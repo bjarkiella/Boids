@@ -29,3 +29,6 @@
 /home/bjarkiella/repos/Boids/obj/Debug/net8.0/Boids.pdb
 /home/bjarkiella/repos/Boids/obj/Debug/net8.0/Boids.genruntimeconfig.cache
 /home/bjarkiella/repos/Boids/obj/Debug/net8.0/ref/Boids.dll
+/home/bjarkiella/repos/Boids/obj/Debug/net8.0/Boids.sourcelink.json
+/home/bjarkiella/repos/Boids/bin/Debug/net8.0/Content/cirlce.xnb
+/home/bjarkiella/repos/Boids/bin/Debug/net8.0/Content/circle.xnb

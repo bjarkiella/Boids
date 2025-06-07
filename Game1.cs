@@ -9,9 +9,12 @@ public class Game1 : Game
     private GraphicsDeviceManager _graphics;
     private SpriteBatch _spriteBatch;
 
+    Texture2D texture;
     public Game1()
     {
         _graphics = new GraphicsDeviceManager(this);
+        _graphics.PreferredBackBufferHeight = 720;
+        _graphics.PreferredBackBufferWidth = 1280;
         Content.RootDirectory = "Content";
         IsMouseVisible = true;
     }
@@ -26,7 +29,7 @@ public class Game1 : Game
     protected override void LoadContent()
     {
         _spriteBatch = new SpriteBatch(GraphicsDevice);
-
+        texture = Content.Load<Texture2D>("circle");
         // TODO: use this.Content to load your game content here
     }
 
@@ -45,6 +48,11 @@ public class Game1 : Game
         GraphicsDevice.Clear(Color.CornflowerBlue);
 
         // TODO: Add your drawing code here
+        _spriteBatch.Begin();
+        
+        _spriteBatch.Draw(texture, new Vector2(100,100), Color.White);
+
+        _spriteBatch.End();
 
         base.Draw(gameTime);
     }
