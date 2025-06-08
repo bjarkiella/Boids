@@ -4,9 +4,9 @@
   <Platform>DesktopGL</Platform>
   <Config />
   <SourceFiles>
-    <File>/home/bjarkiella/repos/Boids/Content/cirlce.png</File>
+    <File>/home/bjarkiella/repos/Boids/Content/circle.png</File>
   </SourceFiles>
   <DestFiles>
-    <File>circle.png</File>
+    <File xsi:nil="true" />
   </DestFiles>
 </SourceFileCollection>
