@@ -9,9 +9,6 @@ namespace Boids
 {
     public static class Utils
     {
-        public const int SHeight = 720;
-        public const int SWidth = 1280;
-        public static float visionFactor = 2f;
 
         public static float RandomFloatRange(float a, float b)
         {
@@ -20,11 +17,13 @@ namespace Boids
         }
         public static Vector2 RandomSpawnPosition()
         {
-            return new Vector2(RandomFloatRange(0f, SWidth), RandomFloatRange(0f, SHeight));
+            float wCons = 1f - Constants.warnOutPerc;
+            return new Vector2(RandomFloatRange(Constants.SWidth*Constants.warnOutPerc, Constants.SWidth*wCons),
+            RandomFloatRange(Constants.SHeight*Constants.warnOutPerc, Constants.SHeight*wCons));
         }
         public static float InitialSpeed()
         {
-            return Utils.RandomFloatRange(0f, 1f); 
+            return Utils.RandomFloatRange(1f*120, 2f*120); 
         }
         public static float InitialAngle()
         {

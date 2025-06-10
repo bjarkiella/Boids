@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection.Metadata;
 using System.Threading.Tasks;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
@@ -14,7 +15,7 @@ namespace Boids
         public float speed;
         public float angle;
         public readonly float boidRadius;
-        public float visionRadius => boidRadius * Utils.visionFactor;
+        public float visionRadius => boidRadius * Constants.visionFactor;
         public BoidEntity(Texture2D texture, Vector2 position, float speed, float angle)
         {
             this.texture = texture;
