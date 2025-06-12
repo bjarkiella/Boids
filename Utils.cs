@@ -21,13 +21,20 @@ namespace Boids
             return new Vector2(RandomFloatRange(Constants.SWidth*Constants.warnOutPerc, Constants.SWidth*wCons),
             RandomFloatRange(Constants.SHeight*Constants.warnOutPerc, Constants.SHeight*wCons));
         }
+       
+        public static float distPoints(Vector2 vector1, Vector2 vector2)
+        {
+            float distance;
+            distance = MathF.Sqrt(MathF.Pow(vector2.X - vector1.X, 2) + MathF.Pow(vector2.Y - vector1.Y, 2));
+            return distance;
+        }
         public static float InitialSpeed()
         {
-            return Utils.RandomFloatRange(1f*120, 2f*120); 
+            return RandomFloatRange(1f * 120, 2f * 120);
         }
         public static float InitialAngle()
         {
-            return Utils.RandomFloatRange(0f, 2 * MathF.PI); 
+            return RandomFloatRange(0f, 2 * MathF.PI); 
         }
     }
 }

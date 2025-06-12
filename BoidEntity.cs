@@ -16,13 +16,15 @@ namespace Boids
         public float angle;
         public readonly float boidRadius;
         public float visionRadius => boidRadius * Constants.visionFactor;
+        public List<BoidEntity> neighbours;
         public BoidEntity(Texture2D texture, Vector2 position, float speed, float angle)
         {
             this.texture = texture;
             this.position = position;
             this.speed = speed;
             this.angle = angle;
-            this.boidRadius = (float)texture.Width/2;
+            this.boidRadius = (float)texture.Width / 2;
+            this.neighbours = new List<BoidEntity>();
         }
 
 

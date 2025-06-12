@@ -15,8 +15,8 @@ public class Game1 : Game
     public Game1()
     {
         _graphics = new GraphicsDeviceManager(this);
-        _graphics.PreferredBackBufferHeight = 720;
-        _graphics.PreferredBackBufferWidth = 1280;
+        _graphics.PreferredBackBufferHeight = Constants.SHeight;
+        _graphics.PreferredBackBufferWidth = Constants.SWidth;
         Content.RootDirectory = "Content";
         IsMouseVisible = true;
     }
@@ -44,7 +44,10 @@ public class Game1 : Game
             Exit();
         if (current.IsKeyDown(Keys.Space) && !_prevKeyboardState.IsKeyDown(Keys.Space))
         {
-            _boidManager.SpawnBoid(); 
+            for (int i = 1; i <= 10; i++)
+            {
+                _boidManager.SpawnBoid(); 
+            }
         }
         // TODO: Add your update logic here
         // Updating the boids movement
