@@ -15,6 +15,18 @@ namespace Boids
             Random random = new Random();
             return (float)random.NextDouble() * (MathF.Max(a, b) - MathF.Min(a, b)) + MathF.Min(a, b);
         }
+        public static Vector2 RandomVector(float a, float b)
+        {
+            return new Vector2(RandomFloatRange(a, b), RandomFloatRange(a, b));
+        }
+        public static float RandomAngle(float angle)
+        {
+            return 1f;
+        }
+        public static float RandomSpeed(float speed)
+        {
+            return 1f;
+        }
         public static Vector2 RandomSpawnPosition()
         {
             float wCons = 1f - Constants.warnOutPerc;
@@ -27,6 +39,10 @@ namespace Boids
             float distance;
             distance = MathF.Sqrt(MathF.Pow(vector2.X - vector1.X, 2) + MathF.Pow(vector2.Y - vector1.Y, 2));
             return distance;
+        }
+        public static Vector2 InitialVelocity(float spawnAngle, float spawnSpeed)
+        {
+            return new Vector2(MathF.Cos(spawnAngle),MathF.Sin(spawnAngle)) * spawnSpeed; 
         }
         public static float InitialSpeed()
         {

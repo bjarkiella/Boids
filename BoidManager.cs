@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
+
+//using System.Numerics;
 using System.Security.AccessControl;
 using System.Threading.Tasks;
 using System.Xml.Schema;
@@ -23,89 +25,109 @@ namespace Boids
         }
         public void SpawnBoid()
         {
-            BoidEntity newBoid = new BoidEntity(_boidTexture, Utils.RandomSpawnPosition(), Utils.InitialSpeed(), Utils.InitialAngle());
+            Vector2 spawnPoint = Utils.RandomSpawnPosition();
+            Vector2 spawnVel = Utils.InitialVelocity(Utils.InitialAngle(), Utils.InitialSpeed());
+            BoidEntity newBoid = new BoidEntity(_boidTexture, spawnPoint, spawnVel);
             _boids.Add(newBoid);
         }
         public void Update(GameTime gt)
         {
-            float dt = (float)gt.ElapsedGameTime.TotalSeconds;
+            float dt = (float)gt.ElapsedGameTime.TotalSeconds*Constants.accFactor;
 
             foreach (BoidEntity b in _boids)
             {
-                // Reset per-boid accumulators
-                Vector2 sep    = Vector2.Zero;
-                Vector2 align  = Vector2.Zero;
+                // Initializing movement vectors
+                Vector2 sep = Vector2.Zero;
+                Vector2 align = Vector2.Zero;
                 Vector2 center = Vector2.Zero;
-                int neighbourCount = 0;
+                Vector2 steer = Vector2.Zero;
+                Vector2 vecTor = Vector2.Zero;
 
+                // Neighbour variables initilized
                 b.neighbours.Clear();
 
                 foreach (BoidEntity other in _boids)
                 {
                     if (other == b) continue;
 
-                    // Torus-wrapped distance
-                    (float distSq, Vector2 away) = TorusDistanceSq(b.position, other.position,Constants.SWidth, Constants.SHeight);
+                    vecTor = TorusDistanceSq(b.position, other.position, Constants.SWidth, Constants.SHeight);
+                    //float distSq = vecTor.LengthSquared();
+                    float distSq = vecTor.Length();
+                    float visSq = b.visionRadius;// * b.visionRadius;
+                    if (distSq > visSq) continue;
 
-                    float visSq = b.visionRadius * b.visionRadius;
-                    if (distSq > visSq) continue;        // not a neighbour
-
-                    //  In-range neighbour 
-                    b.neighbours.Add(other);
-                    neighbourCount++;
-
-                    // separation (inverse-square weighting)
-                    sep += Vector2.Normalize(away) / distSq;
-
-                    // alignment (use neighbour’s forward vector)
-                    align += new Vector2(MathF.Cos(other.angle), MathF.Sin(other.angle));
-
-                    // cohesion (accumulate positions)
+                    align += other.velocity;
                     center += other.position;
+                    float closeSq = visSq / Constants.visionFactor;
+                    if (distSq < closeSq)
+                    {
+                        // sep += b.position - other.position;
+                        sep += -vecTor;
+                    }
+                    b.neighbours.Add(other);
                 }
-
-                if (neighbourCount > 0)
+                if (b.neighbours.Count > 0)
                 {
-                    center /= neighbourCount;                               // average position
-                    align = Vector2.Normalize(align / neighbourCount);     // average heading
+                    align /= b.neighbours.Count;
+                    center /= b.neighbours.Count;
+                    steer += (align - b.velocity) * Constants.alignFactor;
+                    steer += (center - b.position) * Constants.coheFactor;
+                    steer += sep * Constants.sepFactor;
+                    steer += Utils.RandomVector(Constants.RandomSteer, Constants.RandomSteer);
+                }
+                b.velocity += steer * dt * Utils.RandomFloatRange(0,Constants.RandomVel);
+                if (b.velocity.LengthSquared() > Constants.maxSpeed * Constants.maxSpeed)
+                {
+                    b.velocity = Vector2.Normalize(b.velocity) * Constants.maxSpeed;
                 }
 
-                // Normalise & weight each steering component
-                if (sep != Vector2.Zero) sep = Vector2.Normalize(sep) * Constants.sepFactor;
-                if (align != Vector2.Zero) align = align * Constants.alignFactor;
-                Vector2 cohe = Vector2.Zero;
-                if (neighbourCount > 0)
-                    cohe = Vector2.Normalize(center - b.position) * Constants.coheFactor;
+                if (b.velocity.LengthSquared() < Constants.minSpeed * Constants.minSpeed)
+                {
+                    b.velocity = Vector2.Normalize(b.velocity) * Constants.minSpeed;
+                }
 
-                // Current forward vector
-                Vector2 forward = new Vector2(MathF.Cos(b.angle), MathF.Sin(b.angle));
-
-                // Desired direction
-                Vector2 desired = Vector2.Normalize(forward + sep + align + cohe);
-
-                // Integrate position & angle
-                b.position += desired * b.speed * dt;
+            }
+            foreach (BoidEntity b in _boids)
+            {
+                b.position += b.velocity * dt;
                 b.position = Wrap(b.position, b.boidRadius);
-                b.angle = MathF.Atan2(desired.Y, desired.X);   // optional: rotate sprite
             }
         }
-
-        public static (float distSq, Vector2 away) TorusDistanceSq(Vector2 me, Vector2 other, float width, float height)
+        public static Vector2 TorusDistanceSq(Vector2 a, Vector2 b, float width, float height)
         {
-            float dx = me.X - other.X;
-            dx -= MathF.Round(dx / width)  * width;   // shortest X diff
+            float dx = MathF.Abs(b.X - a.X);
+            float dy = MathF.Abs(b.Y - a.Y);
 
-            float dy = me.Y - other.Y;
-            dy -= MathF.Round(dy / height) * height;  // shortest Y diff
+            if (dx > width / 2)
+            {
+                dx = width - dx;
+            }
+            if (dy > height / 2)
+            {
+                dy = height - dy;
+            }
 
-            return (dx * dx + dy * dy, new Vector2(dx, dy));      
+            return new Vector2(dx, dy);
+
+
+
+            //float dx = b.X - other.X;
+            //dx -= MathF.Round(dx / width) * width;   // shortest X diff
+
+           // float dy = b.Y - other.Y;
+            //dy -= MathF.Round(dy / height) * height;  // shortest Y diff
+
+            //return dx * dx + dy * dy;
+           // return new Vector2(dx, dy);  
+            //dreturn new Vector2(dx, dy);
         }
         private static Vector2 Wrap(Vector2 pos, float r)
         {
-            float spanX = Constants.SWidth + 2 * r;
-            float spanY = Constants.SHeight + 2 * r;
-            pos.X = (pos.X + r + spanX) % spanX - r;
-            pos.Y = (pos.Y + r + spanY) % spanY - r;
+            if (pos.X >= Constants.SWidth) pos.X -= Constants.SWidth;
+            if (pos.X <= 0) pos.X += Constants.SWidth;
+            if (pos.Y >= Constants.SHeight) pos.Y -= Constants.SHeight;
+            if (pos.Y <= 0) pos.Y += Constants.SHeight;
+
             return pos;
         }
         private float bounce(float angle, Vector2 position)

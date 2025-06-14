@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Boids and Player</title>
+  <style>
+    body { margin: 0; overflow: hidden; background: #111; }
+    canvas { display: block; background: #222; }
+  </style>
+</head>
+<body>
+  <canvas id="gameCanvas"></canvas>
+  <script>
+    const canvas = document.getElementById("gameCanvas");
+    const ctx = canvas.getContext("2d");
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+
+    function resizeCanvas() {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+    }
+    window.addEventListener('resize', resizeCanvas);
+
+    let alignmentWeight = 0.05;
+    let cohesionWeight = 0.001;
+    let separationWeight = 0.05;
+    let attractionWeight = 0.0005;
+    let attractionRadius = 150;
+    let trailLength = 20;
+    let repulsionRadius = 80;
+    let repulsionForce = 0.01;
+    let randomnessLevel = 0;
+
+    let playerSpeed = 2;
+    let boidMaxSpeed = 2;
+    let boidAcceleration = 0.2;
+    let lastFrameTime = performance.now();
+    let fps = 0;
+
+    const NUM_BOIDS = 10;
+    const BOID_RADIUS = 4;
+    const PLAYER_RADIUS = 6;
+    const boids = [];
+
+    const player = {
+      x: canvas.width / 2,
+      y: canvas.height / 2,
+      dx: 0,
+      dy: 0,
+      get speed() { return playerSpeed; },
+      trail: []
+    };
+
+    const keys = {};
+    document.addEventListener("keydown", e => {
+      keys[e.key] = true;
+      switch (e.key.toLowerCase()) {
+        case 'q': alignmentWeight += 0.005; break;
+        case 'a': alignmentWeight = Math.max(0, alignmentWeight - 0.005); break;
+        case 'w': cohesionWeight += 0.0005; break;
+        case 's': cohesionWeight = Math.max(0, cohesionWeight - 0.0005); break;
+        case 'e': separationWeight += 0.005; break;
+        case 'd': separationWeight = Math.max(0, separationWeight - 0.005); break;
+        case 'r': attractionWeight += 0.0001; break;
+        case 'f': attractionWeight = Math.max(0, attractionWeight - 0.0001); break;
+        case 't': attractionRadius += 10; break;
+        case 'g': attractionRadius = Math.max(0, attractionRadius - 10); break;
+        case 'x': boids.push(new Boid(Math.random() * canvas.width, Math.random() * canvas.height)); break;
+        case 'y': trailLength += 2; break;
+        case 'h': trailLength = Math.max(2, trailLength - 2); break;
+        case 'u': repulsionRadius += 5; break;
+        case 'j': repulsionRadius = Math.max(0, repulsionRadius - 5); break;
+        case 'i': repulsionForce += 0.001; break;
+        case 'k': repulsionForce = Math.max(0, repulsionForce - 0.001); break;
+        case 'z': randomnessLevel = 0; break;
+        case '+':
+        case '=': randomnessLevel += 1; break;
+        case '-': randomnessLevel = Math.max(0, randomnessLevel - 1); break;
+        case '1': playerSpeed = Math.max(0, playerSpeed - 0.1); break;
+        case '2': playerSpeed += 0.1; break;
+        case '3': boidMaxSpeed = Math.max(0.1, boidMaxSpeed - 0.1); break;
+        case '4': boidMaxSpeed += 0.1; break;
+        case '5': boidAcceleration = Math.max(0.01, boidAcceleration - 0.01); break;
+        case '6': boidAcceleration += 0.01; break;
+      }
+    });
+    document.addEventListener("keyup", e => keys[e.key] = false);
+
+    class Boid {
+      constructor(x, y) {
+        this.x = x;
+        this.y = y;
+        this.vx = Math.random() * 2 - 1;
+        this.vy = Math.random() * 2 - 1;
+        this.trail = [];
+      }
+
+      update(boids) {
+        let avgVX = 0, avgVY = 0;
+        let centerX = 0, centerY = 0;
+        let avoidX = 0, avoidY = 0;
+        let count = 0;
+
+        for (const other of boids) {
+          const dist = Math.hypot(this.x - other.x, this.y - other.y);
+          if (other !== this && dist < 100) {
+            avgVX += other.vx;
+            avgVY += other.vy;
+            centerX += other.x;
+            centerY += other.y;
+            count++;
+
+            if (dist < 20) {
+              avoidX += this.x - other.x;
+              avoidY += this.y - other.y;
+            }
+          }
+        }
+
+        if (count > 0) {
+          avgVX /= count;
+          avgVY /= count;
+          centerX /= count;
+          centerY /= count;
+
+          this.vx += (avgVX - this.vx) * alignmentWeight;
+          this.vy += (avgVY - this.vy) * alignmentWeight;
+
+          this.vx += (centerX - this.x) * cohesionWeight;
+          this.vy += (centerY - this.y) * cohesionWeight;
+
+          this.vx += avoidX * separationWeight;
+          this.vy += avoidY * separationWeight;
+        }
+
+        const distToPlayer = Math.hypot(player.x - this.x, player.y - this.y);
+        if (distToPlayer < attractionRadius) {
+          this.vx += (player.x - this.x) * attractionWeight;
+          this.vy += (player.y - this.y) * attractionWeight;
+        }
+
+        if (distToPlayer < repulsionRadius) {
+          const repelForceX = this.x - player.x;
+          const repelForceY = this.y - player.y;
+          this.vx += repelForceX * repulsionForce;
+          this.vy += repelForceY * repulsionForce;
+        }
+
+        let desiredVX = this.vx;
+        let desiredVY = this.vy;
+
+        const currentSpeed = Math.hypot(this.vx, this.vy);
+        if (currentSpeed > boidMaxSpeed) {
+          desiredVX = (this.vx / currentSpeed) * boidMaxSpeed;
+          desiredVY = (this.vy / currentSpeed) * boidMaxSpeed;
+        }
+
+        this.vx += Math.max(-boidAcceleration, Math.min(boidAcceleration, desiredVX - this.vx));
+        this.vy += Math.max(-boidAcceleration, Math.min(boidAcceleration, desiredVY - this.vy));
+
+        this.x += this.vx;
+        this.y += this.vy;
+
+        // Wrap around screen
+        if (this.x < 0) this.x += canvas.width;
+        if (this.x > canvas.width) this.x -= canvas.width;
+        if (this.y < 0) this.y += canvas.height;
+        if (this.y > canvas.height) this.y -= canvas.height;
+
+        const edgeMargin = 50;
+        if (this.x < edgeMargin) this.vx += (edgeMargin - this.x) * 0.01;
+        if (this.x > canvas.width - edgeMargin) this.vx -= (this.x - (canvas.width - edgeMargin)) * 0.01;
+        if (this.y < edgeMargin) this.vy += (edgeMargin - this.y) * 0.01;
+        if (this.y > canvas.height - edgeMargin) this.vy -= (this.y - (canvas.height - edgeMargin)) * 0.01;
+
+        this.trail.push({ x: this.x, y: this.y });
+        if (this.trail.length > trailLength) this.trail.shift();
+      }
+
+      draw(ctx) {
+        ctx.beginPath();
+        for (let i = 0; i < this.trail.length; i++) {
+          const p = this.trail[i];
+          ctx.globalAlpha = i / this.trail.length;
+          ctx.fillStyle = "#0ff";
+          ctx.fillRect(p.x - 1, p.y - 1, 2, 2);
+        }
+        ctx.globalAlpha = 1;
+
+        ctx.beginPath();
+        ctx.arc(this.x, this.y, BOID_RADIUS, 0, Math.PI * 2);
+        ctx.fillStyle = "#0ff";
+        ctx.fill();
+      }
+    }
+
+    for (let i = 0; i < NUM_BOIDS; i++) {
+      boids.push(new Boid(Math.random() * canvas.width, Math.random() * canvas.height));
+    }
+
+    function updatePlayer() {
+      if (keys["ArrowUp"]) player.dy = -player.speed;
+      else if (keys["ArrowDown"]) player.dy = player.speed;
+      else player.dy = 0;
+
+      if (keys["ArrowLeft"]) player.dx = -player.speed;
+      else if (keys["ArrowRight"]) player.dx = player.speed;
+      else player.dx = 0;
+
+      player.x += player.dx;
+      player.y += player.dy;
+
+      if (player.x < 0) player.x += canvas.width;
+      if (player.x > canvas.width) player.x -= canvas.width;
+      if (player.y < 0) player.y += canvas.height;
+      if (player.y > canvas.height) player.y -= canvas.height;
+
+      player.trail.push({ x: player.x, y: player.y });
+      if (player.trail.length > trailLength) player.trail.shift();
+    }
+
+    function drawPlayer(ctx) {
+      ctx.beginPath();
+      for (let i = 0; i < player.trail.length; i++) {
+        const p = player.trail[i];
+        ctx.globalAlpha = i / player.trail.length;
+        ctx.fillStyle = "#ff0";
+        ctx.fillRect(p.x - 1, p.y - 1, 2, 2);
+      }
+      ctx.globalAlpha = 1;
+
+      ctx.beginPath();
+      ctx.arc(player.x, player.y, PLAYER_RADIUS, 0, Math.PI * 2);
+      ctx.fillStyle = "#ff0";
+      ctx.fill();
+
+      ctx.beginPath();
+      ctx.arc(player.x, player.y, attractionRadius, 0, Math.PI * 2);
+      ctx.strokeStyle = "rgba(255, 255, 0, 0.2)";
+      ctx.stroke();
+
+      ctx.beginPath();
+      ctx.arc(player.x, player.y, repulsionRadius, 0, Math.PI * 2);
+      ctx.strokeStyle = "rgba(255, 0, 0, 0.2)";
+      ctx.stroke();
+    }
+
+    function gameLoop() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      updatePlayer();
+      drawPlayer(ctx);
+
+      for (const boid of boids) {
+        boid.update(boids);
+        boid.draw(ctx);
+      }
+
+      ctx.fillStyle = "#fff";
+      ctx.font = "14px monospace";
+      ctx.textAlign = "left";
+      ctx.fillText(`Q/A: Alignment = ${alignmentWeight.toFixed(3)}`, 10, 20);
+      ctx.fillText(`W/S: Cohesion = ${cohesionWeight.toFixed(4)}`, 10, 40);
+      ctx.fillText(`E/D: Separation = ${separationWeight.toFixed(3)}`, 10, 60);
+      ctx.fillText(`R/F: Attraction = ${attractionWeight.toFixed(4)}`, 10, 100);
+      ctx.fillText(`T/G: Attraction Radius = ${attractionRadius}`, 10, 120);
+      ctx.fillText(`Y/H: Trail Length = ${trailLength}`, 10, 140);
+      ctx.fillText(`U/J: Repulsion Radius = ${repulsionRadius}`, 10, 160);
+      ctx.fillText(`I/K: Repulsion Force = ${repulsionForce.toFixed(3)}`, 10, 180);
+      ctx.fillText(`Z/-/+: Randomness = ${randomnessLevel}%`, 10, 200);
+      ctx.fillText(`X: Spawn new Boid (Total: ${boids.length})`, 10, 80);
+      ctx.fillText(`1/2: Player Speed = ${playerSpeed.toFixed(1)}`, 10, 220);
+      ctx.fillText(`3/4: Boid Max Speed = ${boidMaxSpeed.toFixed(1)}`, 10, 240);
+      ctx.fillText(`5/6: Boid Acceleration = ${boidAcceleration.toFixed(2)}`, 10, 260);
+
+      const now = performance.now();
+      fps = Math.round(1000 / (now - lastFrameTime));
+      lastFrameTime = now;
+
+      ctx.textAlign = "right";
+      ctx.fillText(`FPS: ${fps}`, canvas.width - 10, 20);
+      ctx.textAlign = "left";
+
+      requestAnimationFrame(gameLoop);
+    }
+
+    gameLoop();
+  </script>
+</body>
+</html>
