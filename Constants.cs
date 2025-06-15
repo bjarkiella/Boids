@@ -23,5 +23,10 @@ namespace Boids
         public const float minSpeed = 60f;
         public const float RandomSteer = 10f;
         public const float RandomVel = 1.1f;
+        public enum BoundaryType
+        {
+            Wrap,Bounce,Steer
+        }
+        public const BoundaryType tempCond = BoundaryType.Bounce;
     }
 }

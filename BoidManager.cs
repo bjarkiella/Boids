@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 
+
 //using System.Numerics;
 using System.Security.AccessControl;
 using System.Threading.Tasks;
@@ -33,7 +34,7 @@ namespace Boids
         public void Update(GameTime gt)
         {
             float dt = (float)gt.ElapsedGameTime.TotalSeconds*Constants.accFactor;
-
+            Constants.BoundaryType boundaryType = Constants.tempCond;  
             foreach (BoidEntity b in _boids)
             {
                 // Initializing movement vectors
@@ -49,9 +50,26 @@ namespace Boids
                 foreach (BoidEntity other in _boids)
                 {
                     if (other == b) continue;
+                    switch (boundaryType)
+                    {
+                        case Constants.BoundaryType.Wrap:
+                            vecTor = BoundaryCond.TorusDistance(b.position, other.position, Constants.SWidth, Constants.SHeight);
+                            break;
+                        case Constants.BoundaryType.Bounce:
+                            vecTor = BoundaryCond.distVect(b.position, other.position);
+                            break;
+                        case Constants.BoundaryType.Steer:
+                            vecTor = BoundaryCond.distVect(b.position, other.position);
 
-                    vecTor = TorusDistanceSq(b.position, other.position, Constants.SWidth, Constants.SHeight);
-                    //float distSq = vecTor.LengthSquared();
+                            // Distances to edges of screen
+                            float left = b.position.X - b.boidRadius;
+                            float right = Constants.SWidth - b.boidRadius - b.position.X;
+                            float top = b.position.Y - b.boidRadius;
+                            float bottom = Constants.SHeight - b.boidRadius - b.position.Y;
+                            Vector2 boundSteer = BoundaryCond.steerBoid(left, right, top, bottom);
+
+                            break;
+                    }
                     float distSq = vecTor.Length();
                     float visSq = b.visionRadius;// * b.visionRadius;
                     if (distSq > visSq) continue;
@@ -61,7 +79,6 @@ namespace Boids
                     float closeSq = visSq / Constants.visionFactor;
                     if (distSq < closeSq)
                     {
-                        // sep += b.position - other.position;
                         sep += -vecTor;
                     }
                     b.neighbours.Add(other);
@@ -89,86 +106,24 @@ namespace Boids
             }
             foreach (BoidEntity b in _boids)
             {
-                b.position += b.velocity * dt;
-                b.position = Wrap(b.position, b.boidRadius);
-            }
-        }
-        public static Vector2 TorusDistanceSq(Vector2 a, Vector2 b, float width, float height)
-        {
-            float dx = MathF.Abs(b.X - a.X);
-            float dy = MathF.Abs(b.Y - a.Y);
+                switch (boundaryType)
+                {
+                    case Constants.BoundaryType.Wrap:
+                        b.position += b.velocity * dt;
+                        b.position = BoundaryCond.Wrap(b.position);
+                        break;
+                    case Constants.BoundaryType.Bounce:
+                        b.position += b.velocity * dt;
+                        b.velocity = BoundaryCond.bounce(b.velocity, b.position);
+                        break;
+                    case Constants.BoundaryType.Steer:
 
-            if (dx > width / 2)
-            {
-                dx = width - dx;
-            }
-            if (dy > height / 2)
-            {
-                dy = height - dy;
+                        break;
+                }
             }
 
-            return new Vector2(dx, dy);
-
-
-
-            //float dx = b.X - other.X;
-            //dx -= MathF.Round(dx / width) * width;   // shortest X diff
-
-           // float dy = b.Y - other.Y;
-            //dy -= MathF.Round(dy / height) * height;  // shortest Y diff
-
-            //return dx * dx + dy * dy;
-           // return new Vector2(dx, dy);  
-            //dreturn new Vector2(dx, dy);
-        }
-        private static Vector2 Wrap(Vector2 pos, float r)
-        {
-            if (pos.X >= Constants.SWidth) pos.X -= Constants.SWidth;
-            if (pos.X <= 0) pos.X += Constants.SWidth;
-            if (pos.Y >= Constants.SHeight) pos.Y -= Constants.SHeight;
-            if (pos.Y <= 0) pos.Y += Constants.SHeight;
-
-            return pos;
-        }
-        private float bounce(float angle, Vector2 position)
-        {
-            // Checking collision with with walls (bounce effect)
-            if (position.Y <= 0 || position.Y >= Constants.SHeight)
-            {
-                angle *= -1;
-            }
-            if (position.X <= 0 || position.X >= Constants.SWidth)
-            {
-                angle = MathF.PI - angle;
-            }
-            return angle;
         }
        
-        private float steerBoid(float left, float right, float top, float bottom)
-        {
-            float x=0f, y = 0f;
-            if (left < Constants.WarnInX)
-            {
-                x += (left - Constants.WarnInX) / Constants.WarnInX;
-            }
-            else if (right < Constants.WarnInX)
-            {
-                x -= (Constants.WarnInX - right) / Constants.WarnInX;
-            }
-            if (top < Constants.WarnInY)
-            {
-                y += (top - Constants.WarnInY) / Constants.WarnInY;
-            }
-            else if (bottom < Constants.WarnInY)
-            {
-                y += (Constants.WarnInY - bottom) / Constants.WarnInY;
-            }
-
-            if (x == 0f && y == 0f) return 0f;
-
-            Vector2 steer = Vector2.Normalize(new Vector2(x, y));
-            return MathF.Atan2(steer.Y, steer.X);  
-        }
         public void Draw(SpriteBatch sb)
         {
             foreach (BoidEntity b in _boids)

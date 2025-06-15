@@ -34,12 +34,6 @@ namespace Boids
             RandomFloatRange(Constants.SHeight*Constants.warnOutPerc, Constants.SHeight*wCons));
         }
        
-        public static float distPoints(Vector2 vector1, Vector2 vector2)
-        {
-            float distance;
-            distance = MathF.Sqrt(MathF.Pow(vector2.X - vector1.X, 2) + MathF.Pow(vector2.Y - vector1.Y, 2));
-            return distance;
-        }
         public static Vector2 InitialVelocity(float spawnAngle, float spawnSpeed)
         {
             return new Vector2(MathF.Cos(spawnAngle),MathF.Sin(spawnAngle)) * spawnSpeed; 

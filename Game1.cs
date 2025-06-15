@@ -62,7 +62,7 @@ public class Game1 : Game
         GraphicsDevice.Clear(Color.CornflowerBlue);
 
         // TODO: Add your drawing code here
-        _spriteBatch.Begin();
+        _spriteBatch.Begin(SpriteSortMode.FrontToBack,BlendState.AlphaBlend);
         //_spriteBatch.Draw(boidEntity.texture, boidEntity.position, Color.CornflowerBlue);
         _boidManager.Draw(_spriteBatch); 
         _spriteBatch.End();
