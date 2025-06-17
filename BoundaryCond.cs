@@ -51,25 +51,32 @@ namespace Boids
             }
             return velocity;
         }
+
         
-        public static Vector2 steerBoid(float left, float right, float top, float bottom)
+        public static Vector2 steerBoid(Vector2 position, float radius)
         {
+            // Calculating distance to edges    
+            float left = position.X - radius;
+            float right = Constants.SWidth - radius - position.X;
+            float top = position.Y - radius;
+            float bottom = Constants.SHeight - radius - position.Y;
+
             float x=0f, y = 0f;
             if (left < Constants.WarnInX)
             {
-                x += (left - Constants.WarnInX) / Constants.WarnInX;
+                x -= (left - Constants.WarnInX) / Constants.WarnInX;
             }
-            else if (right < Constants.WarnInX)
+            if (right < Constants.WarnInX)
             {
                 x -= (Constants.WarnInX - right) / Constants.WarnInX;
             }
             if (top < Constants.WarnInY)
             {
-                y += (top - Constants.WarnInY) / Constants.WarnInY;
+                y -= (top - Constants.WarnInY) / Constants.WarnInY;
             }
-            else if (bottom < Constants.WarnInY)
+            if (bottom < Constants.WarnInY)
             {
-                y += (Constants.WarnInY - bottom) / Constants.WarnInY;
+                y -= (Constants.WarnInY - bottom) / Constants.WarnInY;
             }
 
             if (x == 0f && y == 0f) return Vector2.Zero;

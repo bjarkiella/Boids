@@ -9,10 +9,10 @@ namespace Boids
 {
     public static class Utils
     {
-
+        static Random random = new Random(); 
         public static float RandomFloatRange(float a, float b)
         {
-            Random random = new Random();
+            random = new Random();
             return (float)random.NextDouble() * (MathF.Max(a, b) - MathF.Min(a, b)) + MathF.Min(a, b);
         }
         public static Vector2 RandomVector(float a, float b)

@@ -3,10 +3,8 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
-
-
-//using System.Numerics;
 using System.Security.AccessControl;
+using System.Security.Cryptography.X509Certificates;
 using System.Threading.Tasks;
 using System.Xml.Schema;
 using Microsoft.VisualBasic;
@@ -47,6 +45,27 @@ namespace Boids
                 // Neighbour variables initilized
                 b.neighbours.Clear();
 
+                if (boundaryType == Constants.BoundaryType.Steer)
+                {
+                    Vector2 boundSteer = BoundaryCond.steerBoid(b.position, b.boidRadius);
+                    if (boundSteer != Vector2.Zero)
+                    {
+                        float desiredAngle = MathF.Atan2(boundSteer.Y, boundSteer.X);
+                        float delta = desiredAngle - b.angle;
+                        delta = (delta + MathF.PI) % (MathF.PI * 2) - MathF.PI;
+
+                        float maxTurn = Constants.MaxTurnPerSec * dt;
+                        float turn = MathHelper.Clamp(delta, -maxTurn, maxTurn);
+                        b.angle += turn;
+
+                        b.velocity = new Vector2(MathF.Cos(b.angle), MathF.Sin(b.angle)) * b.speed;    
+
+                        //Vector2 newDir = Vector2.Normalize(b.velocity) + boundSteer * Constants.steerWeight;
+                        //b.velocity = Vector2.Normalize(newDir) * b.speed;
+                    }
+                }
+
+                // Move this section down and remove the speed etc.
                 foreach (BoidEntity other in _boids)
                 {
                     if (other == b) continue;
@@ -61,27 +80,25 @@ namespace Boids
                         case Constants.BoundaryType.Steer:
                             vecTor = BoundaryCond.distVect(b.position, other.position);
 
-                            // Distances to edges of screen
-                            float left = b.position.X - b.boidRadius;
-                            float right = Constants.SWidth - b.boidRadius - b.position.X;
-                            float top = b.position.Y - b.boidRadius;
-                            float bottom = Constants.SHeight - b.boidRadius - b.position.Y;
-                            Vector2 boundSteer = BoundaryCond.steerBoid(left, right, top, bottom);
-
                             break;
                     }
-                    float distSq = vecTor.Length();
-                    float visSq = b.visionRadius;// * b.visionRadius;
-                    if (distSq > visSq) continue;
+                    float distLen = vecTor.Length();
+                    float visLen = b.visionRadius;// * b.visionRadius;
+                    if (distLen > visLen) continue;
 
                     align += other.velocity;
                     center += other.position;
-                    float closeSq = visSq / Constants.visionFactor;
-                    if (distSq < closeSq)
+                    float closeLen = visLen / Constants.visionFactor;
+                    if (distLen < closeLen)
                     {
                         sep += -vecTor;
                     }
                     b.neighbours.Add(other);
+                }
+                if (boundaryType == Constants.BoundaryType.Steer)
+                {
+                    Vector2 boundSteer = BoundaryCond.steerBoid(b.position, b.boidRadius);
+                    steer += boundSteer * Constants.steerWeight;
                 }
                 if (b.neighbours.Count > 0)
                 {
@@ -102,7 +119,6 @@ namespace Boids
                 {
                     b.velocity = Vector2.Normalize(b.velocity) * Constants.minSpeed;
                 }
-
             }
             foreach (BoidEntity b in _boids)
             {
@@ -117,7 +133,7 @@ namespace Boids
                         b.velocity = BoundaryCond.bounce(b.velocity, b.position);
                         break;
                     case Constants.BoundaryType.Steer:
-
+                        b.position += b.velocity * dt ;
                         break;
                 }
             }
