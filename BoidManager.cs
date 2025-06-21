@@ -41,53 +41,50 @@ namespace Boids
                 Vector2 center = Vector2.Zero;
                 Vector2 steer = Vector2.Zero;
                 Vector2 vecTor = Vector2.Zero;
+                Vector2 boundSteer = Vector2.Zero;
 
                 // Neighbour variables initilized
                 b.neighbours.Clear();
 
                 if (boundaryType == Constants.BoundaryType.Steer)
                 {
-                    Vector2 boundSteer = BoundaryCond.steerBoid(b.position, b.boidRadius);
+                    boundSteer = BoundaryCond.steerBoid(b.Position, b.boidRadius);
+                    b.ResetThrottle();
                     if (boundSteer != Vector2.Zero)
                     {
                         float desiredAngle = MathF.Atan2(boundSteer.Y, boundSteer.X);
-                        float delta = desiredAngle - b.angle;
-                        delta = (delta + MathF.PI) % (MathF.PI * 2) - MathF.PI;
+                        float rawDelta = desiredAngle - b.angle;
+                        float delta = MathHelper.WrapAngle(rawDelta);
 
                         float maxTurn = Constants.MaxTurnPerSec * dt;
                         float turn = MathHelper.Clamp(delta, -maxTurn, maxTurn);
                         b.angle += turn;
 
-                        b.velocity = new Vector2(MathF.Cos(b.angle), MathF.Sin(b.angle)) * b.speed;    
+                        float turnIntensity = MathF.Min(MathF.Abs(turn), MathF.PI / 2f) / (MathF.PI / 2f);
+                        b.Throttle = MathHelper.Lerp(Constants.speedDown,1f, turnIntensity); // Has to between 0 and 1
 
-                        //Vector2 newDir = Vector2.Normalize(b.velocity) + boundSteer * Constants.steerWeight;
-                        //b.velocity = Vector2.Normalize(newDir) * b.speed;
+                        b.Velocity = new Vector2(MathF.Cos(b.angle), MathF.Sin(b.angle)) * b.speed;
                     }
                 }
-
-                // Move this section down and remove the speed etc.
                 foreach (BoidEntity other in _boids)
                 {
                     if (other == b) continue;
                     switch (boundaryType)
                     {
                         case Constants.BoundaryType.Wrap:
-                            vecTor = BoundaryCond.TorusDistance(b.position, other.position, Constants.SWidth, Constants.SHeight);
+                            vecTor = BoundaryCond.TorusDistance(b.Position, other.Position, Constants.SWidth, Constants.SHeight);
                             break;
                         case Constants.BoundaryType.Bounce:
-                            vecTor = BoundaryCond.distVect(b.position, other.position);
-                            break;
                         case Constants.BoundaryType.Steer:
-                            vecTor = BoundaryCond.distVect(b.position, other.position);
-
+                            vecTor = BoundaryCond.distVect(b.Position, other.Position);
                             break;
                     }
                     float distLen = vecTor.Length();
                     float visLen = b.visionRadius;// * b.visionRadius;
                     if (distLen > visLen) continue;
 
-                    align += other.velocity;
-                    center += other.position;
+                    align += other.Velocity;
+                    center += other.Position;
                     float closeLen = visLen / Constants.visionFactor;
                     if (distLen < closeLen)
                     {
@@ -97,27 +94,26 @@ namespace Boids
                 }
                 if (boundaryType == Constants.BoundaryType.Steer)
                 {
-                    Vector2 boundSteer = BoundaryCond.steerBoid(b.position, b.boidRadius);
                     steer += boundSteer * Constants.steerWeight;
                 }
                 if (b.neighbours.Count > 0)
                 {
                     align /= b.neighbours.Count;
                     center /= b.neighbours.Count;
-                    steer += (align - b.velocity) * Constants.alignFactor;
-                    steer += (center - b.position) * Constants.coheFactor;
+                    steer += (align - b.Velocity) * Constants.alignFactor;
+                    steer += (center - b.Position) * Constants.coheFactor;
                     steer += sep * Constants.sepFactor;
                     steer += Utils.RandomVector(Constants.RandomSteer, Constants.RandomSteer);
                 }
-                b.velocity += steer * dt * Utils.RandomFloatRange(0,Constants.RandomVel);
-                if (b.velocity.LengthSquared() > Constants.maxSpeed * Constants.maxSpeed)
+                b.Velocity += steer * dt * Utils.RandomFloatRange(0,Constants.RandomVel);
+                if (b.Velocity.LengthSquared() > Constants.maxSpeed * Constants.maxSpeed)
                 {
-                    b.velocity = Vector2.Normalize(b.velocity) * Constants.maxSpeed;
+                    b.Velocity = Vector2.Normalize(b.Velocity) * Constants.maxSpeed * b.Throttle;
                 }
 
-                if (b.velocity.LengthSquared() < Constants.minSpeed * Constants.minSpeed)
+                if (b.Velocity.LengthSquared() < Constants.minSpeed * Constants.minSpeed)
                 {
-                    b.velocity = Vector2.Normalize(b.velocity) * Constants.minSpeed;
+                    b.Velocity = Vector2.Normalize(b.Velocity) * Constants.minSpeed * b.Throttle;
                 }
             }
             foreach (BoidEntity b in _boids)
@@ -125,15 +121,15 @@ namespace Boids
                 switch (boundaryType)
                 {
                     case Constants.BoundaryType.Wrap:
-                        b.position += b.velocity * dt;
-                        b.position = BoundaryCond.Wrap(b.position);
+                        b.Position += b.Velocity * dt;
+                        b.Position = BoundaryCond.Wrap(b.Position);
                         break;
                     case Constants.BoundaryType.Bounce:
-                        b.position += b.velocity * dt;
-                        b.velocity = BoundaryCond.bounce(b.velocity, b.position);
+                        b.Position += b.Velocity * dt;
+                        b.Velocity = BoundaryCond.bounce(b.Velocity, b.Position);
                         break;
                     case Constants.BoundaryType.Steer:
-                        b.position += b.velocity * dt ;
+                        b.Position += b.Velocity * dt;
                         break;
                 }
             }
@@ -144,7 +140,7 @@ namespace Boids
         {
             foreach (BoidEntity b in _boids)
             {
-                sb.Draw(b.texture, b.position, Color.White);
+                sb.Draw(b.Texture, b.Position, Color.White);
             }
         }
     }
