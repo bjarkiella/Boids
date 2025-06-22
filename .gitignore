@@ -1,0 +1,19 @@
+# ── Core .NET / VS stuff ─────────────────────────────
+bin/
+obj/
+*.user
+*.suo
+*.cache
+*.pidb
+
+# ── MonoGame content-pipeline intermediates ──────────
+**/Content/obj/
+**/Content/bin/
+
+# ── VS Code & other IDEs ─────────────────────────────
+.vscode/
+.idea/
+
+# ── OS cruft ─────────────────────────────────────────
+.DS_Store
+Thumbs.db
