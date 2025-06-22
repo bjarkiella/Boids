@@ -48,21 +48,23 @@ namespace Boids
 
                 if (boundaryType == Constants.BoundaryType.Steer)
                 {
+                    // Initial position check
+                    //b.Position = Utils.PosCheck(b.Position, b.boidRadius);
                     boundSteer = BoundaryCond.steerBoid(b.Position, b.boidRadius);
                     b.ResetThrottle();
                     if (boundSteer != Vector2.Zero)
                     {
+                        // Determining the new angle
                         float desiredAngle = MathF.Atan2(boundSteer.Y, boundSteer.X);
                         float rawDelta = desiredAngle - b.angle;
                         float delta = MathHelper.WrapAngle(rawDelta);
-
                         float maxTurn = Constants.MaxTurnPerSec * dt;
                         float turn = MathHelper.Clamp(delta, -maxTurn, maxTurn);
                         b.angle += turn;
 
+                        // Adding throttling when near wall
                         float turnIntensity = MathF.Min(MathF.Abs(turn), MathF.PI / 2f) / (MathF.PI / 2f);
                         b.Throttle = MathHelper.Lerp(Constants.speedDown,1f, turnIntensity); // Has to between 0 and 1
-
                         b.Velocity = new Vector2(MathF.Cos(b.angle), MathF.Sin(b.angle)) * b.speed;
                     }
                 }
@@ -130,6 +132,7 @@ namespace Boids
                         break;
                     case Constants.BoundaryType.Steer:
                         b.Position += b.Velocity * dt;
+                        b.Position = BoundaryCond.PosCheck(b.Position, b.boidRadius);
                         break;
                 }
             }

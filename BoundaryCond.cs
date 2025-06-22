@@ -83,6 +83,26 @@ namespace Boids
 
             return Vector2.Normalize(new Vector2(x, y));
         }
+        public static Vector2 PosCheck(Vector2 position, float radius)
+        {
+            if (position.X-radius <= 0)
+            {
+                position.X = radius;
+            }
+            else if (position.X + radius >= Constants.SWidth)
+            {
+                position.X = Constants.SWidth - radius;        
+            }
+            if (position.Y - radius <= 0)
+            {
+                position.Y = radius;
+            }
+            else if (position.Y + radius >= Constants.SHeight)
+            {
+                position.Y = Constants.SHeight - radius;
+            }
+            return position;
+        }
         public static Vector2 distVect(Vector2 a, Vector2 b)
         {
             return b - a;
