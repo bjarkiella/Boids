@@ -1,8 +1,11 @@
-﻿using Microsoft.Xna.Framework;
+﻿using AssetManagementBase;
+using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using Myra;
+using Myra.Graphics2D;
 using Myra.Graphics2D.UI;
+using Myra.Graphics2D.UI.Styles;
 
 namespace Boids;
 
@@ -32,17 +35,64 @@ public class Game1 : Game
         base.Initialize();
 
         // Setting up the UI interface
-        MyraEnvironment.Game = this;
     }
 
     protected override void LoadContent()
     {
         _spriteBatch = new SpriteBatch(GraphicsDevice);
         Texture2D texture = Content.Load<Texture2D>("circle");
-        //boidEntity = new BoidEntity(texture, Vector2.Zero, 0.0f, 0.0f); 
-        // TODO: use this.Content to load your game content here
         _boidManager = new BoidManager(texture);
 
+        // Setting up Myra
+        MyraEnvironment.Game = this;
+
+        // Style setup
+        AssetManager assets = AssetManager.CreateResourceAssetManager(typeof(Game1).Assembly, "Content.stylesheets.");
+        string styleName = "ui_stylesheet.xmms";
+        Stylesheet stylesheet = assets.LoadStylesheet(styleName);
+        Stylesheet.Current = stylesheet;
+
+        // Setting up grid
+        Grid grid = new Grid
+        {
+            ColumnSpacing = 8,
+            RowSpacing = 8,
+            Padding = new Thickness(10),
+            Background = new Myra.Graphics2D.Brushes.SolidBrush(Color.DarkSlateBlue)
+        };
+
+        // Grid size
+        grid.ColumnsProportions.Add(new Proportion(ProportionType.Auto));
+        grid.ColumnsProportions.Add(new Proportion(ProportionType.Auto));
+        grid.RowsProportions.Add(new Proportion(ProportionType.Auto));
+
+        Button button1 = Button.CreateTextButton("Add boid");
+        button1.Click += (s, a) =>
+        {
+            for (int i = 0; i < 10; i++)
+            {
+                _boidManager.SpawnBoid();
+            }
+        };
+        grid.Widgets.Add(button1);
+        Grid.SetColumn(button1, 0);
+        Grid.SetRow(button1, 0);
+
+        // Create the bottom panel
+        Panel panel = new Panel
+        {
+            Width = Constants.PWidth,
+            Height = Constants.PHeight,
+            //Background = new Myra.Graphics2D.Brushes.SolidBrush(Color.Gray),
+            Top = Constants.SHeight - Constants.PHeight
+        };
+        panel.Widgets.Add(grid);
+
+        // Deskop rendered
+        _desktop = new Desktop
+        {
+            Root = panel
+        };
 
     }
 
@@ -77,6 +127,10 @@ public class Game1 : Game
         _boidManager.Draw(_spriteBatch); 
         _spriteBatch.End();
 
+        // Rendering the desktop
+        _desktop.Render();
+
+        // Drawing the game
         base.Draw(gameTime);
     }
 }

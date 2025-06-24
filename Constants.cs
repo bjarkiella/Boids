@@ -27,6 +27,8 @@ namespace Boids
         public const float steerWeight = 0.7f;
         public const float MaxTurnPerSec = MathF.PI * 0.75f;
         public const float speedDown = 0.5f;
+        public const int PHeight = 100;
+        public const int PWidth = Constants.SWidth;
         public enum BoundaryType
         {
             Wrap, Bounce, Steer
