@@ -12,7 +12,7 @@ namespace Boids
         public const int SWidth = 1280 * 1;
         public static float visionFactor = 20f;
         public static float warnInPerc = 0.01f;
-        public static float warnOutPerc =warnInPerc + 0.01f;
+        public static float warnOutPerc = warnInPerc + 0.01f;
         public static float warnDistance = warnInPerc * MathF.Max(SWidth, SHeight);
         public static float WarnInX = warnDistance;
         public static float WarnInY = warnDistance;
@@ -28,7 +28,7 @@ namespace Boids
         public const float MaxTurnPerSec = MathF.PI * 0.75f;
         public const float speedDown = 0.5f;
         public const int PHeight = 100;
-        public const int PWidth = Constants.SWidth;
+        public const int PWidth = SWidth;
         public enum BoundaryType
         {
             Wrap, Bounce, Steer

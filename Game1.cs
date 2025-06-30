@@ -1,11 +1,14 @@
-﻿using AssetManagementBase;
+﻿using System.ComponentModel;
+using System.Runtime.CompilerServices;
+using Gum.Wireframe;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
-using Myra;
-using Myra.Graphics2D;
-using Myra.Graphics2D.UI;
-using Myra.Graphics2D.UI.Styles;
+using MonoGameGum;
+using MonoGameGum.Forms.Controls;
+using MonoGameGum.GueDeriving;
+using RenderingLibrary;
+using RenderingLibrary.Math.Geometry;
 
 namespace Boids;
 
@@ -14,12 +17,16 @@ public class Game1 : Game
     private GraphicsDeviceManager _graphics;
     private SpriteBatch _spriteBatch;
 
+    GumService Gum => GumService.Default;
+    StackPanel mainPanel;
+    StackPanel buttonPanel;
+    StackPanel removePanel;
+    StackPanel slidePanel;
+    StackPanel infoPanel;
     KeyboardState _prevKeyboardState;
     
     BoidManager _boidManager;
 
-    Desktop _desktop;
-    
     public Game1()
     {
         _graphics = new GraphicsDeviceManager(this);
@@ -31,10 +38,94 @@ public class Game1 : Game
 
     protected override void Initialize()
     {
-        // TODO: Add your initialization logic here
-        base.Initialize();
 
-        // Setting up the UI interface
+        Gum.Initialize(this);
+        // Bottom container
+        ContainerRuntime bottomPanel = new ContainerRuntime();
+        bottomPanel.AddToManagers(SystemManagers.Default, null);
+        bottomPanel.AddToRoot();
+        bottomPanel.Dock(Dock.Bottom);
+
+        // Color rectanagle created
+        RectangleRuntime bottomBack = new RectangleRuntime();
+        //bottomBack
+        bottomBack.Height = Constants.PHeight;
+        bottomBack.Width = Constants.PWidth;
+        bottomBack.Color = Color.SlateGray;
+        bottomPanel.AddChild(bottomBack);
+
+        // Containers created
+        buttonPanel = new StackPanel();
+        //buttonPanel.Visual.AddToRoot();
+        buttonPanel.Anchor(Anchor.BottomLeft);
+        buttonPanel.Spacing = 3;
+
+
+        slidePanel = new StackPanel();
+        slidePanel.Visual.AddToRoot();
+        slidePanel.Anchor(Anchor.Bottom);
+        slidePanel.Spacing = 3;
+
+        infoPanel = new StackPanel();
+        infoPanel.Visual.AddToRoot();
+        infoPanel.Anchor(Anchor.BottomRight);
+        infoPanel.Spacing = 3;
+
+        bottomPanel.AddChild(buttonPanel);
+
+        // Button Container
+        Label boidLabel = new Label();
+        boidLabel.Text = "Add Spawn";
+
+        Button addOneBtn = new Button();
+        addOneBtn.Text = "1x";
+        addOneBtn.Visual.Width = 200;
+
+        Button addTenBtn = new Button();
+        addTenBtn.Text = "10x";
+        addTenBtn.Visual.Width = 200;
+
+        Button addHunBtn = new Button();
+        addHunBtn.Text = "100x";
+        addHunBtn.Visual.Width = 200;
+
+        buttonPanel.AddChild(boidLabel);
+
+        buttonPanel.AddChild(addOneBtn);
+        buttonPanel.AddChild(addTenBtn);
+        buttonPanel.AddChild(addHunBtn);
+
+        addOneBtn.Click += (_, _) =>
+            _boidManager.SpawnBoid();
+
+        addTenBtn.Click += (_, _) =>{
+            for (int i = 1; i <= 10; i++)
+            {
+                _boidManager.SpawnBoid();
+            }
+        };
+        addHunBtn.Click += (_, _) =>
+        {
+            for (int i = 1; i <= 100; i++)
+            {
+                _boidManager.SpawnBoid();
+            }
+        };
+
+        // Info Container
+        Label infoLabel = new Label();
+        infoLabel.Text = "Boid Information";
+
+        infoPanel.AddChild(infoLabel);
+
+
+        // Slider Container
+        Label slideLabel = new Label();
+        slideLabel.Text = "Boid Controls";
+
+        slidePanel.AddChild(slideLabel);
+
+        base.Initialize();
     }
 
     protected override void LoadContent()
@@ -42,58 +133,6 @@ public class Game1 : Game
         _spriteBatch = new SpriteBatch(GraphicsDevice);
         Texture2D texture = Content.Load<Texture2D>("circle");
         _boidManager = new BoidManager(texture);
-
-        // Setting up Myra
-        MyraEnvironment.Game = this;
-
-        // Style setup
-        AssetManager assets = AssetManager.CreateResourceAssetManager(typeof(Game1).Assembly, "Content.stylesheets.");
-        string styleName = "ui_stylesheet.xmms";
-        Stylesheet stylesheet = assets.LoadStylesheet(styleName);
-        Stylesheet.Current = stylesheet;
-
-        // Setting up grid
-        Grid grid = new Grid
-        {
-            ColumnSpacing = 8,
-            RowSpacing = 8,
-            Padding = new Thickness(10),
-            Background = new Myra.Graphics2D.Brushes.SolidBrush(Color.DarkSlateBlue)
-        };
-
-        // Grid size
-        grid.ColumnsProportions.Add(new Proportion(ProportionType.Auto));
-        grid.ColumnsProportions.Add(new Proportion(ProportionType.Auto));
-        grid.RowsProportions.Add(new Proportion(ProportionType.Auto));
-
-        Button button1 = Button.CreateTextButton("Add boid");
-        button1.Click += (s, a) =>
-        {
-            for (int i = 0; i < 10; i++)
-            {
-                _boidManager.SpawnBoid();
-            }
-        };
-        grid.Widgets.Add(button1);
-        Grid.SetColumn(button1, 0);
-        Grid.SetRow(button1, 0);
-
-        // Create the bottom panel
-        Panel panel = new Panel
-        {
-            Width = Constants.PWidth,
-            Height = Constants.PHeight,
-            //Background = new Myra.Graphics2D.Brushes.SolidBrush(Color.Gray),
-            Top = Constants.SHeight - Constants.PHeight
-        };
-        panel.Widgets.Add(grid);
-
-        // Deskop rendered
-        _desktop = new Desktop
-        {
-            Root = panel
-        };
-
     }
 
     protected override void Update(GameTime gameTime)
@@ -106,14 +145,14 @@ public class Game1 : Game
         {
             for (int i = 1; i <= 10; i++)
             {
-                _boidManager.SpawnBoid(); 
+                _boidManager.SpawnBoid();
             }
         }
-        // TODO: Add your update logic here
         // Updating the boids movement
         _boidManager.Update(gameTime);
         _prevKeyboardState = current;
-        
+
+        Gum.Update(gameTime);
         base.Update(gameTime);
     }
 
@@ -121,15 +160,11 @@ public class Game1 : Game
     {
         GraphicsDevice.Clear(Color.CornflowerBlue);
 
-        // TODO: Add your drawing code here
-        _spriteBatch.Begin(SpriteSortMode.FrontToBack,BlendState.AlphaBlend);
-        //_spriteBatch.Draw(boidEntity.texture, boidEntity.position, Color.CornflowerBlue);
-        _boidManager.Draw(_spriteBatch); 
+        _spriteBatch.Begin(SpriteSortMode.FrontToBack, BlendState.AlphaBlend);
+        _boidManager.Draw(_spriteBatch);
         _spriteBatch.End();
 
-        // Rendering the desktop
-        _desktop.Render();
-
+        Gum.Draw();
         // Drawing the game
         base.Draw(gameTime);
     }
