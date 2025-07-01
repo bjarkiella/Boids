@@ -1,4 +1,5 @@
-﻿using System.ComponentModel;
+﻿using System.Collections.Generic;
+using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using Gum.Wireframe;
 using Microsoft.Xna.Framework;
@@ -18,14 +19,13 @@ public class Game1 : Game
     private SpriteBatch _spriteBatch;
 
     GumService Gum => GumService.Default;
-    StackPanel mainPanel;
-    StackPanel buttonPanel;
-    StackPanel removePanel;
-    StackPanel slidePanel;
-    StackPanel infoPanel;
     KeyboardState _prevKeyboardState;
     
     BoidManager _boidManager;
+    List<Button> _addbuttons;
+    List<Button> _rembuttons;
+    List<Button> _addpredbuttons;
+    List<Button> _rempredbuttons;
 
     public Game1()
     {
@@ -40,84 +40,73 @@ public class Game1 : Game
     {
 
         Gum.Initialize(this);
-        // Bottom container
-        ContainerRuntime bottomPanel = new ContainerRuntime();
-        bottomPanel.AddToManagers(SystemManagers.Default, null);
-        bottomPanel.AddToRoot();
-        bottomPanel.Dock(Dock.Bottom);
+        // Bottom container where all the control parts are kept 
+        ContainerRuntime bottomContainer = new ContainerRuntime();
+        bottomContainer.Name = "bottomPanel";
+        bottomContainer.AddToManagers(SystemManagers.Default, null);
+        bottomContainer.AutoGridHorizontalCells = 3;
+        bottomContainer.AutoGridVerticalCells = 1;
+        bottomContainer.ChildrenLayout = global::Gum.Managers.ChildrenLayout.LeftToRightStack;
+        bottomContainer.AddToRoot();
+        bottomContainer.Dock(Dock.Bottom);
 
         // Color rectanagle created
-        RectangleRuntime bottomBack = new RectangleRuntime();
+        //RectangleRuntime bottomBack = new RectangleRuntime();
         //bottomBack
-        bottomBack.Height = Constants.PHeight;
-        bottomBack.Width = Constants.PWidth;
-        bottomBack.Color = Color.SlateGray;
-        bottomPanel.AddChild(bottomBack);
+        //bottomBack.Height = Constants.PHeight;
+        //bottomBack.Width = Constants.PWidth;
+        //bottomBack.Color = Color.SlateGray;
+        //bottomPanel.AddChild(bottomBack);
 
         // Containers created
-        buttonPanel = new StackPanel();
-        //buttonPanel.Visual.AddToRoot();
-        buttonPanel.Anchor(Anchor.BottomLeft);
+        StackPanel buttonPanel = new StackPanel();
+        buttonPanel.Name = "buttonPanel";
         buttonPanel.Spacing = 3;
 
+        ContainerRuntime buttonContainer = new ContainerRuntime();
+        buttonContainer.AutoGridHorizontalCells = 4;
+        buttonContainer.AutoGridVerticalCells = 1;
+        buttonContainer.StackSpacing = 3;
+        buttonContainer.ChildrenLayout = global::Gum.Managers.ChildrenLayout.LeftToRightStack;
 
-        slidePanel = new StackPanel();
-        slidePanel.Visual.AddToRoot();
-        slidePanel.Anchor(Anchor.Bottom);
+        StackPanel addButtons = new StackPanel();
+        addButtons.Spacing = 3;
+        StackPanel remButtons = new StackPanel();
+        remButtons.Spacing = 3;
+        StackPanel addPredButtons = new StackPanel();
+        addPredButtons.Spacing = 3;
+        StackPanel remPredButtons = new StackPanel();
+        remPredButtons.Spacing = 3;
+
+        StackPanel slidePanel = new StackPanel();
+        //slidePanel.Visual.AddToRoot();
+        //slidePanel.Anchor(Anchor.Bottom);
         slidePanel.Spacing = 3;
 
-        infoPanel = new StackPanel();
-        infoPanel.Visual.AddToRoot();
-        infoPanel.Anchor(Anchor.BottomRight);
+        StackPanel infoPanel = new StackPanel();
+        //infoPanel.Visual.AddToRoot();
+        //infoPanel.Anchor(Anchor.BottomRight);
         infoPanel.Spacing = 3;
 
-        bottomPanel.AddChild(buttonPanel);
+        // Nesting from outer to inner (Button stacks)
+        bottomContainer.AddChild(buttonPanel);
+        buttonPanel.AddChild(buttonContainer);
+        buttonContainer.AddChild(addButtons);
+        buttonContainer.AddChild(remButtons);
+        buttonContainer.AddChild(addPredButtons);
+        buttonContainer.AddChild(remPredButtons);
 
-        // Button Container
-        Label boidLabel = new Label();
-        boidLabel.Text = "Add Spawn";
-
-        Button addOneBtn = new Button();
-        addOneBtn.Text = "1x";
-        addOneBtn.Visual.Width = 200;
-
-        Button addTenBtn = new Button();
-        addTenBtn.Text = "10x";
-        addTenBtn.Visual.Width = 200;
-
-        Button addHunBtn = new Button();
-        addHunBtn.Text = "100x";
-        addHunBtn.Visual.Width = 200;
-
-        buttonPanel.AddChild(boidLabel);
-
-        buttonPanel.AddChild(addOneBtn);
-        buttonPanel.AddChild(addTenBtn);
-        buttonPanel.AddChild(addHunBtn);
-
-        addOneBtn.Click += (_, _) =>
-            _boidManager.SpawnBoid();
-
-        addTenBtn.Click += (_, _) =>{
-            for (int i = 1; i <= 10; i++)
-            {
-                _boidManager.SpawnBoid();
-            }
-        };
-        addHunBtn.Click += (_, _) =>
-        {
-            for (int i = 1; i <= 100; i++)
-            {
-                _boidManager.SpawnBoid();
-            }
-        };
+        List<int> buttonName = new List<int> { 1, 10, 100 };
+        _addbuttons = UI.AddButtonRow("Add boid", 125, buttonName,"+", addButtons);
+        _rembuttons = UI.AddButtonRow("Remove boid", 125, buttonName,"-", remButtons);
+        _addpredbuttons = UI.AddButtonRow("Add predator", 125, buttonName,"+", addPredButtons);
+        _rempredbuttons = UI.AddButtonRow("Remove predator", 125, buttonName,"+", remPredButtons);
 
         // Info Container
         Label infoLabel = new Label();
         infoLabel.Text = "Boid Information";
 
         infoPanel.AddChild(infoLabel);
-
 
         // Slider Container
         Label slideLabel = new Label();
@@ -133,6 +122,10 @@ public class Game1 : Game
         _spriteBatch = new SpriteBatch(GraphicsDevice);
         Texture2D texture = Content.Load<Texture2D>("circle");
         _boidManager = new BoidManager(texture);
+
+        // Button hooking
+        ButtonHandlers.addOrRemButtons(_addbuttons, _boidManager);
+        ButtonHandlers.addOrRemButtons(_rembuttons, _boidManager);
     }
 
     protected override void Update(GameTime gameTime)

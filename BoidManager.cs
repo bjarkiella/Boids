@@ -29,6 +29,13 @@ namespace Boids
             BoidEntity newBoid = new BoidEntity(_boidTexture, spawnPoint, spawnVel);
             _boids.Add(newBoid);
         }
+        public void RemoveBoid()
+        {
+            if (_boids.Count > 0)
+            {
+                _boids.RemoveAt(_boids.Count - 1);
+            }
+        }
         public void Update(GameTime gt)
         {
             float dt = (float)gt.ElapsedGameTime.TotalSeconds*Constants.accFactor;

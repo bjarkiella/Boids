@@ -1,6 +1,7 @@
 # ── Core .NET / VS stuff ─────────────────────────────
 bin/
 obj/
+UI/
 *.user
 *.suo
 *.cache
