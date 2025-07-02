@@ -1,6 +1,8 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
+using Gum.DataTypes.Variables;
 using Gum.Wireframe;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
@@ -20,12 +22,10 @@ public class Game1 : Game
 
     GumService Gum => GumService.Default;
     KeyboardState _prevKeyboardState;
-    
+
     BoidManager _boidManager;
-    List<Button> _addbuttons;
-    List<Button> _rembuttons;
-    List<Button> _addpredbuttons;
-    List<Button> _rempredbuttons;
+    List<Button> _addbuttons,_rembuttons,_addpredbuttons,_rempredbuttons;
+    List<ControlPair<Slider, Label>> _boidSlider;
 
     public Game1()
     {
@@ -35,20 +35,43 @@ public class Game1 : Game
         Content.RootDirectory = "Content";
         IsMouseVisible = true;
     }
-
+    public static void printSizeCont(ContainerRuntime panel)
+    {
+        Console.WriteLine("ContainerRuntime: " + "\n" +
+        "Name: " + panel.Name + "\n" +
+        "Absolotue bottom: " + panel.AbsoluteBottom +"\n" +
+        "Absolote Left: " + panel.AbsoluteLeft +"\n" +
+        "Absolute Right" + panel.AbsoluteRight +"\n" +
+        "Absolute top: " + panel.AbsoluteTop +"\n" +
+        "Absolute x: " + panel.AbsoluteX +"\n" +
+        "Absoulte y: " + panel.AbsoluteY);
+    }
+    public static void printSizeStac(StackPanel panel)
+    {
+        Console.WriteLine("StackPanel: " +"\n" +
+        "Name: " + panel.Name + "\n" +
+        "Absolote Left: " + panel.AbsoluteLeft +"\n" +
+        "Absolute top: " + panel.AbsoluteTop +"\n" +
+        "Absolute height: " + panel.ActualHeight+"\n" +
+        "Absoulte width: " + panel.ActualWidth);
+    }
     protected override void Initialize()
     {
 
         Gum.Initialize(this);
+
         // Bottom container where all the control parts are kept 
         ContainerRuntime bottomContainer = new ContainerRuntime();
         bottomContainer.Name = "bottomPanel";
+        bottomContainer.WidthUnits = global::Gum.DataTypes.DimensionUnitType.RelativeToChildren;
         bottomContainer.AddToManagers(SystemManagers.Default, null);
         bottomContainer.AutoGridHorizontalCells = 3;
         bottomContainer.AutoGridVerticalCells = 1;
+        bottomContainer.Width = Constants.SWidth;
         bottomContainer.ChildrenLayout = global::Gum.Managers.ChildrenLayout.LeftToRightStack;
         bottomContainer.AddToRoot();
         bottomContainer.Dock(Dock.Bottom);
+        //printSizeCont(bottomContainer);
 
         // Color rectanagle created
         //RectangleRuntime bottomBack = new RectangleRuntime();
@@ -58,16 +81,22 @@ public class Game1 : Game
         //bottomBack.Color = Color.SlateGray;
         //bottomPanel.AddChild(bottomBack);
 
-        // Containers created
-        StackPanel buttonPanel = new StackPanel();
-        buttonPanel.Name = "buttonPanel";
-        buttonPanel.Spacing = 3;
-
+        ////////////////////////////////
+        // Button containers created //
+        //////////////////////////////
         ContainerRuntime buttonContainer = new ContainerRuntime();
+        buttonContainer.Name = "buttonContainer";
+        buttonContainer.WidthUnits = global::Gum.DataTypes.DimensionUnitType.RelativeToChildren;
         buttonContainer.AutoGridHorizontalCells = 4;
         buttonContainer.AutoGridVerticalCells = 1;
         buttonContainer.StackSpacing = 3;
         buttonContainer.ChildrenLayout = global::Gum.Managers.ChildrenLayout.LeftToRightStack;
+        //printSizeCont(buttonContainer);
+
+        StackPanel buttonPanel = new StackPanel();
+        buttonPanel.Name = "buttonPanel";
+        buttonPanel.Spacing = 3;
+        //printSizeStac(buttonPanel);
 
         StackPanel addButtons = new StackPanel();
         addButtons.Spacing = 3;
@@ -78,15 +107,11 @@ public class Game1 : Game
         StackPanel remPredButtons = new StackPanel();
         remPredButtons.Spacing = 3;
 
-        StackPanel slidePanel = new StackPanel();
-        //slidePanel.Visual.AddToRoot();
-        //slidePanel.Anchor(Anchor.Bottom);
-        slidePanel.Spacing = 3;
-
-        StackPanel infoPanel = new StackPanel();
-        //infoPanel.Visual.AddToRoot();
-        //infoPanel.Anchor(Anchor.BottomRight);
-        infoPanel.Spacing = 3;
+        List<int> buttonName = new List<int> { 1, 10, 100 };
+        _addbuttons = UI.AddButtonRow("Add boid", 125, buttonName, "+", addButtons);
+        _rembuttons = UI.AddButtonRow("Remove boid", 125, buttonName, "-", remButtons);
+        _addpredbuttons = UI.AddButtonRow("Add predator", 125, buttonName, "+", addPredButtons);
+        _rempredbuttons = UI.AddButtonRow("Remove predator", 125, buttonName, "+", remPredButtons);
 
         // Nesting from outer to inner (Button stacks)
         bottomContainer.AddChild(buttonPanel);
@@ -96,23 +121,46 @@ public class Game1 : Game
         buttonContainer.AddChild(addPredButtons);
         buttonContainer.AddChild(remPredButtons);
 
-        List<int> buttonName = new List<int> { 1, 10, 100 };
-        _addbuttons = UI.AddButtonRow("Add boid", 125, buttonName,"+", addButtons);
-        _rembuttons = UI.AddButtonRow("Remove boid", 125, buttonName,"-", remButtons);
-        _addpredbuttons = UI.AddButtonRow("Add predator", 125, buttonName,"+", addPredButtons);
-        _rempredbuttons = UI.AddButtonRow("Remove predator", 125, buttonName,"+", remPredButtons);
+        ////////////////////////////////
+        // Slider containers created //
+        //////////////////////////////
+        ContainerRuntime slideContainer = new ContainerRuntime();
+        slideContainer.Name = "slideContainer";
+        slideContainer.WidthUnits = global::Gum.DataTypes.DimensionUnitType.RelativeToChildren;
+        slideContainer.AutoGridHorizontalCells = 4;
+        slideContainer.AutoGridVerticalCells = 1;
+        slideContainer.StackSpacing = 3;
+        slideContainer.ChildrenLayout = global::Gum.Managers.ChildrenLayout.LeftToRightStack;
 
-        // Info Container
+        StackPanel boidPanel = new StackPanel();
+        boidPanel.Spacing = 3;
+ 
+        StackPanel boidLabelPanel = new StackPanel();
+        boidLabelPanel.Spacing = 3;
+
+        // Creating the sliders
+        List<string> sliderNames = new List<string> { "Cohesion", "Seperation", "Alignment" };
+        _boidSlider = UI.AddSliderRow(125, sliderNames, boidPanel, boidLabelPanel);
+
+        // Nesting from outer to inner (Button stacks)
+        bottomContainer.AddChild(slideContainer);
+        slideContainer.AddChild(boidPanel);
+        slideContainer.AddChild(boidLabelPanel);
+
+        //////////////////////////////
+        // Info containers created //
+        ////////////////////////////
+        StackPanel infoPanel = new StackPanel();
+        //infoPanel.Visual.AddToRoot();
+        //infoPanel.Anchor(Anchor.BottomRight);
+        infoPanel.Spacing = 3;
+        // Nesting from out to inner (Slide stack) 
+
+        // Nesting from out to inner (Info stack) 
         Label infoLabel = new Label();
         infoLabel.Text = "Boid Information";
-
+        //bottomContainer.AddChild(infoPanel);
         infoPanel.AddChild(infoLabel);
-
-        // Slider Container
-        Label slideLabel = new Label();
-        slideLabel.Text = "Boid Controls";
-
-        slidePanel.AddChild(slideLabel);
 
         base.Initialize();
     }
@@ -126,6 +174,9 @@ public class Game1 : Game
         // Button hooking
         ButtonHandlers.addOrRemButtons(_addbuttons, _boidManager);
         ButtonHandlers.addOrRemButtons(_rembuttons, _boidManager);
+
+        // Slider hooking
+        ButtonHandlers.sliderHandling(_boidSlider);
     }
 
     protected override void Update(GameTime gameTime)

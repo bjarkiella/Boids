@@ -36,5 +36,31 @@ namespace Boids
             }
             return countOut;
         }
+        public static void sliderHandling(List<ControlPair<Slider,Label>> sliders)
+        {
+            foreach (ControlPair<Slider, Label> pair in sliders)
+            {
+                Slider slider = pair.First;
+                Label label = pair.Second;
+
+                slider.ValueChanged += (_, _) =>
+                {
+                    label.Text = Math.Round(slider.Value, 2).ToString();
+                    float newValue = float.Parse(label.Text);
+                    if (slider.Name == "Cohesion")
+                    {
+                        Constants.coheFactor = newValue;
+                    }
+                    else if (slider.Name == "Seperation")
+                    {
+                        Constants.sepFactor = newValue;
+                    }
+                    else if (slider.Name == "Alignment")
+                    {
+                        Constants.alignFactor = newValue;
+                    }
+                };
+            }
+        }
     }
 }

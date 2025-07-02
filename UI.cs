@@ -28,6 +28,53 @@ namespace Boids
             }
             return listOut;
         }
+        public static List<ControlPair<Slider,Label>> AddSliderRow(int width, List<string> sName, StackPanel sliderPanel,StackPanel textPanel)
+        {
+            List<ControlPair<Slider,Label>> listOut = new List<ControlPair<Slider, Label>>();
+            Label startLabel = new Label();
+            startLabel.Text = " ";
+            textPanel.AddChild(startLabel);
+
+            foreach (string name in sName)
+            {
+                Label label = new Label();
+                label.Text = name;
+                Label emptyLabel = new Label();
+                emptyLabel.Text = " ";
+                emptyLabel.Anchor(Anchor.Center);
+                Slider slider = new Slider()
+                {
+                    Name = name,    
+                    Width = width,
+                    Minimum = Constants.boidMinFactor,
+                    Maximum = Constants.boidMaxFactor
+                };
+                if (name == "Cohesion")
+                {
+                    slider.Value = Math.Round(Constants.coheFactor, Constants.roundNumber);
+                }
+                else if (name == "Seperation")
+                {
+                    slider.Value = Math.Round(Constants.sepFactor, Constants.roundNumber);
+                }
+                else if (name == "Alignment")
+                {
+                    slider.Value = Math.Round(Constants.alignFactor, Constants.roundNumber);
+                }
+                else slider.Value = 1;
+
+                Label outText = new Label()
+                {
+                    Text = slider.Value.ToString()
+                };
+                textPanel.AddChild(emptyLabel);
+                sliderPanel.AddChild(label);
+                sliderPanel.AddChild(slider);
+                textPanel.AddChild(outText);
+                listOut.Add(new ControlPair<Slider, Label>(slider, outText));
+            }
+            return listOut;
+        }
     
     }
 }

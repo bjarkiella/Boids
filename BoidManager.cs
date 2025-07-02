@@ -97,7 +97,7 @@ namespace Boids
                     float closeLen = visLen / Constants.visionFactor;
                     if (distLen < closeLen)
                     {
-                        sep += -vecTor;
+                        sep += vecTor;  // This was -vecTor, but it kinda made sep bad....
                     }
                     b.neighbours.Add(other);
                 }

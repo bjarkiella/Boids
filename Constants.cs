@@ -16,9 +16,12 @@ namespace Boids
         public static float warnDistance = warnInPerc * MathF.Max(SWidth, SHeight);
         public static float WarnInX = warnDistance;
         public static float WarnInY = warnDistance;
-        public const float sepFactor = 1.8f;
-        public const float alignFactor = 0.7f;
-        public const float coheFactor = 0.7f;
+        public const int roundNumber = 2;
+        public const float boidMinFactor = 0f;
+        public const float boidMaxFactor = 5f;
+        public static float sepFactor = 1.8f;
+        public static float alignFactor = 0.7f;
+        public static float coheFactor = 0.7f;
         public const float accFactor = 2f;
         public const float maxSpeed = 120f;
         public const float minSpeed = 60f;
