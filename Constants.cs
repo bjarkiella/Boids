@@ -36,6 +36,6 @@ namespace Boids
         {
             Wrap, Bounce, Steer
         }
-        public const BoundaryType tempCond = BoundaryType.Steer;
+        public static BoundaryType bcCondition = BoundaryType.Steer;
     }
 }

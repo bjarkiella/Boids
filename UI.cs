@@ -10,7 +10,7 @@ namespace Boids
 {
     public static class UI
     {
-        public static List<Button> AddButtonRow(string labelName, int bWidth, List<int> bName, string preFix, StackPanel stackPanel)
+        public static List<Button> AddButtonRow(string labelName, int bWidth, List<int> bName, string preFix, StackPanel stackPanel,bool visible=true)
         {
             List<Button> listOut = new List<Button>();
             Button button;
@@ -23,6 +23,7 @@ namespace Boids
                 button.Text = preFix + num;
                 button.Name = preFix + num;
                 button.Visual.Width = bWidth;
+                button.IsVisible = visible;
                 listOut.Add(button);
                 stackPanel.AddChild(button);
             }
@@ -73,6 +74,27 @@ namespace Boids
                 textPanel.AddChild(outText);
                 listOut.Add(new ControlPair<Slider, Label>(slider, outText));
             }
+            return listOut;
+        }
+        public static List<ComboBox> addCombobox(List<string> comboItems, string name, string startIndex, int width,StackPanel comboPanel, string comboLabel, StackPanel textPanel)
+        {
+            List<ComboBox> listOut = new List<ComboBox>();
+            Label label = new Label();
+            label.Text = comboLabel;
+
+            ComboBox comboBox = new ComboBox();
+            foreach (string item in comboItems)
+            {
+                comboBox.Items.Add(item);
+            }
+            comboBox.Width = width;
+            comboBox.Name = name;
+            int defaultIndex = comboBox.Items.IndexOf(startIndex);
+            comboBox.SelectedObject = comboBox.Items[defaultIndex];
+            listOut.Add(comboBox);
+            comboPanel.AddChild(comboBox);
+            textPanel.AddChild(label); 
+            
             return listOut;
         }
     

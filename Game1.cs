@@ -26,7 +26,7 @@ public class Game1 : Game
     BoidManager _boidManager;
     List<Button> _addbuttons,_rembuttons,_addpredbuttons,_rempredbuttons;
     List<ControlPair<Slider, Label>> _boidSlider;
-
+    List<ComboBox> _bcCond;
     public Game1()
     {
         _graphics = new GraphicsDeviceManager(this);
@@ -110,8 +110,8 @@ public class Game1 : Game
         List<int> buttonName = new List<int> { 1, 10, 100 };
         _addbuttons = UI.AddButtonRow("Add boid", 125, buttonName, "+", addButtons);
         _rembuttons = UI.AddButtonRow("Remove boid", 125, buttonName, "-", remButtons);
-        _addpredbuttons = UI.AddButtonRow("Add predator", 125, buttonName, "+", addPredButtons);
-        _rempredbuttons = UI.AddButtonRow("Remove predator", 125, buttonName, "+", remPredButtons);
+        _addpredbuttons = UI.AddButtonRow("Add predator", 125, buttonName, "+", addPredButtons,false);
+        _rempredbuttons = UI.AddButtonRow("Remove predator", 125, buttonName, "+", remPredButtons,false);
 
         // Nesting from outer to inner (Button stacks)
         bottomContainer.AddChild(buttonPanel);
@@ -127,7 +127,7 @@ public class Game1 : Game
         ContainerRuntime slideContainer = new ContainerRuntime();
         slideContainer.Name = "slideContainer";
         slideContainer.WidthUnits = global::Gum.DataTypes.DimensionUnitType.RelativeToChildren;
-        slideContainer.AutoGridHorizontalCells = 4;
+        slideContainer.AutoGridHorizontalCells = 2;
         slideContainer.AutoGridVerticalCells = 1;
         slideContainer.StackSpacing = 3;
         slideContainer.ChildrenLayout = global::Gum.Managers.ChildrenLayout.LeftToRightStack;
@@ -150,17 +150,29 @@ public class Game1 : Game
         //////////////////////////////
         // Info containers created //
         ////////////////////////////
-        StackPanel infoPanel = new StackPanel();
-        //infoPanel.Visual.AddToRoot();
-        //infoPanel.Anchor(Anchor.BottomRight);
-        infoPanel.Spacing = 3;
-        // Nesting from out to inner (Slide stack) 
+        ContainerRuntime infoContainer = new ContainerRuntime();
+        infoContainer.Name = "infoContainer";
+        infoContainer.WidthUnits = global::Gum.DataTypes.DimensionUnitType.RelativeToChildren;
+        infoContainer.AutoGridHorizontalCells = 2;
+        infoContainer.AutoGridVerticalCells = 1;
+        infoContainer.StackSpacing = 3;
+        infoContainer.ChildrenLayout = global::Gum.Managers.ChildrenLayout.LeftToRightStack;
 
-        // Nesting from out to inner (Info stack) 
-        Label infoLabel = new Label();
-        infoLabel.Text = "Boid Information";
-        //bottomContainer.AddChild(infoPanel);
-        infoPanel.AddChild(infoLabel);
+        StackPanel infoPanel = new StackPanel();
+        infoPanel.Spacing = 3;
+
+        StackPanel infoLabel = new StackPanel();
+        infoLabel.Spacing = 3;
+
+        // Creating info boxes
+        List<string> bcItems = new List<string> { "Steer", "Wrap", "Bounce" };
+        _bcCond = UI.addCombobox(bcItems, "bcCondition", "Steer", 125,infoPanel,"Boundary Conditions",infoLabel);
+
+        // Nesting from out to inner (Info stack)
+        bottomContainer.AddChild(infoContainer);
+        infoContainer.AddChild(infoPanel);
+        infoContainer.AddChild(infoLabel);
+
 
         base.Initialize();
     }
@@ -177,6 +189,9 @@ public class Game1 : Game
 
         // Slider hooking
         ButtonHandlers.sliderHandling(_boidSlider);
+
+        // Combobox handling
+        ButtonHandlers.bcHandling(_bcCond);
     }
 
     protected override void Update(GameTime gameTime)

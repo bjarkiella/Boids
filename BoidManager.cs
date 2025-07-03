@@ -39,7 +39,6 @@ namespace Boids
         public void Update(GameTime gt)
         {
             float dt = (float)gt.ElapsedGameTime.TotalSeconds*Constants.accFactor;
-            Constants.BoundaryType boundaryType = Constants.tempCond;  
             foreach (BoidEntity b in _boids)
             {
                 // Initializing movement vectors
@@ -53,7 +52,7 @@ namespace Boids
                 // Neighbour variables initilized
                 b.neighbours.Clear();
 
-                if (boundaryType == Constants.BoundaryType.Steer)
+                if (Constants.bcCondition == Constants.BoundaryType.Steer)
                 {
                     // Initial position check
                     //b.Position = Utils.PosCheck(b.Position, b.boidRadius);
@@ -78,7 +77,7 @@ namespace Boids
                 foreach (BoidEntity other in _boids)
                 {
                     if (other == b) continue;
-                    switch (boundaryType)
+                    switch (Constants.bcCondition)
                     {
                         case Constants.BoundaryType.Wrap:
                             vecTor = BoundaryCond.TorusDistance(b.Position, other.Position, Constants.SWidth, Constants.SHeight);
@@ -97,11 +96,11 @@ namespace Boids
                     float closeLen = visLen / Constants.visionFactor;
                     if (distLen < closeLen)
                     {
-                        sep += vecTor;  // This was -vecTor, but it kinda made sep bad....
+                        sep += -vecTor;  // This was -vecTor, but it kinda made sep bad....
                     }
                     b.neighbours.Add(other);
                 }
-                if (boundaryType == Constants.BoundaryType.Steer)
+                if (Constants.bcCondition == Constants.BoundaryType.Steer)
                 {
                     steer += boundSteer * Constants.steerWeight;
                 }
@@ -127,7 +126,7 @@ namespace Boids
             }
             foreach (BoidEntity b in _boids)
             {
-                switch (boundaryType)
+                switch (Constants.bcCondition)
                 {
                     case Constants.BoundaryType.Wrap:
                         b.Position += b.Velocity * dt;

@@ -10,13 +10,13 @@ namespace Boids
 {
     static class ButtonHandlers
     {
-    public static void addOrRemButtons(List<Button> buttons, BoidManager manager)
+        public static void addOrRemButtons(List<Button> buttons, BoidManager manager)
         {
             if (manager == null) return;
-            
+
             foreach (Button b in buttons)
             {
-                int spawns = getCount(b.Name); 
+                int spawns = getCount(b.Name);
                 b.Click += (_, _) =>
                 {
                     for (int i = 0; i < Math.Abs(spawns); i++)
@@ -32,11 +32,11 @@ namespace Boids
             int countOut;
             if (!int.TryParse(name, out countOut)) {
                 countOut = 1;
-                Console.WriteLine("Unable to parse the name:" + name +", set to " + countOut + ". ");
+                Console.WriteLine("Unable to parse the name:" + name + ", set to " + countOut + ". ");
             }
             return countOut;
         }
-        public static void sliderHandling(List<ControlPair<Slider,Label>> sliders)
+        public static void sliderHandling(List<ControlPair<Slider, Label>> sliders)
         {
             foreach (ControlPair<Slider, Label> pair in sliders)
             {
@@ -59,6 +59,28 @@ namespace Boids
                     {
                         Constants.alignFactor = newValue;
                     }
+                };
+            }
+        }
+        public static void bcHandling(List<ComboBox> comboBoxes)
+        {
+            foreach (ComboBox comboBox in comboBoxes)
+            {
+                comboBox.SelectionChanged += (_, _) =>
+                {
+                    if (comboBox.SelectedObject.ToString() == "Steer")
+                    {
+                        Constants.bcCondition = Constants.BoundaryType.Steer;
+                    }
+                    else if (comboBox.SelectedObject.ToString() == "Wrap")
+                    {
+                        Constants.bcCondition = Constants.BoundaryType.Wrap;
+                    }
+                    else if (comboBox.SelectedObject.ToString() == "Bounce")
+                    {
+                        Constants.bcCondition = Constants.BoundaryType.Bounce;
+                    }
+                    else Constants.bcCondition = Constants.BoundaryType.Steer;
                 };
             }
         }
