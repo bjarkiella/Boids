@@ -13,9 +13,10 @@ using Microsoft.Xna.Framework.Graphics;
 
 namespace Boids
 {
-    internal class BoidManager
+    internal class BoidManager:IEntityManager
     {
-        List<BoidEntity> _boids = new List<BoidEntity>();
+        private List<BoidEntity> _boids = new List<BoidEntity>();
+        public IReadOnlyList<BoidEntity> listOfBoids => _boids;
         private Texture2D _boidTexture;
 
         public BoidManager(Texture2D texture)
@@ -38,7 +39,7 @@ namespace Boids
         }
         public void Update(GameTime gt)
         {
-            float dt = (float)gt.ElapsedGameTime.TotalSeconds*Constants.accFactor;
+            float dt = (float)gt.ElapsedGameTime.TotalSeconds * Constants.accFactor;
             foreach (BoidEntity b in _boids)
             {
                 // Initializing movement vectors
@@ -70,7 +71,7 @@ namespace Boids
 
                         // Adding throttling when near wall
                         float turnIntensity = MathF.Min(MathF.Abs(turn), MathF.PI / 2f) / (MathF.PI / 2f);
-                        b.Throttle = MathHelper.Lerp(Constants.speedDown,1f, turnIntensity); // Has to between 0 and 1
+                        b.Throttle = MathHelper.Lerp(Constants.speedDown, 1f, turnIntensity); // Has to between 0 and 1
                         b.Velocity = new Vector2(MathF.Cos(b.angle), MathF.Sin(b.angle)) * b.speed;
                     }
                 }
@@ -113,7 +114,7 @@ namespace Boids
                     steer += sep * Constants.sepFactor;
                     steer += Utils.RandomVector(Constants.RandomSteer, Constants.RandomSteer);
                 }
-                b.Velocity += steer * dt * Utils.RandomFloatRange(0,Constants.RandomVel);
+                b.Velocity += steer * dt * Utils.RandomFloatRange(0, Constants.RandomVel);
                 if (b.Velocity.LengthSquared() > Constants.maxSpeed * Constants.maxSpeed)
                 {
                     b.Velocity = Vector2.Normalize(b.Velocity) * Constants.maxSpeed * b.Throttle;
@@ -144,7 +145,7 @@ namespace Boids
             }
 
         }
-       
+
         public void Draw(SpriteBatch sb)
         {
             foreach (BoidEntity b in _boids)

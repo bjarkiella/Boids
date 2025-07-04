@@ -4,6 +4,7 @@ using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using Gum.DataTypes.Variables;
 using Gum.Wireframe;
+using Microsoft.VisualBasic;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
@@ -22,8 +23,9 @@ public class Game1 : Game
 
     GumService Gum => GumService.Default;
     KeyboardState _prevKeyboardState;
-
+    List<IEntityManager> _manager = new List<IEntityManager>();
     BoidManager _boidManager;
+    PredatorManager _predatorManager;
     List<Button> _addbuttons,_rembuttons,_addpredbuttons,_rempredbuttons;
     List<ControlPair<Slider, Label>> _boidSlider;
     List<ComboBox> _bcCond;
@@ -71,7 +73,6 @@ public class Game1 : Game
         bottomContainer.ChildrenLayout = global::Gum.Managers.ChildrenLayout.LeftToRightStack;
         bottomContainer.AddToRoot();
         bottomContainer.Dock(Dock.Bottom);
-        //printSizeCont(bottomContainer);
 
         // Color rectanagle created
         //RectangleRuntime bottomBack = new RectangleRuntime();
@@ -91,12 +92,10 @@ public class Game1 : Game
         buttonContainer.AutoGridVerticalCells = 1;
         buttonContainer.StackSpacing = 3;
         buttonContainer.ChildrenLayout = global::Gum.Managers.ChildrenLayout.LeftToRightStack;
-        //printSizeCont(buttonContainer);
 
         StackPanel buttonPanel = new StackPanel();
         buttonPanel.Name = "buttonPanel";
         buttonPanel.Spacing = 3;
-        //printSizeStac(buttonPanel);
 
         StackPanel addButtons = new StackPanel();
         addButtons.Spacing = 3;
@@ -181,7 +180,10 @@ public class Game1 : Game
     {
         _spriteBatch = new SpriteBatch(GraphicsDevice);
         Texture2D texture = Content.Load<Texture2D>("circle");
+        Texture2D predTexture = Content.Load<Texture2D>("red_circle");
         _boidManager = new BoidManager(texture);
+        _predatorManager = new PredatorManager(predTexture,_boidManager);
+        _manager = new List<IEntityManager> { _boidManager, _predatorManager };
 
         // Button hooking
         ButtonHandlers.addOrRemButtons(_addbuttons, _boidManager);
@@ -207,8 +209,9 @@ public class Game1 : Game
                 _boidManager.SpawnBoid();
             }
         }
-        // Updating the boids movement
-        _boidManager.Update(gameTime);
+        // Updating the boids and predator movement
+        foreach (IEntityManager mgr in _manager)
+            mgr.Update(gameTime);
         _prevKeyboardState = current;
 
         Gum.Update(gameTime);
@@ -220,7 +223,8 @@ public class Game1 : Game
         GraphicsDevice.Clear(Color.CornflowerBlue);
 
         _spriteBatch.Begin(SpriteSortMode.FrontToBack, BlendState.AlphaBlend);
-        _boidManager.Draw(_spriteBatch);
+        foreach (IEntityManager mgr in _manager)
+            mgr.Draw(_spriteBatch);
         _spriteBatch.End();
 
         Gum.Draw();
