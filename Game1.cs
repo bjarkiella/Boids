@@ -26,7 +26,7 @@ public class Game1 : Game
     List<IEntityManager> _manager = new List<IEntityManager>();
     BoidManager _boidManager;
     PredatorManager _predatorManager;
-    List<Button> _addbuttons,_rembuttons,_addpredbuttons,_rempredbuttons;
+    List<Button> _addbuttons,_rembuttons;
     List<ControlPair<Slider, Label>> _boidSlider;
     List<ComboBox> _bcCond;
     public Game1()
@@ -67,20 +67,22 @@ public class Game1 : Game
         bottomContainer.Name = "bottomPanel";
         bottomContainer.WidthUnits = global::Gum.DataTypes.DimensionUnitType.RelativeToChildren;
         bottomContainer.AddToManagers(SystemManagers.Default, null);
-        bottomContainer.AutoGridHorizontalCells = 3;
-        bottomContainer.AutoGridVerticalCells = 1;
+        //bottomContainer.AutoGridHorizontalCells = 3;
+        //bottomContainer.AutoGridVerticalCells = 1;
         bottomContainer.Width = Constants.SWidth;
-        bottomContainer.ChildrenLayout = global::Gum.Managers.ChildrenLayout.LeftToRightStack;
+        //bottomContainer.ChildrenLayout = global::Gum.Managers.ChildrenLayout.LeftToRightStack;
         bottomContainer.AddToRoot();
         bottomContainer.Dock(Dock.Bottom);
 
         // Color rectanagle created
-        //RectangleRuntime bottomBack = new RectangleRuntime();
-        //bottomBack
-        //bottomBack.Height = Constants.PHeight;
-        //bottomBack.Width = Constants.PWidth;
-        //bottomBack.Color = Color.SlateGray;
-        //bottomPanel.AddChild(bottomBack);
+        ColoredRectangleRuntime bottomBack = new ColoredRectangleRuntime(); 
+        bottomBack.Height = Constants.PHeight;
+        bottomBack.Width = Constants.PWidth;
+        bottomBack.Color = Color.SlateGray;
+        bottomBack.WidthUnits = global::Gum.DataTypes.DimensionUnitType.RelativeToChildren;
+        bottomBack.ChildrenLayout = global::Gum.Managers.ChildrenLayout.LeftToRightStack;
+        bottomBack.Dock(Dock.Bottom);
+        bottomContainer.AddChild(bottomBack);
 
         ////////////////////////////////
         // Button containers created //
@@ -88,8 +90,6 @@ public class Game1 : Game
         ContainerRuntime buttonContainer = new ContainerRuntime();
         buttonContainer.Name = "buttonContainer";
         buttonContainer.WidthUnits = global::Gum.DataTypes.DimensionUnitType.RelativeToChildren;
-        buttonContainer.AutoGridHorizontalCells = 4;
-        buttonContainer.AutoGridVerticalCells = 1;
         buttonContainer.StackSpacing = 3;
         buttonContainer.ChildrenLayout = global::Gum.Managers.ChildrenLayout.LeftToRightStack;
 
@@ -101,24 +101,16 @@ public class Game1 : Game
         addButtons.Spacing = 3;
         StackPanel remButtons = new StackPanel();
         remButtons.Spacing = 3;
-        StackPanel addPredButtons = new StackPanel();
-        addPredButtons.Spacing = 3;
-        StackPanel remPredButtons = new StackPanel();
-        remPredButtons.Spacing = 3;
 
         List<int> buttonName = new List<int> { 1, 10, 100 };
         _addbuttons = UI.AddButtonRow("Add boid", 125, buttonName, "+", addButtons);
         _rembuttons = UI.AddButtonRow("Remove boid", 125, buttonName, "-", remButtons);
-        _addpredbuttons = UI.AddButtonRow("Add predator", 125, buttonName, "+", addPredButtons,false);
-        _rempredbuttons = UI.AddButtonRow("Remove predator", 125, buttonName, "+", remPredButtons,false);
 
         // Nesting from outer to inner (Button stacks)
-        bottomContainer.AddChild(buttonPanel);
+        bottomBack.AddChild(buttonPanel);
         buttonPanel.AddChild(buttonContainer);
         buttonContainer.AddChild(addButtons);
         buttonContainer.AddChild(remButtons);
-        buttonContainer.AddChild(addPredButtons);
-        buttonContainer.AddChild(remPredButtons);
 
         ////////////////////////////////
         // Slider containers created //
@@ -142,7 +134,7 @@ public class Game1 : Game
         _boidSlider = UI.AddSliderRow(125, sliderNames, boidPanel, boidLabelPanel);
 
         // Nesting from outer to inner (Button stacks)
-        bottomContainer.AddChild(slideContainer);
+        bottomBack.AddChild(slideContainer);
         slideContainer.AddChild(boidPanel);
         slideContainer.AddChild(boidLabelPanel);
 
@@ -168,7 +160,7 @@ public class Game1 : Game
         _bcCond = UI.addCombobox(bcItems, "bcCondition", "Steer", 125,infoPanel,"Boundary Conditions",infoLabel);
 
         // Nesting from out to inner (Info stack)
-        bottomContainer.AddChild(infoContainer);
+        bottomBack.AddChild(infoContainer);
         infoContainer.AddChild(infoPanel);
         infoContainer.AddChild(infoLabel);
 
