@@ -20,15 +20,11 @@ public class Game1 : Game
 {
     private GraphicsDeviceManager _graphics;
     private SpriteBatch _spriteBatch;
-
     GumService Gum => GumService.Default;
     KeyboardState _prevKeyboardState;
-    List<IEntityManager> _manager = new List<IEntityManager>();
     BoidManager _boidManager;
-    PredatorManager _predatorManager;
-    List<Button> _addbuttons,_rembuttons;
-    List<ControlPair<Slider, Label>> _boidSlider;
-    List<ComboBox> _bcCond;
+    private UI _ui;
+
     public Game1()
     {
         _graphics = new GraphicsDeviceManager(this);
@@ -59,111 +55,8 @@ public class Game1 : Game
     }
     protected override void Initialize()
     {
-
-        Gum.Initialize(this);
-
-        // Bottom container where all the control parts are kept 
-        ContainerRuntime bottomContainer = new ContainerRuntime();
-        bottomContainer.Name = "bottomPanel";
-        bottomContainer.WidthUnits = global::Gum.DataTypes.DimensionUnitType.RelativeToChildren;
-        bottomContainer.AddToManagers(SystemManagers.Default, null);
-        //bottomContainer.AutoGridHorizontalCells = 3;
-        //bottomContainer.AutoGridVerticalCells = 1;
-        bottomContainer.Width = Constants.SWidth;
-        //bottomContainer.ChildrenLayout = global::Gum.Managers.ChildrenLayout.LeftToRightStack;
-        bottomContainer.AddToRoot();
-        bottomContainer.Dock(Dock.Bottom);
-
-        // Color rectanagle created
-        ColoredRectangleRuntime bottomBack = new ColoredRectangleRuntime(); 
-        bottomBack.Height = Constants.PHeight;
-        bottomBack.Width = Constants.PWidth;
-        bottomBack.Color = Color.SlateGray;
-        bottomBack.WidthUnits = global::Gum.DataTypes.DimensionUnitType.RelativeToChildren;
-        bottomBack.ChildrenLayout = global::Gum.Managers.ChildrenLayout.LeftToRightStack;
-        bottomBack.Dock(Dock.Bottom);
-        bottomContainer.AddChild(bottomBack);
-
-        ////////////////////////////////
-        // Button containers created //
-        //////////////////////////////
-        ContainerRuntime buttonContainer = new ContainerRuntime();
-        buttonContainer.Name = "buttonContainer";
-        buttonContainer.WidthUnits = global::Gum.DataTypes.DimensionUnitType.RelativeToChildren;
-        buttonContainer.StackSpacing = 3;
-        buttonContainer.ChildrenLayout = global::Gum.Managers.ChildrenLayout.LeftToRightStack;
-
-        StackPanel buttonPanel = new StackPanel();
-        buttonPanel.Name = "buttonPanel";
-        buttonPanel.Spacing = 3;
-
-        StackPanel addButtons = new StackPanel();
-        addButtons.Spacing = 3;
-        StackPanel remButtons = new StackPanel();
-        remButtons.Spacing = 3;
-
-        List<int> buttonName = new List<int> { 1, 10, 100 };
-        _addbuttons = UI.AddButtonRow("Add boid", 125, buttonName, "+", addButtons);
-        _rembuttons = UI.AddButtonRow("Remove boid", 125, buttonName, "-", remButtons);
-
-        // Nesting from outer to inner (Button stacks)
-        bottomBack.AddChild(buttonPanel);
-        buttonPanel.AddChild(buttonContainer);
-        buttonContainer.AddChild(addButtons);
-        buttonContainer.AddChild(remButtons);
-
-        ////////////////////////////////
-        // Slider containers created //
-        //////////////////////////////
-        ContainerRuntime slideContainer = new ContainerRuntime();
-        slideContainer.Name = "slideContainer";
-        slideContainer.WidthUnits = global::Gum.DataTypes.DimensionUnitType.RelativeToChildren;
-        slideContainer.AutoGridHorizontalCells = 2;
-        slideContainer.AutoGridVerticalCells = 1;
-        slideContainer.StackSpacing = 3;
-        slideContainer.ChildrenLayout = global::Gum.Managers.ChildrenLayout.LeftToRightStack;
-
-        StackPanel boidPanel = new StackPanel();
-        boidPanel.Spacing = 3;
- 
-        StackPanel boidLabelPanel = new StackPanel();
-        boidLabelPanel.Spacing = 3;
-
-        // Creating the sliders
-        List<string> sliderNames = new List<string> { "Cohesion", "Seperation", "Alignment" };
-        _boidSlider = UI.AddSliderRow(125, sliderNames, boidPanel, boidLabelPanel);
-
-        // Nesting from outer to inner (Button stacks)
-        bottomBack.AddChild(slideContainer);
-        slideContainer.AddChild(boidPanel);
-        slideContainer.AddChild(boidLabelPanel);
-
-        //////////////////////////////
-        // Info containers created //
-        ////////////////////////////
-        ContainerRuntime infoContainer = new ContainerRuntime();
-        infoContainer.Name = "infoContainer";
-        infoContainer.WidthUnits = global::Gum.DataTypes.DimensionUnitType.RelativeToChildren;
-        infoContainer.AutoGridHorizontalCells = 2;
-        infoContainer.AutoGridVerticalCells = 1;
-        infoContainer.StackSpacing = 3;
-        infoContainer.ChildrenLayout = global::Gum.Managers.ChildrenLayout.LeftToRightStack;
-
-        StackPanel infoPanel = new StackPanel();
-        infoPanel.Spacing = 3;
-
-        StackPanel infoLabel = new StackPanel();
-        infoLabel.Spacing = 3;
-
-        // Creating info boxes
-        List<string> bcItems = new List<string> { "Steer", "Wrap", "Bounce" };
-        _bcCond = UI.addCombobox(bcItems, "bcCondition", "Steer", 125,infoPanel,"Boundary Conditions",infoLabel);
-
-        // Nesting from out to inner (Info stack)
-        bottomBack.AddChild(infoContainer);
-        infoContainer.AddChild(infoPanel);
-        infoContainer.AddChild(infoLabel);
-
+        _ui = new UI();
+        _ui.drawUI(this);
 
         base.Initialize();
     }
@@ -172,20 +65,11 @@ public class Game1 : Game
     {
         _spriteBatch = new SpriteBatch(GraphicsDevice);
         Texture2D texture = Content.Load<Texture2D>("circle");
-        Texture2D predTexture = Content.Load<Texture2D>("red_circle");
+        Texture2D playerTexture = Content.Load<Texture2D>("red_circle");
         _boidManager = new BoidManager(texture);
-        _predatorManager = new PredatorManager(predTexture,_boidManager);
-        _manager = new List<IEntityManager> { _boidManager, _predatorManager };
 
-        // Button hooking
-        ButtonHandlers.addOrRemButtons(_addbuttons, _boidManager);
-        ButtonHandlers.addOrRemButtons(_rembuttons, _boidManager);
-
-        // Slider hooking
-        ButtonHandlers.sliderHandling(_boidSlider);
-
-        // Combobox handling
-        ButtonHandlers.bcHandling(_bcCond);
+        // Events hooked on UI
+        _ui.HookEvents(_boidManager);
     }
 
     protected override void Update(GameTime gameTime)
@@ -194,16 +78,29 @@ public class Game1 : Game
 
         if (GamePad.GetState(PlayerIndex.One).Buttons.Back == ButtonState.Pressed || Keyboard.GetState().IsKeyDown(Keys.Escape))
             Exit();
+
+        if (current.IsKeyDown(Keys.Up) && !_prevKeyboardState.IsKeyDown(Keys.Up))
+        {
+            // Move the player up
+        }
+        if (current.IsKeyDown(Keys.Down) && !_prevKeyboardState.IsKeyDown(Keys.Down))
+        {
+            
+        }
+        if (current.IsKeyDown(Keys.Right) && !_prevKeyboardState.IsKeyDown(Keys.Right))
+        {
+
+        }
+        if (current.IsKeyDown(Keys.Left) && !_prevKeyboardState.IsKeyDown(Keys.Left))
+        {
+
+        }
         if (current.IsKeyDown(Keys.Space) && !_prevKeyboardState.IsKeyDown(Keys.Space))
         {
-            for (int i = 1; i <= 10; i++)
-            {
-                _boidManager.SpawnBoid();
-            }
+            
         }
         // Updating the boids and predator movement
-        foreach (IEntityManager mgr in _manager)
-            mgr.Update(gameTime);
+        _boidManager.Update(gameTime);
         _prevKeyboardState = current;
 
         Gum.Update(gameTime);
@@ -215,11 +112,12 @@ public class Game1 : Game
         GraphicsDevice.Clear(Color.CornflowerBlue);
 
         _spriteBatch.Begin(SpriteSortMode.FrontToBack, BlendState.AlphaBlend);
-        foreach (IEntityManager mgr in _manager)
-            mgr.Draw(_spriteBatch);
+        _boidManager.Draw(_spriteBatch);
         _spriteBatch.End();
 
+        // Drawing the UI
         Gum.Draw();
+
         // Drawing the game
         base.Draw(gameTime);
     }

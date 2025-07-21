@@ -13,7 +13,7 @@ using Microsoft.Xna.Framework.Graphics;
 
 namespace Boids
 {
-    internal class BoidManager:IEntityManager
+    internal class BoidManager
     {
         private List<BoidEntity> _boids = new List<BoidEntity>();
         public IReadOnlyList<BoidEntity> listOfBoids => _boids;

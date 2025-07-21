@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 namespace Boids
 {
     public static class Constants
-    {
+{
 
         public const int SHeight = 720 * 1;
         public const int SWidth = 1280 * 1;
