@@ -9,40 +9,15 @@ using Microsoft.Xna.Framework.Graphics;
 // TODO: Change this class so it makes sense the player uses it
 namespace Boids
 {
-    internal class PlayerEntity
+    internal class PlayerEntity:BaseEntity
     {
-        public Texture2D Texture { get; }
-        public Vector2 Position { get; set; }
-        public Vector2 Velocity { get; set; }
-        private float _throttle = 1f;
-        public float Throttle
+        public PlayerEntity(Texture2D texture, Vector2 position, Vector2 velocity,float visionFactor):base(texture,position,velocity,PlayerConstants.visionFactor)
         {
-            get => _throttle;
-            set => _throttle = MathF.Max(0f, MathF.Min(1f, value));
-        }
 
-        public float speed;
-        public float angle;
-        public readonly float playerRadius;
-        public float visionRadius => playerRadius * Constants.visionFactor;
-        public List<BoidEntity> prey;
-        public PlayerEntity(Texture2D texture, Vector2 position, Vector2 velocity)
-        {
-            this.Texture = texture;
-            this.Position = position;
-            this.Velocity = velocity;
-            this.speed = velocity.Length();
-            this.angle = MathF.Atan2(velocity.Y, velocity.X);
-            this.playerRadius = (float)texture.Width / 2;
-            this.prey = new List<BoidEntity>();
         }
         //public override void Update(GameTime gameTime)
         //{
             
         //}
-        public void ResetThrottle()
-        {
-            Throttle = 1f;
-        }
     }
 }

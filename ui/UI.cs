@@ -53,20 +53,20 @@ namespace Boids
                 {
                     Name = name,    
                     Width = width,
-                    Minimum = Constants.boidMinFactor,
-                    Maximum = Constants.boidMaxFactor
+                    Minimum = BoidConstants.boidMinFactor,
+                    Maximum = BoidConstants.boidMaxFactor
                 };
                 if (name == "Cohesion")
                 {
-                    slider.Value = Math.Round(Constants.coheFactor, Constants.roundNumber);
+                    slider.Value = Math.Round(BoidConstants.coheFactor, Constants.roundNumber);
                 }
                 else if (name == "Seperation")
                 {
-                    slider.Value = Math.Round(Constants.sepFactor, Constants.roundNumber);
+                    slider.Value = Math.Round(BoidConstants.sepFactor, Constants.roundNumber);
                 }
                 else if (name == "Alignment")
                 {
-                    slider.Value = Math.Round(Constants.alignFactor, Constants.roundNumber);
+                    slider.Value = Math.Round(BoidConstants.alignFactor, Constants.roundNumber);
                 }
                 else slider.Value = 1;
 

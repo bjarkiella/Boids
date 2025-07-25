@@ -49,15 +49,15 @@ namespace Boids
                     float newValue = float.Parse(label.Text);
                     if (slider.Name == "Cohesion")
                     {
-                        Constants.coheFactor = newValue;
+                        BoidConstants.coheFactor = newValue;
                     }
                     else if (slider.Name == "Seperation")
                     {
-                        Constants.sepFactor = newValue;
+                        BoidConstants.sepFactor = newValue;
                     }
                     else if (slider.Name == "Alignment")
                     {
-                        Constants.alignFactor = newValue;
+                        BoidConstants.alignFactor = newValue;
                     }
                 };
             }
@@ -70,17 +70,17 @@ namespace Boids
                 {
                     if (comboBox.SelectedObject.ToString() == "Steer")
                     {
-                        Constants.bcCondition = Constants.BoundaryType.Steer;
+                        BoidConstants.bcCondition = BoidConstants.BoundaryType.Steer;
                     }
                     else if (comboBox.SelectedObject.ToString() == "Wrap")
                     {
-                        Constants.bcCondition = Constants.BoundaryType.Wrap;
+                        BoidConstants.bcCondition = BoidConstants.BoundaryType.Wrap;
                     }
                     else if (comboBox.SelectedObject.ToString() == "Bounce")
                     {
-                        Constants.bcCondition = Constants.BoundaryType.Bounce;
+                        BoidConstants.bcCondition = BoidConstants.BoundaryType.Bounce;
                     }
-                    else Constants.bcCondition = Constants.BoundaryType.Steer;
+                    else BoidConstants.bcCondition = BoidConstants.BoundaryType.Steer;
                 };
             }
         }
