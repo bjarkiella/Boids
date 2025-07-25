@@ -46,6 +46,10 @@ namespace Boids
         {
             return RandomFloatRange(0f, 2 * MathF.PI); 
         }
+        public static float deltaTime(GameTime gameTime)
+        {
+            return (float)gameTime.ElapsedGameTime.TotalSeconds;
+        }
 
  
     }

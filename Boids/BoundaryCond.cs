@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 
 using Microsoft.VisualBasic;
@@ -85,23 +86,43 @@ namespace Boids
         }
         public static Vector2 PosCheck(Vector2 position, float radius)
         {
-            if (position.X-radius <= 0)
+            if (position.X-radius/4 <= 0)
             {
-                position.X = radius;
+                position.X = radius/4;
             }
-            else if (position.X + radius >= Constants.SWidth)
+            else if (position.X + radius*2 >= Constants.SWidth)
             {
-                position.X = Constants.SWidth - radius;        
+                position.X = Constants.SWidth - radius*2;        
             }
-            if (position.Y - radius <= 0)
+            if (position.Y - radius/4 <= 0)
             {
-                position.Y = radius;
+                position.Y = radius/4;
             }
             else if (position.Y + radius >= Constants.SHeight)
             {
                 position.Y = Constants.SHeight - radius;
             }
             return position;
+        }
+        public static bool EdgeCheck(Vector2 position, float radius)
+        {
+            if (position.X-radius/4 <= 0)
+            {
+                return true;
+            }
+            else if (position.X + radius*2 >= Constants.SWidth)
+            {
+                return true;
+            }
+            else if (position.Y - radius/4 <= 0)
+            {
+                return true;
+            }
+            else if (position.Y + radius >= Constants.SHeight)
+            {
+                return true;
+            }
+            return false;
         }
         public static Vector2 distVect(Vector2 a, Vector2 b)
         {

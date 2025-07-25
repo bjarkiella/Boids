@@ -23,6 +23,7 @@ public class Game1 : Game
     GumService Gum => GumService.Default;
     KeyboardState _prevKeyboardState;
     BoidManager _boidManager;
+    PlayerEntity _player;
     private UI _ui;
 
     public Game1()
@@ -64,9 +65,14 @@ public class Game1 : Game
     protected override void LoadContent()
     {
         _spriteBatch = new SpriteBatch(GraphicsDevice);
+
+        // Boids initialized
         Texture2D texture = Content.Load<Texture2D>("circle");
-        Texture2D playerTexture = Content.Load<Texture2D>("red_circle");
         _boidManager = new BoidManager(texture);
+
+        // Player created
+        Texture2D playerTexture = Content.Load<Texture2D>("red_circle");
+        _player = new PlayerEntity(playerTexture,new Vector2(Constants.SWidth/2,Constants.SHeight/2),new Vector2(0,0),PlayerConstants.visionFactor);
 
         // Events hooked on UI
         _ui.HookEvents(_boidManager);
@@ -77,30 +83,13 @@ public class Game1 : Game
         KeyboardState current = Keyboard.GetState();
 
         if (GamePad.GetState(PlayerIndex.One).Buttons.Back == ButtonState.Pressed || Keyboard.GetState().IsKeyDown(Keys.Escape))
+        {
             Exit();
+        }
 
-        if (current.IsKeyDown(Keys.Up) && !_prevKeyboardState.IsKeyDown(Keys.Up))
-        {
-            // Move the player up
-        }
-        if (current.IsKeyDown(Keys.Down) && !_prevKeyboardState.IsKeyDown(Keys.Down))
-        {
-            
-        }
-        if (current.IsKeyDown(Keys.Right) && !_prevKeyboardState.IsKeyDown(Keys.Right))
-        {
-
-        }
-        if (current.IsKeyDown(Keys.Left) && !_prevKeyboardState.IsKeyDown(Keys.Left))
-        {
-
-        }
-        if (current.IsKeyDown(Keys.Space) && !_prevKeyboardState.IsKeyDown(Keys.Space))
-        {
-            
-        }
-        // Updating the boids and predator movement
+        // Updating the boids and player movement
         _boidManager.Update(gameTime);
+        _player.Update(gameTime, current, _prevKeyboardState);
         _prevKeyboardState = current;
 
         Gum.Update(gameTime);
@@ -112,6 +101,7 @@ public class Game1 : Game
         GraphicsDevice.Clear(Color.CornflowerBlue);
 
         _spriteBatch.Begin(SpriteSortMode.FrontToBack, BlendState.AlphaBlend);
+        _player.Draw(_spriteBatch);
         _boidManager.Draw(_spriteBatch);
         _spriteBatch.End();
 

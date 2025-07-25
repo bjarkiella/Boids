@@ -39,7 +39,7 @@ namespace Boids
         }
         public void Update(GameTime gt)
         {
-            float dt = (float)gt.ElapsedGameTime.TotalSeconds * BoidConstants.accFactor;
+            float dt = Utils.deltaTime(gt) * BoidConstants.accFactor;
             foreach (BoidEntity b in _boids)
             {
                 // Initializing movement vectors
