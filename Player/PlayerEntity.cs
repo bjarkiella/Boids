@@ -11,7 +11,7 @@ namespace Boids
 {
     internal class PlayerEntity:BaseEntity
     {
-        public PlayerEntity(Texture2D texture, Vector2 position, Vector2 velocity,float visionFactor):base(texture,position,velocity,PlayerConstants.visionFactor)
+        public PlayerEntity(Texture2D texture, Vector2 position, Vector2 velocity,float visionFactor):base(texture,position,velocity,visionFactor)
         {
 
         }

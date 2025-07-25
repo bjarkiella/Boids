@@ -51,7 +51,7 @@ namespace Boids
                 Vector2 boundSteer = Vector2.Zero;
 
                 // Neighbour variables initilized
-                b.neighbours.Clear();
+                b.Neighbours.Clear();
 
                 if (BoidConstants.bcCondition == BoidConstants.BoundaryType.Steer)
                 {
@@ -98,16 +98,16 @@ namespace Boids
                     {
                         sep += -vecTor;  // This was -vecTor, but it kinda made sep bad....
                     }
-                    b.neighbours.Add(other);
+                    b.Neighbours.Add(other);
                 }
                 if (BoidConstants.bcCondition == BoidConstants.BoundaryType.Steer)
                 {
                     steer += boundSteer * BoidConstants.steerWeight;
                 }
-                if (b.neighbours.Count > 0)
+                if (b.Neighbours.Count > 0)
                 {
-                    align /= b.neighbours.Count;
-                    center /= b.neighbours.Count;
+                    align /= b.Neighbours.Count;
+                    center /= b.Neighbours.Count;
                     steer += (align - b.Velocity) * BoidConstants.alignFactor;
                     steer += (center - b.Position) * BoidConstants.coheFactor;
                     steer += sep * BoidConstants.sepFactor;
