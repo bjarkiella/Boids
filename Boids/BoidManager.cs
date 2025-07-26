@@ -56,7 +56,7 @@ namespace Boids
                 if (BoidConstants.bcCondition == BoidConstants.BoundaryType.Steer)
                 {
                     // Initial position check
-                    boundSteer = BoundaryCond.steerBoid(b.Position, b.Radius);
+                    boundSteer = BoidBC.steerBoid(b.Position, b.Radius);
                     b.ResetThrottle();
                     if (boundSteer != Vector2.Zero)
                     {
@@ -80,11 +80,11 @@ namespace Boids
                     switch (BoidConstants.bcCondition)
                     {
                         case BoidConstants.BoundaryType.Wrap:
-                            vecTor = BoundaryCond.TorusDistance(b.Position, other.Position, Constants.ActiveWidth, Constants.ActiveHeight);
+                            vecTor = BC.TorusDistance(b.Position, other.Position, Constants.ActiveWidth, Constants.ActiveHeight);
                             break;
                         case BoidConstants.BoundaryType.Bounce:
                         case BoidConstants.BoundaryType.Steer:
-                            vecTor = BoundaryCond.distVect(b.Position, other.Position);
+                            vecTor = BC.distVect(b.Position, other.Position);
                             break;
                     }
                     float distLen = vecTor.Length();
@@ -130,15 +130,15 @@ namespace Boids
                 {
                     case BoidConstants.BoundaryType.Wrap:
                         b.Position += b.Velocity * dt;
-                        b.Position = BoundaryCond.Wrap(b.Position);
+                        b.Position = BoidBC.Wrap(b.Position);
                         break;
                     case BoidConstants.BoundaryType.Bounce:
                         b.Position += b.Velocity * dt;
-                        b.Velocity = BoundaryCond.bounce(b.Velocity, b.Position);
+                        b.Velocity = BoidBC.bounce(b.Velocity, b.Position);
                         break;
                     case BoidConstants.BoundaryType.Steer:
                         b.Position += b.Velocity * dt;
-                        b.Position = BoundaryCond.PosCheck(b.Position, b.Radius);
+                        b.Position = BC.PosCheck(b.Position, b.Radius);
                         break;
                 }
             }

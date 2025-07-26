@@ -21,6 +21,7 @@ namespace Boids
         private bool _sprinting = false;
         private float _sprintAcc = 1f;
         private float _sprintSpeed = 1f;
+        private BC.Edge? _edge;
         public PlayerEntity(Texture2D texture, Vector2 position, Vector2 velocity, float visionFactor) : base(texture, position, velocity, visionFactor)
         {
 
@@ -28,24 +29,23 @@ namespace Boids
         public void Update(GameTime gameTime, KeyboardState current, KeyboardState _prevKeyboardState)
         {
             float dt = Utils.deltaTime(gameTime);
-            bool edge = BoundaryCond.EdgeCheck(Position, Radius);
+            _edge = BC.EdgeCheck(Position, Radius);
 
             // Keyboard inputs for player
-            // TODO: Add checks if im at the edge or not, flesh out BoundCond class
             Vector2 move = Vector2.Zero;
-            if (current.IsKeyDown(Keys.Up))
+            if (current.IsKeyDown(Keys.Up) && _edge != BC.Edge.Top)
             {
                 move.Y -= 1;
             }
-            if (current.IsKeyDown(Keys.Down))
+            if (current.IsKeyDown(Keys.Down) && _edge != BC.Edge.Bottom)
             {
                 move.Y += 1;
             }
-            if (current.IsKeyDown(Keys.Right))
+            if (current.IsKeyDown(Keys.Right) && _edge != BC.Edge.Right) 
             {
                 move.X += 1;
             }
-            if (current.IsKeyDown(Keys.Left))
+            if (current.IsKeyDown(Keys.Left) && _edge != BC.Edge.Left) 
             {
                 move.X -= 1;
             }
@@ -99,7 +99,7 @@ namespace Boids
                 _speed = MathF.Min(_speed, PlayerConstants.maxSpeed) * _sprintSpeed;
             }
 
-            else if (MathF.Round(Velocity.Length()) < 1e-3 || edge)
+            else if (MathF.Round(Velocity.Length()) < 1e-3 || _edge != null)
             {
                 _speed = 0f;
             }
@@ -110,7 +110,9 @@ namespace Boids
             }
             Velocity = _heading * _speed;
             Position += Velocity * dt;
-            Position = BoundaryCond.PosCheck(Position, Radius);
+            Position = BC.PosCheck(Position, Radius);
+
+            Console.WriteLine(_speed);
         }
         private void sprint()
         {

@@ -10,25 +10,8 @@ using Microsoft.Xna.Framework.Graphics;
 
 namespace Boids
 {
-    public static class BoundaryCond
+    public static class BoidBC
     {
-        public static Vector2 TorusDistance(Vector2 a, Vector2 b, float width, float height)
-        {
-            float dx = MathF.Abs(b.X - a.X);
-            float dy = MathF.Abs(b.Y - a.Y);
-
-            if (dx > width / 2)
-            {
-                dx = width - dx;
-            }
-            if (dy > height / 2)
-            {
-                dy = height - dy;
-            }
-
-            return new Vector2(dx, dy);
-        }
-        
         public static Vector2 Wrap(Vector2 pos)
         {
             if (pos.X >= Constants.ActiveWidth) pos.X -= Constants.ActiveWidth;
@@ -52,7 +35,6 @@ namespace Boids
             }
             return velocity;
         }
-
         
         public static Vector2 steerBoid(Vector2 position, float radius)
         {
@@ -83,50 +65,6 @@ namespace Boids
             if (x == 0f && y == 0f) return Vector2.Zero;
 
             return Vector2.Normalize(new Vector2(x, y));
-        }
-        public static Vector2 PosCheck(Vector2 position, float radius)
-        {
-            if (position.X-radius/4 <= 0)
-            {
-                position.X = radius/4;
-            }
-            else if (position.X + radius*2 >= Constants.ActiveWidth)
-            {
-                position.X = Constants.ActiveWidth - radius*2;        
-            }
-            if (position.Y - radius/4 <= 0)
-            {
-                position.Y = radius/4;
-            }
-            else if (position.Y + radius >= Constants.ActiveHeight)
-            {
-                position.Y = Constants.ActiveHeight - radius;
-            }
-            return position;
-        }
-        public static bool EdgeCheck(Vector2 position, float radius)
-        {
-            if (position.X-radius/4 <= 0)
-            {
-                return true;
-            }
-            else if (position.X + radius*2 >= Constants.ActiveWidth)
-            {
-                return true;
-            }
-            else if (position.Y - radius/4 <= 0)
-            {
-                return true;
-            }
-            else if (position.Y + radius >= Constants.ActiveHeight)
-            {
-                return true;
-            }
-            return false;
-        }
-        public static Vector2 distVect(Vector2 a, Vector2 b)
-        {
-            return b - a;
         }
     }
 }
