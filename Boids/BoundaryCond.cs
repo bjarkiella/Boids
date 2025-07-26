@@ -31,10 +31,10 @@ namespace Boids
         
         public static Vector2 Wrap(Vector2 pos)
         {
-            if (pos.X >= Constants.SWidth) pos.X -= Constants.SWidth;
-            if (pos.X <= 0) pos.X += Constants.SWidth;
-            if (pos.Y >= Constants.SHeight) pos.Y -= Constants.SHeight;
-            if (pos.Y <= 0) pos.Y += Constants.SHeight;
+            if (pos.X >= Constants.ActiveWidth) pos.X -= Constants.ActiveWidth;
+            if (pos.X <= 0) pos.X += Constants.ActiveWidth;
+            if (pos.Y >= Constants.ActiveHeight) pos.Y -= Constants.ActiveHeight;
+            if (pos.Y <= 0) pos.Y += Constants.ActiveHeight;
 
             return pos;
         }
@@ -42,11 +42,11 @@ namespace Boids
         public static Vector2 bounce(Vector2 velocity, Vector2 position)
         {
             // Checking collision with with walls (bounce effect)
-            if (position.Y <= 0 || position.Y >= Constants.SHeight)
+            if (position.Y <= 0 || position.Y >= Constants.ActiveHeight)
             {
                 velocity.Y *= -1;
             }
-            if (position.X <= 0 || position.X >= Constants.SWidth)
+            if (position.X <= 0 || position.X >= Constants.ActiveWidth)
             {
                 velocity.X *= -1;
             }
@@ -58,9 +58,9 @@ namespace Boids
         {
             // Calculating distance to edges    
             float left = position.X - radius;
-            float right = Constants.SWidth - radius - position.X;
+            float right = Constants.ActiveWidth - radius - position.X;
             float top = position.Y - radius;
-            float bottom = Constants.SHeight - radius - position.Y;
+            float bottom = Constants.ActiveHeight - radius - position.Y;
 
             float x=0f, y = 0f;
             if (left < Constants.WarnInX)
@@ -90,17 +90,17 @@ namespace Boids
             {
                 position.X = radius/4;
             }
-            else if (position.X + radius*2 >= Constants.SWidth)
+            else if (position.X + radius*2 >= Constants.ActiveWidth)
             {
-                position.X = Constants.SWidth - radius*2;        
+                position.X = Constants.ActiveWidth - radius*2;        
             }
             if (position.Y - radius/4 <= 0)
             {
                 position.Y = radius/4;
             }
-            else if (position.Y + radius >= Constants.SHeight)
+            else if (position.Y + radius >= Constants.ActiveHeight)
             {
-                position.Y = Constants.SHeight - radius;
+                position.Y = Constants.ActiveHeight - radius;
             }
             return position;
         }
@@ -110,7 +110,7 @@ namespace Boids
             {
                 return true;
             }
-            else if (position.X + radius*2 >= Constants.SWidth)
+            else if (position.X + radius*2 >= Constants.ActiveWidth)
             {
                 return true;
             }
@@ -118,7 +118,7 @@ namespace Boids
             {
                 return true;
             }
-            else if (position.Y + radius >= Constants.SHeight)
+            else if (position.Y + radius >= Constants.ActiveHeight)
             {
                 return true;
             }

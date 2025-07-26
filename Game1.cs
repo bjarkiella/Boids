@@ -72,7 +72,7 @@ public class Game1 : Game
 
         // Player created
         Texture2D playerTexture = Content.Load<Texture2D>("red_circle");
-        _player = new PlayerEntity(playerTexture,new Vector2(Constants.SWidth/2,Constants.SHeight/2),new Vector2(0,0),PlayerConstants.visionFactor);
+        _player = new PlayerEntity(playerTexture,new Vector2(Constants.ActiveWidth/2,Constants.ActiveHeight/2),new Vector2(0,0),PlayerConstants.visionFactor);
 
         // Events hooked on UI
         _ui.HookEvents(_boidManager);

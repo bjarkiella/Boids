@@ -30,8 +30,8 @@ namespace Boids
         public static Vector2 RandomSpawnPosition()
         {
             float wCons = 1f - Constants.warnOutPerc;
-            return new Vector2(RandomFloatRange(Constants.SWidth*Constants.warnOutPerc, Constants.SWidth*wCons),
-            RandomFloatRange(Constants.SHeight*Constants.warnOutPerc, Constants.SHeight*wCons));
+            return new Vector2(RandomFloatRange(Constants.ActiveWidth*Constants.warnOutPerc, Constants.ActiveWidth*wCons),
+            RandomFloatRange(Constants.ActiveHeight*Constants.warnOutPerc, Constants.ActiveHeight*wCons));
         }
        
         public static Vector2 InitialVelocity(float spawnAngle, float spawnSpeed)

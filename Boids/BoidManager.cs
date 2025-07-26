@@ -80,7 +80,7 @@ namespace Boids
                     switch (BoidConstants.bcCondition)
                     {
                         case BoidConstants.BoundaryType.Wrap:
-                            vecTor = BoundaryCond.TorusDistance(b.Position, other.Position, Constants.SWidth, Constants.SHeight);
+                            vecTor = BoundaryCond.TorusDistance(b.Position, other.Position, Constants.ActiveWidth, Constants.ActiveHeight);
                             break;
                         case BoidConstants.BoundaryType.Bounce:
                         case BoidConstants.BoundaryType.Steer:
