@@ -8,7 +8,7 @@ using RenderingLibrary.Math.Geometry;
 
 namespace Boids
 {
-    static class ButtonHandlers
+    static class SimHandling 
     {
         public static void addOrRemButtons(List<Button> buttons, BoidManager manager)
         {

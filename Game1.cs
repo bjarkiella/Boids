@@ -24,8 +24,10 @@ public class Game1 : Game
     KeyboardState _prevKeyboardState;
     BoidManager _boidManager;
     PlayerEntity _player;
-    private UI _ui;
-
+    private SimUI _simUI;
+    private StartupUI _startupUI;
+    public enum GameMode { None, Simulation, Player }
+    private GameMode _gamemode = GameMode.None;
     public Game1()
     {
         _graphics = new GraphicsDeviceManager(this);
@@ -34,30 +36,21 @@ public class Game1 : Game
         Content.RootDirectory = "Content";
         IsMouseVisible = true;
     }
-    public static void printSizeCont(ContainerRuntime panel)
-    {
-        Console.WriteLine("ContainerRuntime: " + "\n" +
-        "Name: " + panel.Name + "\n" +
-        "Absolotue bottom: " + panel.AbsoluteBottom +"\n" +
-        "Absolote Left: " + panel.AbsoluteLeft +"\n" +
-        "Absolute Right" + panel.AbsoluteRight +"\n" +
-        "Absolute top: " + panel.AbsoluteTop +"\n" +
-        "Absolute x: " + panel.AbsoluteX +"\n" +
-        "Absoulte y: " + panel.AbsoluteY);
-    }
-    public static void printSizeStac(StackPanel panel)
-    {
-        Console.WriteLine("StackPanel: " +"\n" +
-        "Name: " + panel.Name + "\n" +
-        "Absolote Left: " + panel.AbsoluteLeft +"\n" +
-        "Absolute top: " + panel.AbsoluteTop +"\n" +
-        "Absolute height: " + panel.ActualHeight+"\n" +
-        "Absoulte width: " + panel.ActualWidth);
-    }
     protected override void Initialize()
     {
-        _ui = new UI();
-        _ui.drawUI(this);
+        _startupUI = new StartupUI();
+        _startupUI.drawUI(this);
+        _startupUI.OnSimulationModeClicked = () =>
+        {
+            _gamemode = GameMode.Simulation;
+            SetupSimulation();
+        };
+        _startupUI.OnPlayerModeClicked = () =>
+        {
+            _gamemode = GameMode.Player;
+            SetupPlayerMode();
+        };
+        _startupUI.HookEvents();
 
         base.Initialize();
     }
@@ -65,17 +58,6 @@ public class Game1 : Game
     protected override void LoadContent()
     {
         _spriteBatch = new SpriteBatch(GraphicsDevice);
-
-        // Boids initialized
-        Texture2D texture = Content.Load<Texture2D>("circle");
-        _boidManager = new BoidManager(texture);
-
-        // Player created
-        Texture2D playerTexture = Content.Load<Texture2D>("red_circle");
-        _player = new PlayerEntity(playerTexture,new Vector2(Constants.ActiveWidth/2,Constants.ActiveHeight/2),new Vector2(0,0),PlayerConstants.visionFactor);
-
-        // Events hooked on UI
-        _ui.HookEvents(_boidManager);
     }
 
     protected override void Update(GameTime gameTime)
@@ -88,25 +70,74 @@ public class Game1 : Game
         }
 
         // Updating the boids and player movement
-        _boidManager.Update(gameTime);
-        _player.Update(gameTime, current, _prevKeyboardState);
-        _prevKeyboardState = current;
+        switch (_gamemode)
+        {
+            case GameMode.None:
+                Gum.Update(gameTime);
+                break;
+            case GameMode.Simulation:
+                _boidManager.Update(gameTime);
+                Gum.Update(gameTime);
+                break;
+            case GameMode.Player:
+                _boidManager.Update(gameTime);
+                _player.Update(gameTime, current, _prevKeyboardState);
+                break;
+        }
+        _prevKeyboardState = current; // Used to keep track if key is pressed multiple times
 
-        Gum.Update(gameTime);
         base.Update(gameTime);
     }
+    private void SetupSimulation()
+    {
+        // New UI drawn
+        Gum.Root.Children.Clear();
+        _simUI = new SimUI();
+        _simUI.drawUI(); 
+        _simUI.HookEvents(_boidManager);
 
+        // Textures and boids created
+        Texture2D boidTexture = Content.Load<Texture2D>("circle");
+        _boidManager = new BoidManager(boidTexture);
+    }
+    private void SetupPlayerMode()
+    {
+        // UI cleared
+        Gum.Root.Children.Clear();
+
+        // Constants modified
+        Constants.PHeight = 0;
+
+        // Textures, boids and player initialized
+        Texture2D boidTexture = Content.Load<Texture2D>("circle");
+        Texture2D playerTexture = Content.Load<Texture2D>("red_circle");
+        _boidManager = new BoidManager(boidTexture);
+        for (int i = 0; i < 50; i++) _boidManager.SpawnBoid();
+        _player = new PlayerEntity(playerTexture, new Vector2(Constants.ActiveWidth / 2, Constants.ActiveHeight / 2), new Vector2(0, 0), PlayerConstants.visionFactor);
+    }
     protected override void Draw(GameTime gameTime)
     {
         GraphicsDevice.Clear(Color.CornflowerBlue);
 
         _spriteBatch.Begin(SpriteSortMode.FrontToBack, BlendState.AlphaBlend);
-        _player.Draw(_spriteBatch);
-        _boidManager.Draw(_spriteBatch);
+        switch (_gamemode)
+        {
+            case GameMode.Simulation:
+                _boidManager.Draw(_spriteBatch);
+                break;
+            case GameMode.Player:
+                _player.Draw(_spriteBatch);
+                _boidManager.Draw(_spriteBatch);
+                break;
+        }
         _spriteBatch.End();
-
-        // Drawing the UI
-        Gum.Draw();
+        switch (_gamemode)
+        {
+            case GameMode.None:
+            case GameMode.Simulation:
+                Gum.Draw();
+                break;
+        }
 
         // Drawing the game
         base.Draw(gameTime);

@@ -10,7 +10,7 @@ using MonoGameGum;
 using Microsoft.Xna.Framework;
 namespace Boids
 {
-    public class UI
+    public class SimUI 
     {
         GumService Gum => GumService.Default;
         List<Button> _addbuttons,_rembuttons;
@@ -107,28 +107,23 @@ namespace Boids
         {
 
             // Button hooking
-            ButtonHandlers.addOrRemButtons(_addbuttons, boidManager);
-            ButtonHandlers.addOrRemButtons(_rembuttons, boidManager);
+            SimHandling.addOrRemButtons(_addbuttons, boidManager);
+            SimHandling.addOrRemButtons(_rembuttons, boidManager);
 
             // Slider hooking
-            ButtonHandlers.sliderHandling(_boidSlider);
+            SimHandling.sliderHandling(_boidSlider);
 
             // Combobox handling
-            ButtonHandlers.bcHandling(_bcCond);
+            SimHandling.bcHandling(_bcCond);
         }
-        public void drawUI(Game game)
+        public void drawUI()
         {
-            Gum.Initialize(game);
-
             // Bottom container where all the control parts are kept 
             ContainerRuntime bottomContainer = new ContainerRuntime();
             bottomContainer.Name = "bottomPanel";
             bottomContainer.WidthUnits = global::Gum.DataTypes.DimensionUnitType.RelativeToChildren;
             bottomContainer.AddToManagers(SystemManagers.Default, null);
-            //bottomContainer.AutoGridHorizontalCells = 3;
-            //bottomContainer.AutoGridVerticalCells = 1;
             bottomContainer.Width = Constants.SWidth;
-            //bottomContainer.ChildrenLayout = global::Gum.Managers.ChildrenLayout.LeftToRightStack;
             bottomContainer.AddToRoot();
             bottomContainer.Dock(Dock.Bottom);
 
@@ -189,7 +184,7 @@ namespace Boids
 
             // Creating the sliders
             List<string> sliderNames = new List<string> { "Cohesion", "Seperation", "Alignment" };
-            _boidSlider = UI.AddSliderRow(125, sliderNames, boidPanel, boidLabelPanel);
+            _boidSlider = SimUI.AddSliderRow(125, sliderNames, boidPanel, boidLabelPanel);
 
             // Nesting from outer to inner (Button stacks)
             bottomBack.AddChild(slideContainer);
@@ -224,5 +219,25 @@ namespace Boids
 
         }
     
+    public static void printSizeCont(ContainerRuntime panel)
+    {
+        Console.WriteLine("ContainerRuntime: " + "\n" +
+        "Name: " + panel.Name + "\n" +
+        "Absolotue bottom: " + panel.AbsoluteBottom + "\n" +
+        "Absolote Left: " + panel.AbsoluteLeft + "\n" +
+        "Absolute Right" + panel.AbsoluteRight + "\n" +
+        "Absolute top: " + panel.AbsoluteTop + "\n" +
+        "Absolute x: " + panel.AbsoluteX + "\n" +
+        "Absoulte y: " + panel.AbsoluteY);
+    }
+    public static void printSizeStac(StackPanel panel)
+    {
+        Console.WriteLine("StackPanel: " + "\n" +
+        "Name: " + panel.Name + "\n" +
+        "Absolote Left: " + panel.AbsoluteLeft + "\n" +
+        "Absolute top: " + panel.AbsoluteTop + "\n" +
+        "Absolute height: " + panel.ActualHeight + "\n" +
+        "Absoulte width: " + panel.ActualWidth);
+    }
     }
 }

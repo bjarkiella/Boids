@@ -112,7 +112,6 @@ namespace Boids
             Position += Velocity * dt;
             Position = BC.PosCheck(Position, Radius);
 
-            Console.WriteLine(_speed);
         }
         private void sprint()
         {
