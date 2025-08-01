@@ -56,6 +56,8 @@ namespace Boids
         public void Update(GameTime gt, Vector2? eatPos= null, float? eatRadius = null, bool eatBoid=false)
         {
             float dt = Utils.deltaTime(gt) * BoidConstants.accFactor;
+            List<BoidEntity> eatenBoid = new List<BoidEntity>();
+
             foreach (BoidEntity b in _boids)
             {
                 // Initializing movement vectors
@@ -66,10 +68,6 @@ namespace Boids
                 Vector2 vecTor = Vector2.Zero;
                 Vector2 boundSteer = Vector2.Zero;
                 Vector2 pBoidTor = Vector2.Zero;
-                if (eatPos == null)
-                {
-                    eatPos = Vector2.Zero;
-                }
 
                 // Neighbour variables initilized
                 b.Neighbours.Clear();
@@ -78,12 +76,12 @@ namespace Boids
                 bool playerClose = false;
                 if (eatPos.HasValue)
                 {
-                    pBoidTor = distanceVector(b.Position,eatPos.Value);
-                    if (pBoidTor.Length() > b.VisionRadius) 
+                    pBoidTor = distanceVector(b.Position, eatPos.Value);
+                    if (pBoidTor.Length() > b.VisionRadius)
                     {
-                        playerClose = false; 
+                        playerClose = false;
                     }
-                    else 
+                    else
                     {
                         playerClose = true;
                         Console.WriteLine("OMG HE IS CLOSE");
@@ -92,43 +90,49 @@ namespace Boids
                 // If close evasive manuovers!
                 if (playerClose)
                 {
-                    // Make a new angle and a turn, similar to what is done with steer and give it a little speed booooozt    
-                        
-                }
+                    Vector2 avoidVector = b.Position - eatPos.Value;
+                    float turn = Utils.calcTurnAngle(avoidVector, dt, b.Angle, BoidConstants.MaxTurnPerSec);
+                    b.Angle += turn;
+                    b.SpeedFactor = BoidConstants.speedUp;
+                    b.Velocity = new Vector2(MathF.Cos(b.Angle), MathF.Sin(b.Angle)) * b.Speed;
+                    if (b.Velocity.LengthSquared() > BoidConstants.maxSpeed * BoidConstants.maxSpeed)
+                    {
+                        b.Velocity = Vector2.Normalize(b.Velocity) * BoidConstants.maxSpeed * b.SpeedFactor;
+                    }
 
-                // Need to check here two things:
-                // 1. Is there a player nearby, that is the _player.Position
-                // 2. Is the player trying to eat.
-                // If the player is nearby, then avoid
-                // And if he is trying to eat and is within the eating distance, then remove
-                // So all in all, the update function needs three inputs, position, eatradius and if trying to eat
-                // Then it could be a logic like, if only position has value, then I dont need eatradius or the other one etc.
+                    if (b.Velocity.LengthSquared() < BoidConstants.minSpeed * BoidConstants.minSpeed)
+                    {
+                        b.Velocity = Vector2.Normalize(b.Velocity) * BoidConstants.minSpeed * b.SpeedFactor;
+                    }
+                    b.ResetSpeedFactor();
+                    if (eatBoid && avoidVector.Length() <= eatRadius.Value)
+                    {
+                        eatenBoid.Add(b);
+                    }
+                    continue;
+                }
 
                 if (BoidConstants.bcCondition == BoidConstants.BoundaryType.Steer)
                 {
                     // Initial position check
                     boundSteer = BoidBC.steerBoid(b.Position, b.Radius);
-                    b.ResetThrottle();
+                    b.ResetSpeedFactor();
                     if (boundSteer != Vector2.Zero)
                     {
                         // Determining the new angle
-                        float desiredAngle = MathF.Atan2(boundSteer.Y, boundSteer.X);
-                        float rawDelta = desiredAngle - b.Angle;
-                        float delta = MathHelper.WrapAngle(rawDelta);
-                        float maxTurn = BoidConstants.MaxTurnPerSec * dt;
-                        float turn = MathHelper.Clamp(delta, -maxTurn, maxTurn);
+                        float turn = Utils.calcTurnAngle(boundSteer, dt, b.Angle, BoidConstants.MaxTurnPerSec);
                         b.Angle += turn;
 
                         // Applying throttling when near wall
                         float turnIntensity = MathF.Min(MathF.Abs(turn), MathF.PI / 2f) / (MathF.PI / 2f);
-                        b.Throttle = MathHelper.Lerp(BoidConstants.speedDown, 1f, turnIntensity); // Has to between 0 and 1
+                        b.SpeedFactor = MathHelper.Lerp(BoidConstants.speedDown, 1f, turnIntensity); // Has to between 0 and 1
                         b.Velocity = new Vector2(MathF.Cos(b.Angle), MathF.Sin(b.Angle)) * b.Speed;
                     }
                 }
                 foreach (BoidEntity other in _boids)
                 {
                     if (other == b) continue;
-                    vecTor = distanceVector(b.Position,other.Position);
+                    vecTor = distanceVector(b.Position, other.Position);
                     if (vecTor.Length() > b.VisionRadius) continue;
 
                     align += other.Velocity;
@@ -156,14 +160,16 @@ namespace Boids
                 b.Velocity += steer * dt * Utils.RandomFloatRange(0, BoidConstants.RandomVel);
                 if (b.Velocity.LengthSquared() > BoidConstants.maxSpeed * BoidConstants.maxSpeed)
                 {
-                    b.Velocity = Vector2.Normalize(b.Velocity) * BoidConstants.maxSpeed * b.Throttle;
+                    b.Velocity = Vector2.Normalize(b.Velocity) * BoidConstants.maxSpeed * b.SpeedFactor;
                 }
 
                 if (b.Velocity.LengthSquared() < BoidConstants.minSpeed * BoidConstants.minSpeed)
                 {
-                    b.Velocity = Vector2.Normalize(b.Velocity) * BoidConstants.minSpeed * b.Throttle;
+                    b.Velocity = Vector2.Normalize(b.Velocity) * BoidConstants.minSpeed * b.SpeedFactor;
                 }
             }
+            foreach (BoidEntity b in eatenBoid) _boids.Remove(b);
+            
             foreach (BoidEntity b in _boids)
             {
                 switch (BoidConstants.bcCondition)

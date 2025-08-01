@@ -97,11 +97,7 @@ namespace Boids
                 // Smoothing out the heading (same as in steer in boidmanager)
                 Vector2 heading = Vector2.Normalize(move);
                 float currentAngle = MathF.Atan2(_heading.Y, _heading.X);
-                float desiredAngle = MathF.Atan2(heading.Y, heading.X);
-                float rawDelta = desiredAngle - currentAngle;
-                float angleDiff = MathHelper.WrapAngle(rawDelta);
-                float maxTurn = PlayerConstants.maxTurn * dt;
-                float turn = MathHelper.Clamp(angleDiff, -maxTurn, maxTurn);
+                float turn = Utils.calcTurnAngle(heading, dt, currentAngle, PlayerConstants.maxTurn);
                 float newAngle = currentAngle + turn;
                 _heading = new Vector2(MathF.Cos(newAngle), MathF.Sin(newAngle));
 

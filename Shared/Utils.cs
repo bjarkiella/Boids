@@ -33,7 +33,15 @@ namespace Boids
             return new Vector2(RandomFloatRange(Constants.ActiveWidth*Constants.warnOutPerc, Constants.ActiveWidth*wCons),
             RandomFloatRange(Constants.ActiveHeight*Constants.warnOutPerc, Constants.ActiveHeight*wCons));
         }
-       
+
+        public static float calcTurnAngle(Vector2 desiredPos, float dt, float currentAngle, float maxRate)
+        {
+            float desiredAngle = MathF.Atan2(desiredPos.Y, desiredPos.X);
+            float delta = MathHelper.WrapAngle(desiredAngle - currentAngle);
+            float maxTurn = maxRate * dt;
+            float turn = MathHelper.Clamp(delta, -maxTurn, maxTurn);
+            return turn;
+        }
         public static Vector2 InitialVelocity(float spawnAngle, float spawnSpeed)
         {
             return new Vector2(MathF.Cos(spawnAngle),MathF.Sin(spawnAngle)) * spawnSpeed; 

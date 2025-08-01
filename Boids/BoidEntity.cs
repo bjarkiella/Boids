@@ -10,21 +10,16 @@ namespace Boids
 {
     internal class BoidEntity:BaseEntity
     {
-        private float _throttle = 1f;
-        public float Throttle
-        {
-            get => _throttle;
-            set => _throttle = MathF.Max(0f, MathF.Min(1f, value));
-        }
+        public float SpeedFactor = 1f;
         public List<BoidEntity> Neighbours; 
 
         public BoidEntity(Texture2D texture, Vector2 position, Vector2 velocity, float visionFactor): base(texture, position,velocity, visionFactor)
         {
             Neighbours = new List<BoidEntity>();
         }
-        public void ResetThrottle()
+        public void ResetSpeedFactor()
         {
-            Throttle = 1f;
+            SpeedFactor = 1f;
         }
     }
 }

@@ -135,7 +135,7 @@ public class Game1 : Game
         Texture2D playerTexture = Content.Load<Texture2D>("red_circle");
         _player = new PlayerEntity(playerTexture, new Vector2(Constants.ActiveWidth / 2, Constants.ActiveHeight / 2), new Vector2(0, 0),PlayerConstants.eatRadiusFactor);
         _boidManager = new BoidManager(boidTexture);
-        for (int i = 0; i < 2; i++) _boidManager.SpawnBoid();
+        for (int i = 0; i < 50; i++) _boidManager.SpawnBoid();
     }
     protected override void Draw(GameTime gameTime)
     {
