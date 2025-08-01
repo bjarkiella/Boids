@@ -5,6 +5,7 @@ using System.Reflection.Metadata;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using System.Xml;
+using Gum.Managers;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
@@ -22,7 +23,9 @@ namespace Boids
         private float _sprintAcc = 1f;
         private float _sprintSpeed = 1f;
         private BC.Edge? _edge;
-        public PlayerEntity(Texture2D texture, Vector2 position, Vector2 velocity, float visionFactor) : base(texture, position, velocity, visionFactor)
+        public float _eatRadius => VisionRadius;
+        public bool EatBoid { get; private set; } = false;
+        public PlayerEntity(Texture2D texture, Vector2 position, Vector2 velocity, float eatRadiusFactor) : base(texture, position, velocity, eatRadiusFactor)
         {
 
         }
@@ -58,6 +61,14 @@ namespace Boids
                 _sprintTimeLeft = PlayerConstants.sprintTime;
                 _sprintAcc = PlayerConstants.sprintAcc;
                 _sprintSpeed = PlayerConstants.sprintSpeed;
+            }
+            if (current.IsKeyDown(Keys.Space) && _prevKeyboardState.IsKeyDown(Keys.Space))
+            {
+                EatBoid = true;
+            }
+            else
+            {
+                EatBoid = false;
             }
 
             // Sprinting conditions 

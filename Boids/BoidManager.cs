@@ -22,6 +22,7 @@ namespace Boids
         public BoidManager(Texture2D texture)
         {
             _boidTexture = texture;
+
         }
         public void SpawnBoid()
         {
@@ -37,7 +38,22 @@ namespace Boids
                 _boids.RemoveAt(_boids.Count - 1);
             }
         }
-        public void Update(GameTime gt)
+        private Vector2 distanceVector(Vector2 first, Vector2 second)
+        {
+            Vector2 distVector = Vector2.Zero;
+            switch (BoidConstants.bcCondition)
+            {
+                case BoidConstants.BoundaryType.Wrap:
+                    distVector = BC.TorusDistance(first, second, Constants.ActiveWidth, Constants.ActiveHeight);
+                    break;
+                case BoidConstants.BoundaryType.Bounce:
+                case BoidConstants.BoundaryType.Steer:
+                    distVector = BC.distVect(first, second);
+                    break;
+            }
+            return distVector;
+        }
+        public void Update(GameTime gt, Vector2? eatPos= null, float? eatRadius = null, bool eatBoid=false)
         {
             float dt = Utils.deltaTime(gt) * BoidConstants.accFactor;
             foreach (BoidEntity b in _boids)
@@ -49,9 +65,44 @@ namespace Boids
                 Vector2 steer = Vector2.Zero;
                 Vector2 vecTor = Vector2.Zero;
                 Vector2 boundSteer = Vector2.Zero;
+                Vector2 pBoidTor = Vector2.Zero;
+                if (eatPos == null)
+                {
+                    eatPos = Vector2.Zero;
+                }
 
                 // Neighbour variables initilized
                 b.Neighbours.Clear();
+
+                // Checking if player is close
+                bool playerClose = false;
+                if (eatPos.HasValue)
+                {
+                    pBoidTor = distanceVector(b.Position,eatPos.Value);
+                    if (pBoidTor.Length() > b.VisionRadius) 
+                    {
+                        playerClose = false; 
+                    }
+                    else 
+                    {
+                        playerClose = true;
+                        Console.WriteLine("OMG HE IS CLOSE");
+                    }
+                }
+                // If close evasive manuovers!
+                if (playerClose)
+                {
+                    // Make a new angle and a turn, similar to what is done with steer and give it a little speed booooozt    
+                        
+                }
+
+                // Need to check here two things:
+                // 1. Is there a player nearby, that is the _player.Position
+                // 2. Is the player trying to eat.
+                // If the player is nearby, then avoid
+                // And if he is trying to eat and is within the eating distance, then remove
+                // So all in all, the update function needs three inputs, position, eatradius and if trying to eat
+                // Then it could be a logic like, if only position has value, then I dont need eatradius or the other one etc.
 
                 if (BoidConstants.bcCondition == BoidConstants.BoundaryType.Steer)
                 {
@@ -68,7 +119,7 @@ namespace Boids
                         float turn = MathHelper.Clamp(delta, -maxTurn, maxTurn);
                         b.Angle += turn;
 
-                        // Adding throttling when near wall
+                        // Applying throttling when near wall
                         float turnIntensity = MathF.Min(MathF.Abs(turn), MathF.PI / 2f) / (MathF.PI / 2f);
                         b.Throttle = MathHelper.Lerp(BoidConstants.speedDown, 1f, turnIntensity); // Has to between 0 and 1
                         b.Velocity = new Vector2(MathF.Cos(b.Angle), MathF.Sin(b.Angle)) * b.Speed;
@@ -77,24 +128,13 @@ namespace Boids
                 foreach (BoidEntity other in _boids)
                 {
                     if (other == b) continue;
-                    switch (BoidConstants.bcCondition)
-                    {
-                        case BoidConstants.BoundaryType.Wrap:
-                            vecTor = BC.TorusDistance(b.Position, other.Position, Constants.ActiveWidth, Constants.ActiveHeight);
-                            break;
-                        case BoidConstants.BoundaryType.Bounce:
-                        case BoidConstants.BoundaryType.Steer:
-                            vecTor = BC.distVect(b.Position, other.Position);
-                            break;
-                    }
-                    float distLen = vecTor.Length();
-                    float visLen = b.VisionRadius;// * b.VisionRadius;
-                    if (distLen > visLen) continue;
+                    vecTor = distanceVector(b.Position,other.Position);
+                    if (vecTor.Length() > b.VisionRadius) continue;
 
                     align += other.Velocity;
                     center += other.Position;
-                    float closeLen = visLen / BoidConstants.visionFactor;
-                    if (distLen < closeLen)
+                    float closeLen = b.VisionRadius / BoidConstants.visionFactor;
+                    if (vecTor.Length() < closeLen)
                     {
                         sep += -vecTor;  // This was -vecTor, but it kinda made sep bad....
                     }

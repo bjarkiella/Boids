@@ -8,7 +8,7 @@ namespace Boids
 {
     public static class PlayerConstants
     {
-        public static float visionFactor = 1f;
+        public static float eatRadiusFactor = 1f;
         public static float maxSpeed = 240f;
         public static float maxAccel = 100f;
         public static float drag = 100f;

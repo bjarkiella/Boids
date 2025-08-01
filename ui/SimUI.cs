@@ -13,6 +13,7 @@ namespace Boids
     public class SimUI 
     {
         GumService Gum => GumService.Default;
+        private ContainerRuntime _mainContainer;
         List<Button> _addbuttons,_rembuttons;
         List<ControlPair<Slider, Label>> _boidSlider;
         List<ComboBox> _bcCond;
@@ -116,16 +117,14 @@ namespace Boids
             // Combobox handling
             SimHandling.bcHandling(_bcCond);
         }
-        public void drawUI()
+        public void BuildUI()
         {
             // Bottom container where all the control parts are kept 
-            ContainerRuntime bottomContainer = new ContainerRuntime();
-            bottomContainer.Name = "bottomPanel";
-            bottomContainer.WidthUnits = global::Gum.DataTypes.DimensionUnitType.RelativeToChildren;
-            bottomContainer.AddToManagers(SystemManagers.Default, null);
-            bottomContainer.Width = Constants.SWidth;
-            bottomContainer.AddToRoot();
-            bottomContainer.Dock(Dock.Bottom);
+            _mainContainer = new ContainerRuntime();
+            _mainContainer.Name = "bottomPanel";
+            _mainContainer.WidthUnits = global::Gum.DataTypes.DimensionUnitType.RelativeToChildren;
+            _mainContainer.Width = Constants.SWidth;
+            _mainContainer.Dock(Dock.Bottom);
 
             // Color rectanagle created
             ColoredRectangleRuntime bottomBack = new ColoredRectangleRuntime(); 
@@ -135,7 +134,7 @@ namespace Boids
             bottomBack.WidthUnits = global::Gum.DataTypes.DimensionUnitType.RelativeToChildren;
             bottomBack.ChildrenLayout = global::Gum.Managers.ChildrenLayout.LeftToRightStack;
             bottomBack.Dock(Dock.Bottom);
-            bottomContainer.AddChild(bottomBack);
+            _mainContainer.AddChild(bottomBack);
 
             ////////////////////////////////
             // Button containers created //
@@ -218,26 +217,37 @@ namespace Boids
             infoContainer.AddChild(infoLabel);
 
         }
+        public void ShowUI()
+        {
+            try
+            {
+                _mainContainer.AddToRoot();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Simulation container has not been initialized", ex);
+            }
+        }
     
-    public static void printSizeCont(ContainerRuntime panel)
-    {
-        Console.WriteLine("ContainerRuntime: " + "\n" +
-        "Name: " + panel.Name + "\n" +
-        "Absolotue bottom: " + panel.AbsoluteBottom + "\n" +
-        "Absolote Left: " + panel.AbsoluteLeft + "\n" +
-        "Absolute Right" + panel.AbsoluteRight + "\n" +
-        "Absolute top: " + panel.AbsoluteTop + "\n" +
-        "Absolute x: " + panel.AbsoluteX + "\n" +
-        "Absoulte y: " + panel.AbsoluteY);
-    }
-    public static void printSizeStac(StackPanel panel)
-    {
-        Console.WriteLine("StackPanel: " + "\n" +
-        "Name: " + panel.Name + "\n" +
-        "Absolote Left: " + panel.AbsoluteLeft + "\n" +
-        "Absolute top: " + panel.AbsoluteTop + "\n" +
-        "Absolute height: " + panel.ActualHeight + "\n" +
-        "Absoulte width: " + panel.ActualWidth);
-    }
+        public static void printSizeCont(ContainerRuntime panel)
+        {
+            Console.WriteLine("ContainerRuntime: " + "\n" +
+            "Name: " + panel.Name + "\n" +
+            "Absolotue bottom: " + panel.AbsoluteBottom + "\n" +
+            "Absolote Left: " + panel.AbsoluteLeft + "\n" +
+            "Absolute Right" + panel.AbsoluteRight + "\n" +
+            "Absolute top: " + panel.AbsoluteTop + "\n" +
+            "Absolute x: " + panel.AbsoluteX + "\n" +
+            "Absoulte y: " + panel.AbsoluteY);
+        }
+        public static void printSizeStac(StackPanel panel)
+        {
+            Console.WriteLine("StackPanel: " + "\n" +
+            "Name: " + panel.Name + "\n" +
+            "Absolote Left: " + panel.AbsoluteLeft + "\n" +
+            "Absolute top: " + panel.AbsoluteTop + "\n" +
+            "Absolute height: " + panel.ActualHeight + "\n" +
+            "Absoulte width: " + panel.ActualWidth);
+        }
     }
 }

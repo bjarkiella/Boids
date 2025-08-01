@@ -38,20 +38,8 @@ public class Game1 : Game
     }
     protected override void Initialize()
     {
-        _startupUI = new StartupUI();
-        _startupUI.drawUI(this);
-        _startupUI.OnSimulationModeClicked = () =>
-        {
-            _gamemode = GameMode.Simulation;
-            SetupSimulation();
-        };
-        _startupUI.OnPlayerModeClicked = () =>
-        {
-            _gamemode = GameMode.Player;
-            SetupPlayerMode();
-        };
-        _startupUI.HookEvents();
-
+        Gum.Initialize(this);
+        SetupStartup();
         base.Initialize();
     }
 
@@ -64,9 +52,14 @@ public class Game1 : Game
     {
         KeyboardState current = Keyboard.GetState();
 
-        if (GamePad.GetState(PlayerIndex.One).Buttons.Back == ButtonState.Pressed || Keyboard.GetState().IsKeyDown(Keys.Escape))
+        if (GamePad.GetState(PlayerIndex.One).Buttons.Back == ButtonState.Pressed)
         {
             Exit();
+        }
+        if (Keyboard.GetState().IsKeyDown(Keys.Escape))
+        {
+            _gamemode = GameMode.None;
+            SetupStartup();
         }
 
         // Updating the boids and player movement
@@ -80,25 +73,54 @@ public class Game1 : Game
                 Gum.Update(gameTime);
                 break;
             case GameMode.Player:
-                _boidManager.Update(gameTime);
                 _player.Update(gameTime, current, _prevKeyboardState);
+                _boidManager.Update(gameTime, _player.Position, _player._eatRadius,_player.EatBoid);
                 break;
         }
         _prevKeyboardState = current; // Used to keep track if key is pressed multiple times
 
         base.Update(gameTime);
     }
+    private void SetupStartup()
+    {
+        Gum.Root.Children.Clear();
+        if (_startupUI == null)
+        {
+            _startupUI = new StartupUI();
+            _startupUI.BuildUI(this);
+            _startupUI.HookEvents();
+        }
+        _startupUI.ShowUI();
+        _startupUI.OnSimulationModeClicked = () =>
+        {
+            _gamemode = GameMode.Simulation;
+            SetupSimulation();
+        };
+        _startupUI.OnPlayerModeClicked = () =>
+        {
+            _gamemode = GameMode.Player;
+            SetupPlayerMode();
+        };
+        _startupUI.OnExitClicked = () =>
+        {
+            Exit();
+        };
+    }
     private void SetupSimulation()
     {
-        // New UI drawn
-        Gum.Root.Children.Clear();
-        _simUI = new SimUI();
-        _simUI.drawUI(); 
-        _simUI.HookEvents(_boidManager);
-
         // Textures and boids created
         Texture2D boidTexture = Content.Load<Texture2D>("circle");
         _boidManager = new BoidManager(boidTexture);
+
+        // New UI drawn
+        Gum.Root.Children.Clear();
+        if (_simUI == null)
+        {
+            _simUI = new SimUI();
+            _simUI.BuildUI();
+            _simUI.HookEvents(_boidManager);
+        }
+        _simUI.ShowUI();
     }
     private void SetupPlayerMode()
     {
@@ -111,9 +133,9 @@ public class Game1 : Game
         // Textures, boids and player initialized
         Texture2D boidTexture = Content.Load<Texture2D>("circle");
         Texture2D playerTexture = Content.Load<Texture2D>("red_circle");
+        _player = new PlayerEntity(playerTexture, new Vector2(Constants.ActiveWidth / 2, Constants.ActiveHeight / 2), new Vector2(0, 0),PlayerConstants.eatRadiusFactor);
         _boidManager = new BoidManager(boidTexture);
-        for (int i = 0; i < 50; i++) _boidManager.SpawnBoid();
-        _player = new PlayerEntity(playerTexture, new Vector2(Constants.ActiveWidth / 2, Constants.ActiveHeight / 2), new Vector2(0, 0), PlayerConstants.visionFactor);
+        for (int i = 0; i < 2; i++) _boidManager.SpawnBoid();
     }
     protected override void Draw(GameTime gameTime)
     {

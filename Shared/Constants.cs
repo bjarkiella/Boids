@@ -15,9 +15,9 @@ namespace Boids
         public static float WarnInX = warnDistance;
         public static float WarnInY = warnDistance;
         public const int roundNumber = 2;
-        public static int ActiveHeight = SHeight - PHeight;
-        public const int ActiveWidth = SWidth;
         public static int PHeight = 150;
         public const int PWidth = SWidth;
+        public static int ActiveHeight => SHeight - PHeight;
+        public const int ActiveWidth = SWidth;
     }
 }
