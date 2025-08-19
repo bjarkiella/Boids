@@ -14,6 +14,10 @@ namespace Boids
         public float VisionFactor;
         public float VisionRadius;
         public float Radius;
+
+
+        protected float dt => Time.Delta;
+
         public BaseEntity(Texture2D texture, Vector2 position, Vector2 velocity, float visionFactor)
         {
             this.Texture = texture;
