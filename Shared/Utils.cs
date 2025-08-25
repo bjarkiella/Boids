@@ -42,6 +42,11 @@ namespace Boids
             float turn = MathHelper.Clamp(delta, -maxTurn, maxTurn);
             return turn;
         }
+
+        public static Vector2 newDirection(float radAngle)
+        {
+            return new Vector2(MathF.Cos(radAngle),MathF.Sin(radAngle));
+        }
         public static Vector2 InitialVelocity(float spawnAngle, float spawnSpeed)
         {
             return new Vector2(MathF.Cos(spawnAngle),MathF.Sin(spawnAngle)) * spawnSpeed; 

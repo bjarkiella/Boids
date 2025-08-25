@@ -14,6 +14,7 @@ namespace Boids
         public static float warnDistance = warnInPerc * MathF.Max(SWidth, SHeight);
         public static float WarnInX = warnDistance;
         public static float WarnInY = warnDistance;
+        public const float ZeroCompare = 1e-10f;   
         public const int roundNumber = 2;
         public static int PHeight = 150;
         public const int PWidth = SWidth;
