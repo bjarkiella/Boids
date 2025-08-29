@@ -2,7 +2,7 @@ using System;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 
-namespace Boids
+namespace Boids.Shared
 {
     internal class BaseEntity 
     {
@@ -20,7 +20,7 @@ namespace Boids
         } // Used to check if entity is at, or close to zero speed 
         public float VisionFactor { get; set; }
     
-        protected float dt => Time.Delta;
+        protected static float Dt => Time.Delta;
         protected float Angle => MathF.Atan2(Velocity.Y, Velocity.X);
         protected float Speed => Velocity.Length();
         protected float Radius => (float)Texture.Width /2;
@@ -44,22 +44,21 @@ namespace Boids
             float delta = MathHelper.WrapAngle(desiredAngle - Angle);
             float maxTurn = maxRate * dt;
             float turn = MathHelper.Clamp(delta, -maxTurn, maxTurn);
-            float newAngle = Angle + turn;
             Vector2 dir = Utils.newDirection(turn);
             _fallbackHeading = dir;
             Velocity = dir * Speed;
         }
-
-        public void RotateTowardsDir(float turn){
-            float newAngle = Angle + turn;
-            Vector2 dir = Utils.newDirection(turn);
-
-            Velocity = dir * Speed;
+        
+        public void ClampSpeed(float minSpeed,float maxSpeed, float sFactor){
+            float clampSpeed = MathHelper.Clamp(Speed,minSpeed*sFactor,maxSpeed*sFactor); 
+            if (MathF.Abs(Speed - clampSpeed) > 1e-6f) {
+                Velocity = clampSpeed * Heading;
+            }
         }
 
         public void Integrate()
         {
-            Position += Velocity * dt;
+            Position += Velocity * Dt;
         }
     }
 }

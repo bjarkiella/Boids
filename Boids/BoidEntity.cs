@@ -1,25 +1,24 @@
-using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Reflection.Metadata;
-using System.Threading.Tasks;
+using Boids.Shared;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 
-namespace Boids
+namespace Boids.Boids
 {
-    internal class BoidEntity:BaseEntity
+    internal class BoidEntity(
+            Texture2D texture,
+            Vector2 position,
+            Vector2 velocity,
+            float visionFactor)
+        :BaseEntity(texture, position,velocity, visionFactor)
     {
         public float SpeedFactor = 1f;
-        public List<BoidEntity> Neighbours; 
+        public List<BoidEntity> Neighbours { get; } = [];
+        internal void SteerTowards(Vector2 desiredDir, float maxTurnRate) 
+            => RotateTowardsDir(desiredDir,Dt,maxTurnRate); 
 
-        public BoidEntity(Texture2D texture, Vector2 position, Vector2 velocity, float visionFactor): base(texture, position,velocity, visionFactor)
-        {
-            Neighbours = new List<BoidEntity>();
-        }
         public void ResetSpeedFactor()
-        {
-            SpeedFactor = 1f;
-        }
+            => SpeedFactor = 1f;
+
     }
 }

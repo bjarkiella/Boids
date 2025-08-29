@@ -1,5 +1,5 @@
 using Microsoft.Xna.Framework;
-namespace Boids {
+namespace Boids.Shared {
 
     internal static class Time {
         public static float Delta {get; private set;}

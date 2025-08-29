@@ -1,18 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Runtime.CompilerServices;
-using Gum.DataTypes.Variables;
-using Gum.Wireframe;
-using Microsoft.VisualBasic;
-using Microsoft.Xna.Framework;
+﻿using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using MonoGameGum;
-using MonoGameGum.Forms.Controls;
-using MonoGameGum.GueDeriving;
-using RenderingLibrary;
-using RenderingLibrary.Math.Geometry;
+
+using Boids.Shared;
 
 namespace Boids;
 

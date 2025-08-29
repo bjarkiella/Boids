@@ -10,15 +10,16 @@ using System.Xml.Schema;
 using Microsoft.VisualBasic;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using Boids.Shared;
 
-namespace Boids
+namespace Boids.Boids
 {
     internal class BoidManager
     {
         private List<BoidEntity> _boids = new List<BoidEntity>();
         public IReadOnlyList<BoidEntity> listOfBoids => _boids;
         private Texture2D _boidTexture;
-
+        protected static float Dt => Time.Delta;
         public BoidManager(Texture2D texture)
         {
             _boidTexture = texture;
@@ -55,7 +56,6 @@ namespace Boids
         }
         public void Update(GameTime gt, Vector2? eatPos= null, float? eatRadius = null, bool eatBoid=false)
         {
-            float dt = Utils.deltaTime(gt) * BoidConstants.accFactor;
             List<BoidEntity> eatenBoid = new List<BoidEntity>();
 
             foreach (BoidEntity b in _boids)
@@ -91,19 +91,22 @@ namespace Boids
                 if (playerClose)
                 {
                     Vector2 avoidVector = b.Position - eatPos.Value;
-                    float turn = Utils.calcTurnAngle(avoidVector, dt, b.Angle, BoidConstants.MaxTurnPerSec);
-                    b.Angle += turn;
+                    b.SteerTowards(avoidVector,BoidConstants.MaxTurnPerSec);
+                    // 
+                    // float turn = Utils.calcTurnAngle(avoidVector, dt, b.Angle, BoidConstants.MaxTurnPerSec);
+                    // b.Angle += turn;
                     b.SpeedFactor = BoidConstants.speedUp;
-                    b.Velocity = new Vector2(MathF.Cos(b.Angle), MathF.Sin(b.Angle)) * b.Speed;
-                    if (b.Velocity.LengthSquared() > BoidConstants.maxSpeed * BoidConstants.maxSpeed)
-                    {
-                        b.Velocity = Vector2.Normalize(b.Velocity) * BoidConstants.maxSpeed * b.SpeedFactor;
-                    }
-
-                    if (b.Velocity.LengthSquared() < BoidConstants.minSpeed * BoidConstants.minSpeed)
-                    {
-                        b.Velocity = Vector2.Normalize(b.Velocity) * BoidConstants.minSpeed * b.SpeedFactor;
-                    }
+                    // b.Velocity = new Vector2(MathF.Cos(b.Angle), MathF.Sin(b.Angle)) * b.Speed;
+                    b.ClampSpeed(BoidConstants.minSpeed,BoidConstants.maxSpeed,b.SpeedFactor);
+                    // if (b.Velocity.LengthSquared() > BoidConstants.maxSpeed * BoidConstants.maxSpeed)
+                    // {
+                    //     b.Velocity = Vector2.Normalize(b.Velocity) * BoidConstants.maxSpeed * b.SpeedFactor;
+                    // }
+                    //
+                    // if (b.Velocity.LengthSquared() < BoidConstants.minSpeed * BoidConstants.minSpeed)
+                    // {
+                    //     b.Velocity = Vector2.Normalize(b.Velocity) * BoidConstants.minSpeed * b.SpeedFactor;
+                    // }
                     b.ResetSpeedFactor();
                     if (eatBoid && avoidVector.Length() <= eatRadius.Value)
                     {
@@ -119,9 +122,10 @@ namespace Boids
                     b.ResetSpeedFactor();
                     if (boundSteer != Vector2.Zero)
                     {
+                        b.SteerTowards(boundSteer,BoidConstants.MaxTurnPerSec);
                         // Determining the new angle
-                        float turn = Utils.calcTurnAngle(boundSteer, dt, b.Angle, BoidConstants.MaxTurnPerSec);
-                        b.Angle += turn;
+                        // float turn = Utils.calcTurnAngle(boundSteer, dt, b.Angle, BoidConstants.MaxTurnPerSec);
+                        // b.Angle += turn;
 
                         // Applying throttling when near wall
                         float turnIntensity = MathF.Min(MathF.Abs(turn), MathF.PI / 2f) / (MathF.PI / 2f);
@@ -157,16 +161,17 @@ namespace Boids
                     steer += sep * BoidConstants.sepFactor;
                     steer += Utils.RandomVector(BoidConstants.RandomSteer, BoidConstants.RandomSteer);
                 }
-                b.Velocity += steer * dt * Utils.RandomFloatRange(0, BoidConstants.RandomVel);
-                if (b.Velocity.LengthSquared() > BoidConstants.maxSpeed * BoidConstants.maxSpeed)
-                {
-                    b.Velocity = Vector2.Normalize(b.Velocity) * BoidConstants.maxSpeed * b.SpeedFactor;
-                }
+                b.Velocity += steer * Dt * Utils.RandomFloatRange(0, BoidConstants.RandomVel);
+                // if (b.Velocity.LengthSquared() > BoidConstants.maxSpeed * BoidConstants.maxSpeed)
+                // {
+                    // b.Velocity = Vector2.Normalize(b.Velocity) * BoidConstants.maxSpeed * b.SpeedFactor;
+                    b.ClampSpeed(BoidConstants.minSpeed,BoidConstants.maxSpeed,b.SpeedFactor);
+                // }
 
-                if (b.Velocity.LengthSquared() < BoidConstants.minSpeed * BoidConstants.minSpeed)
-                {
-                    b.Velocity = Vector2.Normalize(b.Velocity) * BoidConstants.minSpeed * b.SpeedFactor;
-                }
+                // if (b.Velocity.LengthSquared() < BoidConstants.minSpeed * BoidConstants.minSpeed)
+                // {
+                    // b.Velocity = Vector2.Normalize(b.Velocity) * BoidConstants.minSpeed * b.SpeedFactor;
+                // }
             }
             foreach (BoidEntity b in eatenBoid) _boids.Remove(b);
             
@@ -175,15 +180,15 @@ namespace Boids
                 switch (BoidConstants.bcCondition)
                 {
                     case BoidConstants.BoundaryType.Wrap:
-                        b.Position += b.Velocity * dt;
+                        b.Integrate();
                         b.Position = BoidBC.Wrap(b.Position);
                         break;
                     case BoidConstants.BoundaryType.Bounce:
-                        b.Position += b.Velocity * dt;
+                        b.Integrate();
                         b.Velocity = BoidBC.bounce(b.Velocity, b.Position);
                         break;
                     case BoidConstants.BoundaryType.Steer:
-                        b.Position += b.Velocity * dt;
+                        b.Integrate();
                         b.Position = BC.PosCheck(b.Position, b.Radius);
                         break;
                 }
