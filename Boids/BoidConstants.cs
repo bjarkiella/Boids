@@ -1,9 +1,6 @@
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 
-namespace Boids
+namespace Boids.Boids
 {
     public static class BoidConstants
 {
@@ -19,7 +16,7 @@ namespace Boids
         public const float RandomSteer = 10f;
         public const float RandomVel = 1.1f;
         public const float steerWeight = 0.7f;
-        public const float MaxTurnPerSec = MathF.PI * 0.75f;
+        public const float MaxTurn = MathF.PI * 0.75f;
         public const float speedDown = 0.5f;
         public const float speedUp = 1.5f;
         public enum BoundaryType

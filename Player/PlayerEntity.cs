@@ -9,9 +9,10 @@ using Gum.Managers;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
+using Boids.Shared;
 
 // TODO: Change this class so it makes sense the player uses it
-namespace Boids
+namespace Boids.Player
 {
     internal class PlayerEntity : BaseEntity
     {
@@ -29,6 +30,13 @@ namespace Boids
         {
 
         }
+
+        internal void SteerTowards(Vector2 desiredDir, float maxTurnRate) 
+            => RotateTowardsDir(desiredDir,maxTurnRate); 
+
+        internal void Clamp(float sFactor) 
+            => UpdateVelocity(0f,PlayerConstants.maxSpeed,sFactor); 
+
         public void Update(GameTime gameTime, KeyboardState current, KeyboardState _prevKeyboardState)
         {
             float dt = Utils.deltaTime(gameTime);
@@ -78,7 +86,7 @@ namespace Boids
                 _sprintTimeLeft = MathF.Max(0f, _sprintTimeLeft);
                 if (_sprintTimeLeft <= 0f)
                 {
-                    _sprinting = false;
+               _sprinting = false;
                     _sprintTimeLeft = 0f;
                     _sprintAcc = 1f;
                     _sprintSpeed = 1f;
@@ -104,6 +112,17 @@ namespace Boids
                 // Smoothing out the speed
                 _speed += PlayerConstants.maxAccel * _sprintAcc * dt;
                 _speed = MathF.Min(_speed, PlayerConstants.maxSpeed) * _sprintSpeed;
+                
+                // Refactor stuff
+                // RotateTowardsDir(move,PlayerConstants.MaxTurn);
+                
+                // b.SteerTowards(avoidVector,BoidConstants.MaxTurn);
+                // 
+                // float turn = Utils.calcTurnAngle(avoidVector, dt, b.Angle, BoidConstants.MaxTurnPerSec);
+                // b.Angle += turn;
+                // b.SpeedFactor = BoidConstants.speedUp;
+                // b.Velocity = new Vector2(MathF.Cos(b.Angle), MathF.Sin(b.Angle)) * b.Speed;
+                // b.ClampSpeed(BoidConstants.minSpeed,BoidConstants.maxSpeed,b.SpeedFactor);
             }
 
             else if (MathF.Round(Velocity.Length()) < 1e-3 || _edge != null)
