@@ -19,10 +19,5 @@ namespace Boids.Boids
         public const float MaxTurn = MathF.PI * 0.75f;
         public const float speedDown = 0.5f;
         public const float speedUp = 1.5f;
-        public enum BoundaryType
-        {
-            Wrap, Bounce, Steer
-        }
-        public static BoundaryType bcCondition = BoundaryType.Steer;
     }
 }

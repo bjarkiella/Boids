@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace Boids
+namespace Boids.ui
 {
     public class ControlPair<TFirst, TSecond>
     {

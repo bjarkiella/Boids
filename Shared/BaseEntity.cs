@@ -47,11 +47,22 @@ namespace Boids.Shared
             float delta = MathHelper.WrapAngle(desiredAngle - Angle);
             float maxTurn = maxRate * Dt;
             float turn = MathHelper.Clamp(delta, -maxTurn, maxTurn);
-            Vector2 dir = Utils.newDirection(turn);
+            Vector2 dir = Utils.NewDirection(turn);
             _fallbackHeading = dir;
             Velocity = dir * Speed;
         }
         
+        public void ApplyAccel(Vector2 desiredDir, float maxAccel, float accel) 
+        {
+            Velocity += desiredDir * (maxAccel * accel) * Dt; 
+
+        }
+        public void ApplyDrag(float dragFactor)
+        {
+            float k = MathF.Max(0f, 1f - dragFactor * Dt);
+            Velocity *= k;
+        }
+
         public float ClampSpeed(float minSpeed,float maxSpeed, float sFactor) => MathHelper.Clamp(Speed,minSpeed*sFactor,maxSpeed*sFactor); 
  
         public void UpdateVelocity(float minSpeed,float maxSpeed, float sFactor)

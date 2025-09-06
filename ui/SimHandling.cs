@@ -1,12 +1,10 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using System.Threading.Tasks.Dataflow;
 using MonoGameGum.Forms.Controls;
-using RenderingLibrary.Math.Geometry;
 
-namespace Boids
+using Boids.Boids;
+
+namespace Boids.ui
 {
     static class SimHandling 
     {
@@ -70,17 +68,17 @@ namespace Boids
                 {
                     if (comboBox.SelectedObject.ToString() == "Steer")
                     {
-                        BoidConstants.bcCondition = BoidConstants.BoundaryType.Steer;
+                        Constants.bcCondition = Constants.BoundaryType.Steer;
                     }
                     else if (comboBox.SelectedObject.ToString() == "Wrap")
                     {
-                        BoidConstants.bcCondition = BoidConstants.BoundaryType.Wrap;
+                        Constants.bcCondition = Constants.BoundaryType.Wrap;
                     }
                     else if (comboBox.SelectedObject.ToString() == "Bounce")
                     {
-                        BoidConstants.bcCondition = BoidConstants.BoundaryType.Bounce;
+                        Constants.bcCondition = Constants.BoundaryType.Bounce;
                     }
-                    else BoidConstants.bcCondition = BoidConstants.BoundaryType.Steer;
+                    else Constants.bcCondition = Constants.BoundaryType.Steer;
                 };
             }
         }

@@ -1,14 +1,9 @@
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 using Gum.Wireframe;
 using MonoGameGum.Forms.Controls;
-using MonoGameGum.GueDeriving;
-using RenderingLibrary;
 using MonoGameGum;
 using Microsoft.Xna.Framework;
-namespace Boids
+namespace Boids.ui
 {
     public class StartupUI 
     {

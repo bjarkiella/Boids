@@ -1,15 +1,11 @@
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Reflection.Emit;
-using System.Threading.Tasks;
 using Microsoft.Xna.Framework;
 
-namespace Boids
+namespace Boids.Shared
 {
     public static class Utils
     {
-        static Random random = new Random(); 
+        static Random random = new (); 
         public static float RandomFloatRange(float a, float b)
         {
             random = new Random();
@@ -19,14 +15,7 @@ namespace Boids
         {
             return new Vector2(RandomFloatRange(a, b), RandomFloatRange(a, b));
         }
-        public static float RandomAngle(float angle)
-        {
-            return 1f;
-        }
-        public static float RandomSpeed(float speed)
-        {
-            return 1f;
-        }
+
         public static Vector2 RandomSpawnPosition()
         {
             float wCons = 1f - Constants.warnOutPerc;
@@ -34,16 +23,7 @@ namespace Boids
             RandomFloatRange(Constants.ActiveHeight*Constants.warnOutPerc, Constants.ActiveHeight*wCons));
         }
 
-        public static float calcTurnAngle(Vector2 desiredPos, float dt, float currentAngle, float maxRate)
-        {
-            float desiredAngle = MathF.Atan2(desiredPos.Y, desiredPos.X);
-            float delta = MathHelper.WrapAngle(desiredAngle - currentAngle);
-            float maxTurn = maxRate * dt;
-            float turn = MathHelper.Clamp(delta, -maxTurn, maxTurn);
-            return turn;
-        }
-
-        public static Vector2 newDirection(float radAngle)
+        public static Vector2 NewDirection(float radAngle)
         {
             return new Vector2(MathF.Cos(radAngle),MathF.Sin(radAngle));
         }
@@ -59,11 +39,14 @@ namespace Boids
         {
             return RandomFloatRange(0f, 2 * MathF.PI); 
         }
-        public static float deltaTime(GameTime gameTime)
+        public static float MinValueArray(float[] arrayList)
         {
-            return (float)gameTime.ElapsedGameTime.TotalSeconds;
+            float minDist = float.MaxValue;
+            for (int i = 0; i < arrayList.Length; i++)
+                if (arrayList[i] < minDist) minDist = arrayList[i];
+            return minDist;
         }
-
+        
  
     }
 }

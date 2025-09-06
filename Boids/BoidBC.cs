@@ -1,4 +1,3 @@
-using System;
 using Microsoft.Xna.Framework;
 
 namespace Boids.Boids
@@ -15,7 +14,7 @@ namespace Boids.Boids
             return pos;
         }
 
-        public static Vector2 bounce(Vector2 velocity, Vector2 position)
+        public static Vector2 Bounce(Vector2 velocity, Vector2 position)
         {
             // Checking collision with with walls (bounce effect)
             if (position.Y <= 0 || position.Y >= Constants.ActiveHeight)
@@ -29,25 +28,7 @@ namespace Boids.Boids
             return velocity;
         }
 
-        public static bool CloseToEdge(Vector2 position, float radius, float visionRadius)
-        {
-            // Calculating distance to edges    
-            float left = position.X - radius;
-            float right = Constants.ActiveWidth - radius - position.X;
-            float top = position.Y - radius;
-            float bottom = Constants.ActiveHeight - radius - position.Y;
-            float minDist = MathF.Min(MathF.Min(left,right),MathF.Min(top,bottom));
-            float proxTrigger = 0.35f;
-
-            if (minDist < visionRadius){ 
-                if (proxTrigger < MathHelper.Clamp(1f-(minDist/visionRadius),0f,1f))
-                    return true;
-            }
-            return false;
-        }
-
-
-        public static Vector2 steerBoid(Vector2 position, float radius)
+        public static Vector2 SteerBoid(Vector2 position, float radius)
         {
             // Calculating distance to edges    
             float left = position.X - radius;

@@ -4,7 +4,7 @@ using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
 
-namespace Boids
+namespace Boids.Player
 {
     public static class PlayerConstants
     {

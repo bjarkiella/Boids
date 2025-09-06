@@ -20,5 +20,11 @@ namespace Boids
         public const int PWidth = SWidth;
         public static int ActiveHeight => SHeight - PHeight;
         public const int ActiveWidth = SWidth;
+
+        public enum BoundaryType
+        {
+            Wrap, Bounce, Steer
+        }
+        public static BoundaryType bcCondition = BoundaryType.Steer;
     }
 }

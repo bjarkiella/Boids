@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Generic;
 using Boids.Shared;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
@@ -15,56 +14,43 @@ namespace Boids.Boids
     {
 
         public float SpeedFactor = 1f;
-        public List<BoidEntity> Neighbours { get; } = [];
 
-        private Vector2 distanceVector(BoidConstants.BoundaryType bType, Vector2 posCheck)
-        {
-            return bType switch
-            {
-                BoidConstants.BoundaryType.Wrap => BC.TorusDistance(Position, posCheck, Constants.ActiveWidth, Constants.ActiveHeight),
-                BoidConstants.BoundaryType.Bounce => BC.distVect(Position, posCheck),
-                BoidConstants.BoundaryType.Steer => BC.distVect(Position, posCheck),
-                _ => Vector2.Zero
-                    
-            };
-        }
+        internal float CloseVision() => VisionRadius/BoidConstants.visionFactor;
 
-        internal bool EdgeCloseCheck()
-            => BoidBC.CloseToEdge(Position,Radius,VisionRadius);
+        internal bool EdgeCloseCheck() => BC.CloseToEdge(Position,Radius,VisionRadius);
 
-        internal void SteerTowards(Vector2 desiredDir, float maxTurnRate) 
-            => RotateTowardsDir(desiredDir,maxTurnRate); 
+        internal void SteerTowards(Vector2 desiredDir, float maxTurnRate) => RotateTowardsDir(desiredDir,maxTurnRate); 
 
         internal static Vector2 SteerFromEdgeDir(BC.Edge? edge)
         {
             return edge switch
             {
-             BC.Edge.Left => new Vector2(+1f,0f),
-                 BC.Edge.Right => new Vector2(-1f,0f),
-                 BC.Edge.Top => new Vector2(0f,+1f),
-                 BC.Edge.Bottom => new Vector2(0f,-1f),
-                 _ => Vector2.Zero
+                BC.Edge.Left => new Vector2(+1f,0f),
+                BC.Edge.Right => new Vector2(-1f,0f),
+                BC.Edge.Top => new Vector2(0f,+1f),
+                BC.Edge.Bottom => new Vector2(0f,-1f),
+                _ => Vector2.Zero
             };
         }
         internal void SteerFromEdge()
         {
             BC.Edge? edge = BC.EdgeCheck(Position, Radius); 
-            if (EdgeCloseCheck())
+            if (!EdgeCloseCheck())
             {
                 throw new InvalidOperationException
-                ("ERROR: The boid is not next to an edge, calling SteerFromEdge() not required");
+                    ("ERROR: The boid is not next to an edge, calling SteerFromEdge() not required");
             }
             if (edge == null)
             {
                 throw new InvalidOperationException
-                ("ERROR: Unable to determine which edge boid is next to");
+                    ("ERROR: Unable to determine which edge boid is next to");
             }
             Vector2 steerDir = SteerFromEdgeDir(edge);
             SpeedFactor = BoidConstants.speedDown;
             UpdateVelocity(BoidConstants.minSpeed,BoidConstants.maxSpeed,SpeedFactor); 
             SteerTowards(steerDir,BoidConstants.MaxTurn);
             ResetSpeedFactor();
-            
+
         }
         internal void SteerFromPlayer(Vector2 playerPos)
         {
@@ -75,35 +61,33 @@ namespace Boids.Boids
             ResetSpeedFactor();
         }
 
-        internal void ApplyBC(BoidConstants.BoundaryType bType)
+        internal void UpdateSteerVelocity(Vector2 steer)
         {
+            Velocity += steer * Dt * Utils.RandomFloatRange(0, BoidConstants.RandomVel);
+
+        }
+        internal void ApplyBC(Constants.BoundaryType bType)
+        {
+            if (!EdgeCloseCheck()) return;
             switch (bType)
             {
-                case BoidConstants.BoundaryType.Steer:
+                case Constants.BoundaryType.Steer:
                     SteerFromEdge();
+                    Position = BC.PosCheck(Position,Radius);
                     break;
 
-                case BoidConstants.BoundaryType.Bounce:
-                    // Velocity = BoidBC.Bounce(Velocity, Position);
+                case Constants.BoundaryType.Bounce:
+                    Velocity = BoidBC.Bounce(Velocity, Position);
                     break;
 
-                case BoidConstants.BoundaryType.Wrap:
-                    // Position = BoidBC.Wrap(Position);
+                case Constants.BoundaryType.Wrap:
+                    Position = BoidBC.Wrap(Position);
                     break;
 
                 default:
                     break;
             }
         }
-
-        internal Vector2 ComputeBoundarySteer()
-            => BoidBC.steerBoid(Position,Radius);
-
-        internal Vector2 ComputeBounceSteer()
-            => BoidBC.bounce(Velocity,Position);
-
-        internal Vector2 ComputeWrapSteer()
-            => BoidBC.Wrap(Position);
 
         internal bool InVisionRange(Vector2 pos) {
             float distaSq = Vector2.DistanceSquared(Position,pos);

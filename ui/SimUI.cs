@@ -8,7 +8,11 @@ using MonoGameGum.GueDeriving;
 using RenderingLibrary;
 using MonoGameGum;
 using Microsoft.Xna.Framework;
-namespace Boids
+
+using Boids.Shared;
+using Boids.Boids;
+
+namespace Boids.ui
 {
     public class SimUI 
     {

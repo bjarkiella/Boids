@@ -1,23 +1,18 @@
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Reflection.Metadata;
-using System.Runtime.CompilerServices;
-using System.Threading.Tasks;
-using System.Xml;
-using Gum.Managers;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using Boids.Shared;
 
-// TODO: Change this class so it makes sense the player uses it
 namespace Boids.Player
 {
-    internal class PlayerEntity : BaseEntity
+    internal class PlayerEntity(
+            Texture2D texture,
+            Vector2 position,
+            Vector2 velocity,
+            float eatRadiusFactor):
+        BaseEntity(texture, position, velocity, eatRadiusFactor)
     {
-        private Vector2 _heading = Vector2.Zero;
-        private float _speed = 0f;
         private float _sprintTimeLeft = 0f;
         private float _coolDown = 0f;
         private bool _sprinting = false;
@@ -26,23 +21,14 @@ namespace Boids.Player
         private BC.Edge? _edge;
         public float _eatRadius => VisionRadius;
         public bool EatBoid { get; private set; } = false;
-        public PlayerEntity(Texture2D texture, Vector2 position, Vector2 velocity, float eatRadiusFactor) : base(texture, position, velocity, eatRadiusFactor)
+
+        internal void SteerTowards(Vector2 desiredDir, float maxTurnRate) => RotateTowardsDir(desiredDir,maxTurnRate); 
+
+        public void Update(KeyboardState current, KeyboardState _prevKeyboardState)
         {
-
-        }
-
-        internal void SteerTowards(Vector2 desiredDir, float maxTurnRate) 
-            => RotateTowardsDir(desiredDir,maxTurnRate); 
-
-        internal void Clamp(float sFactor) 
-            => UpdateVelocity(0f,PlayerConstants.maxSpeed,sFactor); 
-
-        public void Update(GameTime gameTime, KeyboardState current, KeyboardState _prevKeyboardState)
-        {
-            float dt = Utils.deltaTime(gameTime);
             _edge = BC.EdgeCheck(Position, Radius);
 
-            // Keyboard inputs for player
+            // Keyboard inputs for player, edge is used to stop pushing beyond edge
             Vector2 move = Vector2.Zero;
             if (current.IsKeyDown(Keys.Up) && _edge != BC.Edge.Top)
             {
@@ -60,7 +46,7 @@ namespace Boids.Player
             {
                 move.X -= 1;
             }
-            if ((current.IsKeyDown(Keys.LeftShift) && !_prevKeyboardState.IsKeyDown(Keys.LeftShift)) &&
+            if (current.IsKeyDown(Keys.LeftShift) && !_prevKeyboardState.IsKeyDown(Keys.LeftShift) &&
             !_sprinting &&
             _coolDown <= 0f &&
             move.Length() > 0)
@@ -82,7 +68,7 @@ namespace Boids.Player
             // Sprinting conditions 
             if (_sprinting)
             {
-                _sprintTimeLeft -= dt;
+                _sprintTimeLeft -= Dt;
                 _sprintTimeLeft = MathF.Max(0f, _sprintTimeLeft);
                 if (_sprintTimeLeft <= 0f)
                 {
@@ -95,7 +81,7 @@ namespace Boids.Player
             }
             else if (_coolDown >= 0f)
             {
-                _coolDown -= dt;
+                _coolDown -= Dt;
                 _coolDown = MathF.Max(0f, _coolDown);
             }
 
@@ -104,52 +90,28 @@ namespace Boids.Player
             {
                 // Smoothing out the heading (same as in steer in boidmanager)
                 Vector2 heading = Vector2.Normalize(move);
-                float currentAngle = MathF.Atan2(_heading.Y, _heading.X);
-                float turn = Utils.calcTurnAngle(heading, dt, currentAngle, PlayerConstants.maxTurn);
-                float newAngle = currentAngle + turn;
-                _heading = new Vector2(MathF.Cos(newAngle), MathF.Sin(newAngle));
-
-                // Smoothing out the speed
-                _speed += PlayerConstants.maxAccel * _sprintAcc * dt;
-                _speed = MathF.Min(_speed, PlayerConstants.maxSpeed) * _sprintSpeed;
-                
-                // Refactor stuff
-                // RotateTowardsDir(move,PlayerConstants.MaxTurn);
-                
-                // b.SteerTowards(avoidVector,BoidConstants.MaxTurn);
-                // 
-                // float turn = Utils.calcTurnAngle(avoidVector, dt, b.Angle, BoidConstants.MaxTurnPerSec);
-                // b.Angle += turn;
-                // b.SpeedFactor = BoidConstants.speedUp;
-                // b.Velocity = new Vector2(MathF.Cos(b.Angle), MathF.Sin(b.Angle)) * b.Speed;
-                // b.ClampSpeed(BoidConstants.minSpeed,BoidConstants.maxSpeed,b.SpeedFactor);
+                SteerTowards(heading,PlayerConstants.MaxTurn);
+                if (_sprinting)
+                {
+                    ApplyAccel(heading,PlayerConstants.maxAccel,_sprintAcc);
+                    UpdateVelocity(0f,PlayerConstants.maxSpeed,_sprintSpeed);
+                }
             }
 
-            else if (MathF.Round(Velocity.Length()) < 1e-3 || _edge != null)
-            {
-                _speed = 0f;
-            }
             else
             {
-                _speed -= PlayerConstants.drag * dt;
-                _speed = MathF.Max(_speed, 0f);
+                ApplyDrag(PlayerConstants.drag);
             }
-            Velocity = _heading * _speed;
-            Position += Velocity * dt;
+            Integrate();
+
+            // Position += Velocity * dt;
             Position = BC.PosCheck(Position, Radius);
 
         }
-        private void sprint()
-        {
 
-        }
-        private void moveFrame()
-        {
-
-        }
         public void Draw(SpriteBatch sb)
         {
-            sb.Draw(this.Texture, this.Position, Color.White);
+            sb.Draw(Texture, Position, Color.White);
         }
     }
 }

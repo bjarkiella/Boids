@@ -1,4 +1,3 @@
-using System;
 using System.Collections.Generic;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
@@ -6,22 +5,18 @@ using Boids.Shared;
 
 namespace Boids.Boids
 {
-    internal class BoidManager
+    internal class BoidManager(Texture2D texture)
     {
-        private List<BoidEntity> _boids = new List<BoidEntity>();
-        public IReadOnlyList<BoidEntity> listOfBoids => _boids;
-        private Texture2D _boidTexture;
+        private readonly List<BoidEntity> _boids = []; 
+        public IReadOnlyList<BoidEntity> ListOfBoids => _boids;
+        private readonly Texture2D _boidTexture = texture;
         protected static float Dt => Time.Delta;
-        public BoidManager(Texture2D texture)
-        {
-            _boidTexture = texture;
 
-        }
         public void SpawnBoid()
         {
             Vector2 spawnPoint = Utils.RandomSpawnPosition();
             Vector2 spawnVel = Utils.InitialVelocity(Utils.InitialAngle(), Utils.InitialSpeed());
-            BoidEntity newBoid = new BoidEntity(_boidTexture, spawnPoint, spawnVel, BoidConstants.visionFactor);
+            BoidEntity newBoid = new (_boidTexture, spawnPoint, spawnVel, BoidConstants.visionFactor);
             _boids.Add(newBoid);
         }
         public void RemoveBoid()
@@ -32,7 +27,7 @@ namespace Boids.Boids
             }
         }
         
-        public void Update(GameTime gt, Vector2? eatPos= null, float? eatRadius = null, bool eatBoid=false)
+        public void Update(Vector2? eatPos= null, float? eatRadius = null, bool eatBoid=false)
         {
             List<BoidEntity> eatenBoid = [];
 
@@ -43,35 +38,15 @@ namespace Boids.Boids
                 Vector2 align = Vector2.Zero;
                 Vector2 center = Vector2.Zero;
                 Vector2 steer = Vector2.Zero;
-                Vector2 vecTor = Vector2.Zero;
                 Vector2 boundSteer = Vector2.Zero;
-                Vector2 pBoidTor = Vector2.Zero;
 
                 // Neighbour variables initilized
-                b.Neighbours.Clear();
+                float neighbours = 0;
 
                 // Checking if player is close
                 if (eatPos.HasValue && b.InVisionRange(eatPos.Value)){
                     b.SteerFromPlayer(eatPos.Value);
 
-                    // Vector2 avoidVector = b.Position - eatPos.Value;
-                    // b.SteerTowards(avoidVector,BoidConstants.MaxTurn);
-                    // 
-                    // float turn = Utils.calcTurnAngle(avoidVector, dt, b.Angle, BoidConstants.MaxTurnPerSec);
-                    // b.Angle += turn;
-                    // b.SpeedFactor = BoidConstants.speedUp;
-                    // b.Velocity = new Vector2(MathF.Cos(b.Angle), MathF.Sin(b.Angle)) * b.Speed;
-                    // b.UpdateVelocity(BoidConstants.minSpeed,BoidConstants.maxSpeed,b.SpeedFactor);
-                    // if (b.Velocity.LengthSquared() > BoidConstants.maxSpeed * BoidConstants.maxSpeed)
-                    // {
-                    //     b.Velocity = Vector2.Normalize(b.Velocity) * BoidConstants.maxSpeed * b.SpeedFactor;
-                    // }
-                    //
-                    // if (b.Velocity.LengthSquared() < BoidConstants.minSpeed * BoidConstants.minSpeed)
-                    // {
-                    //     b.Velocity = Vector2.Normalize(b.Velocity) * BoidConstants.minSpeed * b.SpeedFactor;
-                    // }
-                    // b.ResetSpeedFactor();
                     if (eatBoid && (b.Position - eatPos.Value).Length() <= eatRadius.Value)
                     {
                         eatenBoid.Add(b);
@@ -79,100 +54,39 @@ namespace Boids.Boids
                     continue; //BOID DEAD OR ESCPAED, NEXT!
                 } 
 
-                // pBoidTor = distanceVector(b.Position, eatPos.Value);
-                //
-                // if (pBoidTor.Length() > b.VisionRadius)
-                // {
-                //     playerClose = false;
-                // }
-                // else
-                // {
-                //     playerClose = true;
-                //     Console.WriteLine("OMG HE IS CLOSE");
-                // }
-
-                b.ApplyBC(BoidConstants.bcCondition);
-                // if (BoidConstants.bcCondition == BoidConstants.BoundaryType.Steer)
-                // {
-                //     b.SteerFromEdge();
-                // Initial position check
-                // So here im basically checking where I am to check if I should steer away from the edge
-                // boundSteer = BoidBC.steerBoid(b.Position, b.Radius);
-                // b.ResetSpeedFactor();
-                // if (boundSteer != Vector2.Zero)
-                // {
-                //     b.SteerTowards(boundSteer,BoidConstants.MaxTurn);
-                //     // Determining the new angle
-                //     // float turn = Utils.calcTurnAngle(boundSteer, Dt, b.Angle, BoidConstants.MaxTurnPerSec);
-                //     // b.Angle += turn;
-                //
-                //     // Applying throttling when near wall
-                //     float turnIntensity = MathF.Min(MathF.Abs(turn), MathF.PI / 2f) / (MathF.PI / 2f);
-                //     b.SpeedFactor = MathHelper.Lerp(BoidConstants.speedDown, 1f, turnIntensity); // Has to between 0 and 1
-                //                                                                                  // b.Velocity = new Vector2(MathF.Cos(b.Angle), MathF.Sin(b.Angle)) * b.Speed;
-                // }
-                // }
+                b.ApplyBC(Constants.bcCondition);
                 foreach (BoidEntity other in _boids)
                 {
+                    // Some pre-checks
                     if (other == b) continue;
-                    vecTor = distanceVector(b.Position, other.Position);
-                    if (vecTor.Length() > b.VisionRadius) continue;
+                    if (eatenBoid.Contains(other)) continue;
+                    if (!b.InVisionRange(other.Position)) continue;
 
-                    align += other.Velocity;
-                    center += other.Position;
-                    float closeLen = b.VisionRadius / BoidConstants.visionFactor;
-                    if (vecTor.Length() < closeLen)
-                    {
-                        sep += -vecTor;  // This was -vecTor, but it kinda made sep bad....
-                    }
-                    b.Neighbours.Add(other);
+                    // Flocking variables gathered
+                    BoidFlocking.GatherNeighbours(ref align, ref center, ref sep, b, other);
+                    neighbours++;
                 }
-                if (BoidConstants.bcCondition == BoidConstants.BoundaryType.Steer)
+                if (Constants.bcCondition == Constants.BoundaryType.Steer)
                 {
                     steer += boundSteer * BoidConstants.steerWeight;
                 }
-                if (b.Neighbours.Count > 0)
+                if (neighbours > 0)
                 {
-                    align /= b.Neighbours.Count;
-                    center /= b.Neighbours.Count;
-                    steer += (align - b.Velocity) * BoidConstants.alignFactor;
-                    steer += (center - b.Position) * BoidConstants.coheFactor;
-                    steer += sep * BoidConstants.sepFactor;
-                    steer += Utils.RandomVector(BoidConstants.RandomSteer, BoidConstants.RandomSteer);
+                    Vector2 nSteer = BoidFlocking.FlockSteer(neighbours,b);
+                    steer += nSteer;
                 }
-                b.Velocity += steer * Dt * Utils.RandomFloatRange(0, BoidConstants.RandomVel);
-                // if (b.Velocity.LengthSquared() > BoidConstants.maxSpeed * BoidConstants.maxSpeed)
-                // {
-                // b.Velocity = Vector2.Normalize(b.Velocity) * BoidConstants.maxSpeed * b.SpeedFactor;
+                // TODO: Some funky stuff with the velocity had been happening here, much velocoty changes and that needs to stop!
+                b.UpdateSteerVelocity(steer);
+                
                 b.UpdateVelocity(BoidConstants.minSpeed,BoidConstants.maxSpeed,b.SpeedFactor);
-                // }
-
-                // if (b.Velocity.LengthSquared() < BoidConstants.minSpeed * BoidConstants.minSpeed)
-                // {
-                // b.Velocity = Vector2.Normalize(b.Velocity) * BoidConstants.minSpeed * b.SpeedFactor;
-                // }
             }
             foreach (BoidEntity b in eatenBoid) _boids.Remove(b);
 
             foreach (BoidEntity b in _boids)
             {
-                switch (BoidConstants.bcCondition)
-                {
-                    case BoidConstants.BoundaryType.Wrap:
-                        b.Integrate();
-                        b.Position = BoidBC.Wrap(b.Position);
-                        break;
-                    case BoidConstants.BoundaryType.Bounce:
-                        b.Integrate();
-                        b.Velocity = BoidBC.bounce(b.Velocity, b.Position);
-                        break;
-                    case BoidConstants.BoundaryType.Steer:
-                        b.Integrate();
-                        b.Position = BC.PosCheck(b.Position, b.Radius);
-                        break;
-                }
+                b.Integrate();
+                b.ApplyBC(Constants.bcCondition);
             }
-
         }
 
         public void Draw(SpriteBatch sb)
