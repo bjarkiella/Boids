@@ -35,38 +35,39 @@ namespace Boids.Shared
             edgeList[(int) Edge.Bottom] = Constants.ActiveHeight - radius - position.Y;
             return edgeList;
         }
-        public static bool CloseToEdge(Vector2 position, float radius, float visionRadius, float proxTrigger=0.35f)
+
+        public static Edge? ClosestEdge(Vector2 position, float radius, float proxRadius, float proxTrigger=0.03f)
         {
             float[] edgeList = PosEdge(position,radius);
             float minDist = Utils.MinValueArray(edgeList);
+            int idx = Array.IndexOf(edgeList,minDist);
+            Edge closest = (Edge)idx;
 
-            if (minDist < visionRadius){ 
-                if (proxTrigger < MathHelper.Clamp(1f-(minDist/visionRadius),0f,1f))
-                    return true;
-            }
-            return false;
-        }
+            if (proxTrigger <= 0f) return closest;
+            else if (proxTrigger < MathHelper.Clamp(1f-(minDist/proxRadius),0f,1f))
+                return closest;
+            else
+                return null;
 
-        public static Edge? EdgeCheck(Vector2 position, float radius)
-        {
-            float[] edgeList = PosEdge(position,radius);
-            if (position.X-radius/4 <= 0)
-            {
-                return Edge.Left;
-            }
-            else if (position.X + radius*2 >= Constants.ActiveWidth)
-            {
-                return Edge.Right;
-            }
-            else if (position.Y - radius/4 <= 0)
-            {
-                return Edge.Top; 
-            }
-            else if (position.Y + radius >= Constants.ActiveHeight)
-            {
-                return Edge.Bottom; 
-            }
-            return null;
+
+
+            // if (position.X-radius/4 <= 0)
+            // {
+            //     return Edge.Left;
+            // }
+            // else if (position.X + radius*2 >= Constants.ActiveWidth)
+            // {
+            //     return Edge.Right;
+            // }
+            // else if (position.Y - radius/4 <= 0)
+            // {
+            //     return Edge.Top; 
+            // }
+            // else if (position.Y + radius >= Constants.ActiveHeight)
+            // {
+            //     return Edge.Bottom; 
+            // }
+            // return null;
         }
 
 

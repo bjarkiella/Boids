@@ -1,28 +1,26 @@
 using System;
+using Boids.Boids;
 using Microsoft.Xna.Framework;
 
 namespace Boids.Shared
 {
     public static class Utils
     {
-        static Random random = new (); 
+        static readonly Random random = new (); 
         public static float RandomFloatRange(float a, float b)
         {
-            random = new Random();
             return (float)random.NextDouble() * (MathF.Max(a, b) - MathF.Min(a, b)) + MathF.Min(a, b);
         }
         public static Vector2 RandomVector(float a, float b)
         {
             return new Vector2(RandomFloatRange(a, b), RandomFloatRange(a, b));
         }
-
         public static Vector2 RandomSpawnPosition()
         {
             float wCons = 1f - Constants.warnOutPerc;
             return new Vector2(RandomFloatRange(Constants.ActiveWidth*Constants.warnOutPerc, Constants.ActiveWidth*wCons),
             RandomFloatRange(Constants.ActiveHeight*Constants.warnOutPerc, Constants.ActiveHeight*wCons));
         }
-
         public static Vector2 NewDirection(float radAngle)
         {
             return new Vector2(MathF.Cos(radAngle),MathF.Sin(radAngle));
@@ -31,11 +29,11 @@ namespace Boids.Shared
         {
             return new Vector2(MathF.Cos(spawnAngle),MathF.Sin(spawnAngle)) * spawnSpeed; 
         }
-        public static float InitialSpeed()
+        public static float RandomSpeed()
         {
-            return RandomFloatRange(1f * 120, 2f * 120);
+            return RandomFloatRange(MathF.Max(1f,BoidConstants.minSpeed),BoidConstants.maxSpeed);
         }
-        public static float InitialAngle()
+        public static float RandomAngle()
         {
             return RandomFloatRange(0f, 2 * MathF.PI); 
         }

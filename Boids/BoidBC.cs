@@ -1,5 +1,5 @@
 using Microsoft.Xna.Framework;
-
+using Boids.Shared;
 namespace Boids.Boids
 {
     public static class BoidBC
@@ -28,31 +28,62 @@ namespace Boids.Boids
             return velocity;
         }
 
-        public static Vector2 SteerBoid(Vector2 position, float radius)
+        public static Vector2 SteerBoid(Vector2 position,float radius, float proxRadius,float proxTrigger)
         {
             // Calculating distance to edges    
-            float left = position.X - radius;
-            float right = Constants.ActiveWidth - radius - position.X;
-            float top = position.Y - radius;
-            float bottom = Constants.ActiveHeight - radius - position.Y;
+            // float left = position.X - radius;
+            // float right = Constants.ActiveWidth - radius - position.X;
+            // float top = position.Y - radius;
+            // float bottom = Constants.ActiveHeight - radius - position.Y;
+            // BC.Edge? edge;
+            // edge = BC.ClosestEdge(position,radius,visionRadius,BoidConstants.wallProx);
+            float[] edgeList = BC.PosEdge(position,radius);
 
+            float triggerCompare; 
+            float dist;
             float x=0f, y = 0f;
-            if (left < Constants.WarnInX)
+            for (int i = 0; i<edgeList.Length;i++)
             {
-                x -= (left - Constants.WarnInX) / Constants.WarnInX;
+               BC.Edge edge = (BC.Edge)i;
+               dist = edgeList[i];
+               triggerCompare = MathHelper.Clamp(1f-(dist/proxRadius),0f,1f);
+
+               if (triggerCompare > proxTrigger)
+                   switch (edge)
+                   {
+                       case BC.Edge.Top:
+                           y += triggerCompare; 
+                           break;
+                       case BC.Edge.Bottom:
+                           y -= triggerCompare; 
+                           break;
+                       case BC.Edge.Right:
+                           x -= triggerCompare; 
+                           break;
+                       case BC.Edge.Left:
+                           x += triggerCompare; 
+                           break;
+                   }
             }
-            if (right < Constants.WarnInX)
-            {
-                x -= (Constants.WarnInX - right) / Constants.WarnInX;
-            }
-            if (top < Constants.WarnInY)
-            {
-                y -= (top - Constants.WarnInY) / Constants.WarnInY;
-            }
-            if (bottom < Constants.WarnInY)
-            {
-                y -= (Constants.WarnInY - bottom) / Constants.WarnInY;
-            }
+
+
+            // if (edgeList[(int)BC.Edge.Top] < 0f)
+            // if (left < Constants.WarnInX)
+            // {
+            //     x -= (left - Constants.WarnInX) / Constants.WarnInX;
+            // }
+            // if (right < Constants.WarnInX)
+            // {
+            //     x -= (Constants.WarnInX - right) / Constants.WarnInX;
+            // }
+            // if (top < Constants.WarnInY)
+            // {
+            //     y -= (top - Constants.WarnInY) / Constants.WarnInY;
+            // }
+            // if (bottom < Constants.WarnInY)
+            // {
+            //     y -= (Constants.WarnInY - bottom) / Constants.WarnInY;
+            // }
 
             if (x == 0f && y == 0f) return Vector2.Zero;
 

@@ -26,7 +26,7 @@ namespace Boids.Player
 
         public void Update(KeyboardState current, KeyboardState _prevKeyboardState)
         {
-            _edge = BC.EdgeCheck(Position, Radius);
+            _edge = BC.ClosestEdge(Position, Radius,Radius*2,PlayerConstants.wallProx);
 
             // Keyboard inputs for player, edge is used to stop pushing beyond edge
             Vector2 move = Vector2.Zero;
@@ -94,7 +94,7 @@ namespace Boids.Player
                 if (_sprinting)
                 {
                     ApplyAccel(heading,PlayerConstants.maxAccel,_sprintAcc);
-                    UpdateVelocity(0f,PlayerConstants.maxSpeed,_sprintSpeed);
+                    UpdateVelocity(100f,0f,PlayerConstants.maxSpeed,_sprintSpeed); // UPDATE THE INITISPEED HERE
                 }
             }
 
@@ -102,10 +102,10 @@ namespace Boids.Player
             {
                 ApplyDrag(PlayerConstants.drag);
             }
-            Integrate();
+            // Integrate();
 
             // Position += Velocity * dt;
-            Position = BC.PosCheck(Position, Radius);
+            // Position = BC.PosCheck(Position, Radius);
 
         }
 

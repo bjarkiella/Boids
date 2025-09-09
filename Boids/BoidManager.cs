@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Boids.Shared;
@@ -15,8 +16,9 @@ namespace Boids.Boids
         public void SpawnBoid()
         {
             Vector2 spawnPoint = Utils.RandomSpawnPosition();
-            Vector2 spawnVel = Utils.InitialVelocity(Utils.InitialAngle(), Utils.InitialSpeed());
+            Vector2 spawnVel = Utils.InitialVelocity(Utils.RandomAngle(), Utils.RandomSpeed());
             BoidEntity newBoid = new (_boidTexture, spawnPoint, spawnVel, BoidConstants.visionFactor);
+            Console.WriteLine("My inital speed is: " + spawnVel.Length());
             _boids.Add(newBoid);
         }
         public void RemoveBoid()
@@ -44,49 +46,50 @@ namespace Boids.Boids
                 float neighbours = 0;
 
                 // Checking if player is close
-                if (eatPos.HasValue && b.InVisionRange(eatPos.Value)){
-                    b.SteerFromPlayer(eatPos.Value);
+                // if (eatPos.HasValue && b.InVisionRange(eatPos.Value)){
+                //     b.SteerFromPlayer(eatPos.Value);
+                //
+                //     if (eatBoid && (b.Position - eatPos.Value).Length() <= eatRadius.Value)
+                //     {
+                //         eatenBoid.Add(b);
+                //     }
+                //     continue; //BOID DEAD OR ESCPAED, NEXT!
+                // } 
+                // b.ApplyBC(Constants.bcCondition);
+                // foreach (BoidEntity other in _boids)
+                // {
+                //     // Some pre-checks
+                //     if (other == b) continue;
+                //     if (eatenBoid.Contains(other)) continue;
+                //     if (!b.InVisionRange(other.Position)) continue;
+                //     Console.WriteLine("Theres a neighbour!");
+                //     // Flocking variables gathered
+                //     BoidFlocking.GatherNeighbours(ref align, ref center, ref sep, b, other);
+                //     neighbours++;
+                // }
+                // if (Constants.bcCondition == Constants.BoundaryType.Steer)
+                // {
+                //     steer += boundSteer * BoidConstants.steerWeight;
+                // }
+                // if (neighbours > 0)
+                // {
+                //     Vector2 nSteer = BoidFlocking.FlockSteer(neighbours,b);
+                //     steer += nSteer;
+                // }
+                // // TODO: Some funky stuff with the velocity had been happening here, much velocoty changes and that needs to stop!
+                // b.UpdateSteerVelocity(steer);
 
-                    if (eatBoid && (b.Position - eatPos.Value).Length() <= eatRadius.Value)
-                    {
-                        eatenBoid.Add(b);
-                    }
-                    continue; //BOID DEAD OR ESCPAED, NEXT!
-                } 
-
+                // b.UpdateVelocity(BoidConstants.minSpeed,BoidConstants.maxSpeed,b.SpeedFactor);
                 b.ApplyBC(Constants.bcCondition);
-                foreach (BoidEntity other in _boids)
-                {
-                    // Some pre-checks
-                    if (other == b) continue;
-                    if (eatenBoid.Contains(other)) continue;
-                    if (!b.InVisionRange(other.Position)) continue;
-
-                    // Flocking variables gathered
-                    BoidFlocking.GatherNeighbours(ref align, ref center, ref sep, b, other);
-                    neighbours++;
-                }
-                if (Constants.bcCondition == Constants.BoundaryType.Steer)
-                {
-                    steer += boundSteer * BoidConstants.steerWeight;
-                }
-                if (neighbours > 0)
-                {
-                    Vector2 nSteer = BoidFlocking.FlockSteer(neighbours,b);
-                    steer += nSteer;
-                }
-                // TODO: Some funky stuff with the velocity had been happening here, much velocoty changes and that needs to stop!
-                b.UpdateSteerVelocity(steer);
-                
-                b.UpdateVelocity(BoidConstants.minSpeed,BoidConstants.maxSpeed,b.SpeedFactor);
-            }
-            foreach (BoidEntity b in eatenBoid) _boids.Remove(b);
-
-            foreach (BoidEntity b in _boids)
-            {
                 b.Integrate();
-                b.ApplyBC(Constants.bcCondition);
             }
+            // foreach (BoidEntity b in eatenBoid) _boids.Remove(b);
+            //
+            // foreach (BoidEntity b in _boids)
+            // {
+            //     b.Integrate();
+            //     b.ApplyBC(Constants.bcCondition);
+            // }
         }
 
         public void Draw(SpriteBatch sb)

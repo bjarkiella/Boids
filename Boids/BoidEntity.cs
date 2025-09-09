@@ -1,4 +1,5 @@
 using System;
+using System.Reflection;
 using Boids.Shared;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
@@ -12,53 +13,44 @@ namespace Boids.Boids
             float visionFactor)
         :BaseEntity(texture, position,velocity, visionFactor)
     {
+        private bool _inTurn = false;
+        private float _preSpeed = 0f;
+        private bool _accel = false;
+
+        private int _stuckframe =0;
+        private Vector2 _prevPosition;
+        private float _targetSpeed;
+        private bool _accelFromCorner = false;
+        private Vector2 _escapeDir;
 
         public float SpeedFactor = 1f;
 
         internal float CloseVision() => VisionRadius/BoidConstants.visionFactor;
 
-        internal bool EdgeCloseCheck() => BC.CloseToEdge(Position,Radius,VisionRadius);
+        internal void ResetSpeedFactor() => SpeedFactor = 1f;
 
-        internal void SteerTowards(Vector2 desiredDir, float maxTurnRate) => RotateTowardsDir(desiredDir,maxTurnRate); 
+        // internal void SteerTowards(Vector2 desiredDir, float maxTurnRate, bool jitter = false) 
 
-        internal static Vector2 SteerFromEdgeDir(BC.Edge? edge)
+        internal void SteerFromEdge(BC.Edge? edge)
         {
-            return edge switch
-            {
-                BC.Edge.Left => new Vector2(+1f,0f),
-                BC.Edge.Right => new Vector2(-1f,0f),
-                BC.Edge.Top => new Vector2(0f,+1f),
-                BC.Edge.Bottom => new Vector2(0f,-1f),
-                _ => Vector2.Zero
-            };
-        }
-        internal void SteerFromEdge()
-        {
-            BC.Edge? edge = BC.EdgeCheck(Position, Radius); 
-            if (!EdgeCloseCheck())
-            {
-                throw new InvalidOperationException
-                    ("ERROR: The boid is not next to an edge, calling SteerFromEdge() not required");
-            }
             if (edge == null)
             {
-                throw new InvalidOperationException
-                    ("ERROR: Unable to determine which edge boid is next to");
+                throw new InvalidOperationException("The input 'edge' should never be null");
             }
-            Vector2 steerDir = SteerFromEdgeDir(edge);
+            Vector2 steerDir = BoidBC.SteerBoid(Position,Radius,VisionRadius,BoidConstants.wallTurn);
+            RotateTowardsDir(steerDir,BoidConstants.MaxTurn);
             SpeedFactor = BoidConstants.speedDown;
-            UpdateVelocity(BoidConstants.minSpeed,BoidConstants.maxSpeed,SpeedFactor); 
-            SteerTowards(steerDir,BoidConstants.MaxTurn);
-            ResetSpeedFactor();
-
+            UpdateVelocity(_preSpeed,BoidConstants.minSpeed,BoidConstants.maxSpeed,SpeedFactor); 
+            // Position = BC.PosCheck(Position,Radius);
         }
         internal void SteerFromPlayer(Vector2 playerPos)
         {
             Vector2 avoidVector = Position - playerPos;
-            SteerTowards(avoidVector,BoidConstants.MaxTurn);
+            RotateTowardsDir(avoidVector,BoidConstants.MaxTurn);
             SpeedFactor = BoidConstants.speedUp;
-            UpdateVelocity(BoidConstants.minSpeed,BoidConstants.maxSpeed,SpeedFactor);
+            UpdateVelocity(Speed,BoidConstants.minSpeed,BoidConstants.maxSpeed,SpeedFactor);
             ResetSpeedFactor();
+            // Position = BC.PosCheck(Position,Radius);
         }
 
         internal void UpdateSteerVelocity(Vector2 steer)
@@ -66,14 +58,80 @@ namespace Boids.Boids
             Velocity += steer * Dt * Utils.RandomFloatRange(0, BoidConstants.RandomVel);
 
         }
+        internal void CornerCheck()
+        {
+            if (Position.LengthSquared() == _prevPosition.LengthSquared())  // Is the boid stuck in a corner
+            {
+                // Console.WriteLine("I think I might be stuck");
+                _stuckframe++;
+            }
+            else _stuckframe = 0;
+
+            if (_stuckframe >= BoidConstants.maxStuck)  // The boid is stuck and starts accelerating from corner
+            {
+                // Console.WriteLine("Trying to get looooose");
+                _targetSpeed = Utils.RandomSpeed();
+                _escapeDir = Utils.NewDirection(Utils.RandomAngle());
+                _accelFromCorner = true;
+                _stuckframe = 0;
+            }
+            if (_stuckframe == 0 && _accelFromCorner)  //The boid is accelerating from the corner
+            {
+                float currentSpeed = ApplyAccTo(_targetSpeed,BoidConstants.boidAccel);
+
+                // Console.WriteLine("Im trying to accelerate from the corner: "+currentSpeed);
+                if (_targetSpeed <= currentSpeed) 
+                {
+                    _accelFromCorner = false;
+                    _escapeDir = Vector2.Zero;
+                }
+                else Velocity = currentSpeed * _escapeDir;
+            }
+        }
+        internal void Integrate()
+        {
+            _prevPosition = Position;
+            Position += Velocity * Dt;
+            BC.Edge? edge = BC.ClosestEdge(Position,Radius,VisionRadius,0.95f);
+            if (edge!= null)
+            {
+                // Console.WriteLine("Looks like im to close to the edge, moving away");
+                SteerFromEdge(edge);
+            }
+            Position = BC.PosCheck(Position,Radius); 
+            CornerCheck();
+        }
         internal void ApplyBC(Constants.BoundaryType bType)
         {
-            if (!EdgeCloseCheck()) return;
             switch (bType)
             {
                 case Constants.BoundaryType.Steer:
-                    SteerFromEdge();
-                    Position = BC.PosCheck(Position,Radius);
+                    BC.Edge? edge = BC.ClosestEdge(Position,Radius,VisionRadius,BoidConstants.wallProx);
+                    if (edge == null && !_inTurn && !_accel) return; // Here there is nothing happening 
+                    else if (edge == null && _inTurn && !_accel) // Here the boid stops turning and starts accelerating
+                    {
+                        // Console.WriteLine("Ive stopped turning");
+                        _inTurn = false;
+                        _accel = true;
+                        ResetSpeedFactor();
+
+                        return;
+                    }
+                    else if (edge == null && _accel)  // Here the boid is accelerating
+                    {
+                        float currentSpeed = ApplyAccTo(_preSpeed,BoidConstants.boidAccel);
+                        if (_preSpeed <= currentSpeed) _accel = false;
+                        else Velocity = currentSpeed * Heading;
+                        // Console.WriteLine("My current speed is: " + Velocity.Length());
+                    }
+                    else if (edge != null && !_inTurn)  // Here the boid starts turning
+                    {
+                        // Console.WriteLine("Ive started turning now");
+                        _preSpeed = Speed;  // check if max speed is exceeded?
+                        _inTurn = true;
+                        SteerFromEdge(edge);
+                    }
+                    else if (edge!= null && _inTurn && !_accel) SteerFromEdge(edge);  // Here the boid is currently turning
                     break;
 
                 case Constants.BoundaryType.Bounce:
@@ -95,10 +153,7 @@ namespace Boids.Boids
             if (distaSq <= visionSq) return true;
             return false;
         }
-        // Put boundary conditions here
 
-        public void ResetSpeedFactor()
-            => SpeedFactor = 1f;
 
     }
 }

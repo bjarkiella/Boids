@@ -21,6 +21,8 @@ namespace Boids
         public static int ActiveHeight => SHeight - PHeight;
         public const int ActiveWidth = SWidth;
 
+
+
         public enum BoundaryType
         {
             Wrap, Bounce, Steer

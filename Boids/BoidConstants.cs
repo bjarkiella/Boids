@@ -11,13 +11,17 @@ namespace Boids.Boids
         public static float alignFactor = 0.7f;
         public static float coheFactor = 0.7f;
         public const float accFactor = 2f;
-        public const float maxSpeed = 120f;
-        public const float minSpeed = 60f;
+        public const float maxSpeed = 200f;
+        public const float minSpeed = 100f;
         public const float RandomSteer = 10f;
         public const float RandomVel = 1.1f;
         public const float steerWeight = 0.7f;
         public const float MaxTurn = MathF.PI * 0.75f;
-        public const float speedDown = 0.5f;
+        public const float speedDown = 0.75f;
         public const float speedUp = 1.5f;
+        public const float wallProx = 0.35f; // When the boid should start seeing the wall (0<wallprox<1)
+        public const float wallTurn = 0.8f; // When the boid should start turning (higher = closer) (0<wallTurn<1)
+        public const float boidAccel = 20.0f;
+        public const int maxStuck = 5;
     }
 }

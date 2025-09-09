@@ -17,5 +17,6 @@ namespace Boids.Player
         public static float sprintAcc = 2f;
         public static float sprintSpeed = 2f;
         public static float sprintCoolDown = 5f;
+        public const float wallProx = 0.03f;
     }
 }
