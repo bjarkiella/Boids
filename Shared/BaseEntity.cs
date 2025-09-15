@@ -1,10 +1,8 @@
 using System;
-using Boids.Boids;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 
 namespace Boids.Shared
-//TODO: I propably need to move some of the boid specifi things to the boidentity, like for example integrate and stuff like that
 {
     internal class BaseEntity 
     {
@@ -66,7 +64,6 @@ namespace Boids.Shared
             if (targetSpeed > Speed) currentSpeed = nextSpeed;  
             else currentSpeed = nextSpeed - accel*Dt;
             return currentSpeed;
-            // Velocity = Heading * currentSpeed;
         }
         
         public void ApplyAccel(Vector2 desiredDir, float maxAccel, float accel) 
@@ -85,46 +82,5 @@ namespace Boids.Shared
             float clampSpeed = MathHelper.Clamp(initSpeed,minSpeed,maxSpeed) * sFactor;
             if (MathF.Abs(Speed - clampSpeed) > 1e-6f) Velocity = clampSpeed * Heading;
         }
-
-        // public void CornerCheck()
-        // {
-        //     if (Position.LengthSquared() == _prevPosition.LengthSquared())  // Is the boid stuck in a corner
-        //     {
-        //         Console.WriteLine("I think I might be stuck");
-        //         _stuckframe++;
-        //     }
-        //     else _stuckframe = 0;
-        //
-        //     if (_stuckframe >= BoidConstants.maxStuck)  // The boid is stuck and starts accelerating from corner
-        //     {
-        //         Console.WriteLine("Trying to get looooose");
-        //         _targetSpeed = Utils.RandomSpeed();
-        //         _escapeDir = Utils.NewDirection(Utils.RandomAngle());
-        //         _accelFromCorner = true;
-        //         _stuckframe = 0;
-        //     }
-        //     if (_stuckframe == 0 && _accelFromCorner)  //The boid is accelerating from the corner
-        //     {
-        //         float currentSpeed = ApplyAccTo(_targetSpeed,BoidConstants.boidAccel);
-        //
-        //         Console.WriteLine("Im trying to accelerate from the corner: "+currentSpeed);
-        //         if (_targetSpeed <= currentSpeed) 
-        //         {
-        //             _accelFromCorner = false;
-        //             _escapeDir = Vector2.Zero;
-        //         }
-        //         else Velocity = currentSpeed * _escapeDir;
-        //     }
-        // }
-        // public void Integrate()
-        // {
-        //     _prevPosition = Position;
-        //     Position += Velocity * Dt;
-        //
-        //             BC.Edge? edge = BC.ClosestEdge(Position,Radius,VisionRadius,BoidConstants.wallProx);
-        //             if (edge!= null) SteerFromEdge(edge);
-        //     Position = BC.PosCheck(Position,Radius); 
-        //     CornerCheck();
-        // }
     }
 }

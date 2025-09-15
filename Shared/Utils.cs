@@ -29,6 +29,10 @@ namespace Boids.Shared
         {
             return new Vector2(MathF.Cos(spawnAngle),MathF.Sin(spawnAngle)) * spawnSpeed; 
         }
+        public static float RadToDeg(float rad) => 180f/MathF.PI * rad;
+
+        public static float DegToRad(float deg) => MathF.PI/180f * deg;
+
         public static float RandomSpeed()
         {
             return RandomFloatRange(MathF.Max(1f,BoidConstants.minSpeed),BoidConstants.maxSpeed);

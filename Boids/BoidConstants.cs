@@ -23,5 +23,7 @@ namespace Boids.Boids
         public const float wallTurn = 0.8f; // When the boid should start turning (higher = closer) (0<wallTurn<1)
         public const float boidAccel = 20.0f;
         public const int maxStuck = 5;
+        public const float MaxWiggleAngle = 25f;
+        public const float MaxWiggleSpeed = 5f;
     }
 }

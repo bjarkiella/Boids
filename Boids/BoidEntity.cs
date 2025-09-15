@@ -1,5 +1,4 @@
 using System;
-using System.Reflection;
 using Boids.Shared;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
@@ -29,8 +28,6 @@ namespace Boids.Boids
 
         internal void ResetSpeedFactor() => SpeedFactor = 1f;
 
-        // internal void SteerTowards(Vector2 desiredDir, float maxTurnRate, bool jitter = false) 
-
         internal void SteerFromEdge(BC.Edge? edge)
         {
             if (edge == null)
@@ -41,7 +38,7 @@ namespace Boids.Boids
             RotateTowardsDir(steerDir,BoidConstants.MaxTurn);
             SpeedFactor = BoidConstants.speedDown;
             UpdateVelocity(_preSpeed,BoidConstants.minSpeed,BoidConstants.maxSpeed,SpeedFactor); 
-            // Position = BC.PosCheck(Position,Radius);
+            Position = BC.PosCheck(Position,Radius);
         }
         internal void SteerFromPlayer(Vector2 playerPos)
         {
@@ -50,7 +47,20 @@ namespace Boids.Boids
             SpeedFactor = BoidConstants.speedUp;
             UpdateVelocity(Speed,BoidConstants.minSpeed,BoidConstants.maxSpeed,SpeedFactor);
             ResetSpeedFactor();
-            // Position = BC.PosCheck(Position,Radius);
+        }
+        internal float WiggleSpeed()
+        {
+            float wiggleSpeed = Utils.RandomFloatRange(-BoidConstants.MaxWiggleSpeed,BoidConstants.MaxWiggleSpeed);
+            return Speed + wiggleSpeed;
+        }
+        internal Vector2 WiggleHeading()
+        {
+            float wiggleAngle = Utils.RandomFloatRange(-Utils.DegToRad(BoidConstants.MaxWiggleAngle),Utils.DegToRad(BoidConstants.MaxWiggleAngle));
+            float newAngle = Angle + wiggleAngle;
+
+            Vector2 newHeading = Utils.NewDirection(newAngle); 
+            Vector2 smoothHeading = Vector2.Lerp(Heading,newHeading,0.12f);
+            return Vector2.Normalize(smoothHeading);
         }
 
         internal void UpdateSteerVelocity(Vector2 steer)
@@ -90,15 +100,21 @@ namespace Boids.Boids
         }
         internal void Integrate()
         {
+            // TODO: I might need a switch case here, when to "wiggle", not sure where to keep PosCheck (steerfromedeg or integrate)
             _prevPosition = Position;
             Position += Velocity * Dt;
             BC.Edge? edge = BC.ClosestEdge(Position,Radius,VisionRadius,0.95f);
             if (edge!= null)
             {
-                // Console.WriteLine("Looks like im to close to the edge, moving away");
                 SteerFromEdge(edge);
             }
-            Position = BC.PosCheck(Position,Radius); 
+            else
+            {
+                float wiggleSpeed = WiggleSpeed();
+                Vector2 wiggleHeading = WiggleHeading();
+                Velocity = wiggleHeading * wiggleSpeed;
+            }
+            // Position = BC.PosCheck(Position,Radius); 
             CornerCheck();
         }
         internal void ApplyBC(Constants.BoundaryType bType)
