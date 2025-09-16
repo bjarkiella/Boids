@@ -4,7 +4,7 @@ namespace Boids.Boids
 {
     public static class BoidConstants
 {
-        public static float visionFactor = 20f;
+        public const float visionFactor = 20f; // If this is below 20, then boids get stuck to walls, relats to wallProx and wallTurn 
         public const float boidMinFactor = 0f;
         public const float boidMaxFactor = 5f;
         public static float sepFactor = 1.8f;

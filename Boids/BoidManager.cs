@@ -18,7 +18,6 @@ namespace Boids.Boids
             Vector2 spawnPoint = Utils.RandomSpawnPosition();
             Vector2 spawnVel = Utils.InitialVelocity(Utils.RandomAngle(), Utils.RandomSpeed());
             BoidEntity newBoid = new (_boidTexture, spawnPoint, spawnVel, BoidConstants.visionFactor);
-            Console.WriteLine("My inital speed is: " + spawnVel.Length());
             _boids.Add(newBoid);
         }
         public void RemoveBoid()
@@ -31,6 +30,8 @@ namespace Boids.Boids
         
         public void Update(Vector2? eatPos= null, float? eatRadius = null, bool eatBoid=false)
         {
+            // TODO: The boids are behaving strangely, it might be because there is to much randomness inserted to each boid
+            // perhaps only go with randomness when flocked?
             List<BoidEntity> eatenBoid = [];
 
             foreach (BoidEntity b in _boids)
@@ -40,7 +41,6 @@ namespace Boids.Boids
                 Vector2 align = Vector2.Zero;
                 Vector2 center = Vector2.Zero;
                 Vector2 steer = Vector2.Zero;
-                Vector2 boundSteer = Vector2.Zero;
 
                 // Neighbour variables initilized
                 float neighbours = 0;
@@ -56,30 +56,23 @@ namespace Boids.Boids
                 //     continue; //BOID DEAD OR ESCPAED, NEXT!
                 // } 
                 // b.ApplyBC(Constants.bcCondition);
-                // foreach (BoidEntity other in _boids)
-                // {
-                //     // Some pre-checks
-                //     if (other == b) continue;
-                //     if (eatenBoid.Contains(other)) continue;
-                //     if (!b.InVisionRange(other.Position)) continue;
-                //     Console.WriteLine("Theres a neighbour!");
-                //     // Flocking variables gathered
-                //     BoidFlocking.GatherNeighbours(ref align, ref center, ref sep, b, other);
-                //     neighbours++;
-                // }
-                // if (Constants.bcCondition == Constants.BoundaryType.Steer)
-                // {
-                //     steer += boundSteer * BoidConstants.steerWeight;
-                // }
-                // if (neighbours > 0)
-                // {
-                //     Vector2 nSteer = BoidFlocking.FlockSteer(neighbours,b);
-                //     steer += nSteer;
-                // }
-                // // TODO: Some funky stuff with the velocity had been happening here, much velocoty changes and that needs to stop!
-                // b.UpdateSteerVelocity(steer);
+                foreach (BoidEntity other in _boids)
+                {
+                    // Some pre-checks
+                    if (other == b) continue;
+                    if (eatenBoid.Contains(other)) continue;
+                    if (!b.InVisionRange(other.Position)) continue;
+                    BoidFlocking.GatherNeighbours(ref align, ref center, ref sep, b, other);
+                    neighbours++;
+                }
 
-                // b.UpdateVelocity(BoidConstants.minSpeed,BoidConstants.maxSpeed,b.SpeedFactor);
+                if (neighbours > 0)
+                {
+                    Vector2 nSteer = BoidFlocking.FlockSteer(neighbours,b,align,center,sep,steer);
+                    // steer += nSteer;
+                    b.UpdateSteerVelocity(nSteer);
+                }
+
                 b.ApplyBC(Constants.bcCondition);
                 b.Integrate();
             }

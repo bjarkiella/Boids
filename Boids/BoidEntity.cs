@@ -165,7 +165,7 @@ namespace Boids.Boids
 
         internal bool InVisionRange(Vector2 pos) {
             float distaSq = Vector2.DistanceSquared(Position,pos);
-            float visionSq = VisionFactor * VisionFactor;
+            float visionSq = VisionRadius * VisionRadius;
             if (distaSq <= visionSq) return true;
             return false;
         }
