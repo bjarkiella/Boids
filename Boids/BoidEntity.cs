@@ -4,6 +4,7 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 
 namespace Boids.Boids
+//TODO: create a getter for BoidVisionRadius from BaseEntity, it is being called many times, could be best to put it here:
 {
     internal class BoidEntity(
             Texture2D texture,
@@ -24,17 +25,16 @@ namespace Boids.Boids
 
         public float SpeedFactor = 1f;
 
-        internal float CloseVision() => VisionRadius/BoidConstants.visionFactor;
-
+        internal float BoidVisionRadius() => VisionRadius;
+        internal float CloseVision() => BoidVisionRadius()/BoidConstants.visionFactor;
         internal void ResetSpeedFactor() => SpeedFactor = 1f;
-
         internal void SteerFromEdge(BC.Edge? edge)
         {
             if (edge == null)
             {
                 throw new InvalidOperationException("The input 'edge' should never be null");
             }
-            Vector2 steerDir = BoidBC.SteerBoid(Position,Radius,VisionRadius,BoidConstants.wallTurn);
+            Vector2 steerDir = BoidBC.SteerBoid(Position,Radius,BoidVisionRadius(),BoidConstants.wallTurn);
             RotateTowardsDir(steerDir,BoidConstants.MaxTurn);
             SpeedFactor = BoidConstants.speedDown;
             UpdateVelocity(_preSpeed,BoidConstants.minSpeed,BoidConstants.maxSpeed,SpeedFactor); 
@@ -103,7 +103,7 @@ namespace Boids.Boids
             // TODO: I might need a switch case here, when to "wiggle", not sure where to keep PosCheck (steerfromedeg or integrate)
             _prevPosition = Position;
             Position += Velocity * Dt;
-            BC.Edge? edge = BC.ClosestEdge(Position,Radius,VisionRadius,0.95f);
+            BC.Edge? edge = BC.ClosestEdge(Position,Radius,BoidVisionRadius(),0.95f);
             if (edge!= null)
             {
                 SteerFromEdge(edge);
@@ -122,7 +122,7 @@ namespace Boids.Boids
             switch (bType)
             {
                 case Constants.BoundaryType.Steer:
-                    BC.Edge? edge = BC.ClosestEdge(Position,Radius,VisionRadius,BoidConstants.wallProx);
+                    BC.Edge? edge = BC.ClosestEdge(Position,Radius,BoidVisionRadius(),BoidConstants.wallProx);
                     if (edge == null && !_inTurn && !_accel) return; // Here there is nothing happening 
                     else if (edge == null && _inTurn && !_accel) // Here the boid stops turning and starts accelerating
                     {
@@ -165,9 +165,8 @@ namespace Boids.Boids
 
         internal bool InVisionRange(Vector2 pos) {
             float distaSq = Vector2.DistanceSquared(Position,pos);
-            float visionSq = VisionRadius * VisionRadius;
-            if (distaSq <= visionSq) return true;
-            return false;
+            float visionSq = BoidVisionRadius() * BoidVisionRadius();
+            return distaSq <= visionSq;
         }
 
 

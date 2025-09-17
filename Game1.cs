@@ -143,7 +143,14 @@ namespace Boids
         {
             GraphicsDevice.Clear(Color.CornflowerBlue);
 
-            _spriteBatch.Begin(SpriteSortMode.FrontToBack, BlendState.AlphaBlend);
+            // _spriteBatch.Begin(SpriteSortMode.FrontToBack, BlendState.AlphaBlend);
+            _spriteBatch.Begin(
+                    SpriteSortMode.Deferred,
+                    BlendState.AlphaBlend,
+                    SamplerState.PointClamp,   // fewer state changes than default if pixel art / UI
+                    depthStencilState: null,
+                    rasterizerState: null
+                    );
             switch (_gamemode)
             {
                 case GameMode.Simulation:

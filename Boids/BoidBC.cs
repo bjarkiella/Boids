@@ -30,13 +30,6 @@ namespace Boids.Boids
 
         public static Vector2 SteerBoid(Vector2 position,float radius, float proxRadius,float proxTrigger)
         {
-            // Calculating distance to edges    
-            // float left = position.X - radius;
-            // float right = Constants.ActiveWidth - radius - position.X;
-            // float top = position.Y - radius;
-            // float bottom = Constants.ActiveHeight - radius - position.Y;
-            // BC.Edge? edge;
-            // edge = BC.ClosestEdge(position,radius,visionRadius,BoidConstants.wallProx);
             float[] edgeList = BC.PosEdge(position,radius);
 
             float triggerCompare; 
