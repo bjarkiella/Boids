@@ -46,15 +46,15 @@ namespace Boids.Boids
                 float neighbours = 0;
 
                 // Checking if player is close
-                // if (eatPos.HasValue && b.InVisionRange(eatPos.Value)){
-                //     b.SteerFromPlayer(eatPos.Value);
-                //
-                //     if (eatBoid && (b.Position - eatPos.Value).Length() <= eatRadius.Value)
-                //     {
-                //         eatenBoid.Add(b);
-                //     }
-                //     continue; //BOID DEAD OR ESCPAED, NEXT!
-                // } 
+                if (eatPos.HasValue && b.InVisionRange(eatPos.Value)){
+                    b.SteerFromPlayer(eatPos.Value);
+
+                    if (eatBoid && (b.Position - eatPos.Value).Length() <= eatRadius.Value)
+                    {
+                        eatenBoid.Add(b);
+                    }
+                    continue; //BOID DEAD OR ESCPAED, NEXT!
+                } 
                 // b.ApplyBC(Constants.bcCondition);
                 foreach (BoidEntity other in _boids)
                 {
@@ -76,7 +76,7 @@ namespace Boids.Boids
                 b.ApplyBC(Constants.bcCondition);
                 b.Integrate();
             }
-            // foreach (BoidEntity b in eatenBoid) _boids.Remove(b);
+            foreach (BoidEntity b in eatenBoid) _boids.Remove(b);
             //
             // foreach (BoidEntity b in _boids)
             // {

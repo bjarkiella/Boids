@@ -24,6 +24,13 @@ namespace Boids.Player
 
         internal void SteerTowards(Vector2 desiredDir, float maxTurnRate) => RotateTowardsDir(desiredDir,maxTurnRate); 
 
+        internal void Integrate() 
+        {
+
+            Position += Velocity * Dt;
+            //Lets do some stufffff
+        }
+
         public void Update(KeyboardState current, KeyboardState _prevKeyboardState)
         {
             _edge = BC.ClosestEdge(Position, Radius,Radius*2,PlayerConstants.wallProx);
@@ -102,7 +109,7 @@ namespace Boids.Player
             {
                 ApplyDrag(PlayerConstants.drag);
             }
-            // Integrate();
+            Integrate();
 
             // Position += Velocity * dt;
             // Position = BC.PosCheck(Position, Radius);
