@@ -53,6 +53,8 @@ namespace Boids.Boids
                     {
                         eatenBoid.Add(b);
                     }
+                    b.ApplyBC(Constants.bcCondition);
+                    b.Integrate();
                     continue; //BOID DEAD OR ESCPAED, NEXT!
                 } 
                 // b.ApplyBC(Constants.bcCondition);

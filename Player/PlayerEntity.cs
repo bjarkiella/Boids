@@ -26,7 +26,6 @@ namespace Boids.Player
 
         internal void Integrate() 
         {
-
             Position += Velocity * Dt;
             //Lets do some stufffff
         }
@@ -98,11 +97,13 @@ namespace Boids.Player
                 // Smoothing out the heading (same as in steer in boidmanager)
                 Vector2 heading = Vector2.Normalize(move);
                 SteerTowards(heading,PlayerConstants.MaxTurn);
-                if (_sprinting)
-                {
-                    ApplyAccel(heading,PlayerConstants.maxAccel,_sprintAcc);
-                    UpdateVelocity(100f,0f,PlayerConstants.maxSpeed,_sprintSpeed); // UPDATE THE INITISPEED HERE
-                }
+                ApplyAccel(heading,PlayerConstants.maxAccel,_sprintAcc);
+                UpdateVelocity(100f,0f,PlayerConstants.maxSpeed,_sprintSpeed); // UPDATE THE INITISPEED HERE
+                // if (_sprinting)
+                // {
+                //     ApplyAccel(heading,PlayerConstants.maxAccel,_sprintAcc);
+                //     UpdateVelocity(100f,0f,PlayerConstants.maxSpeed,_sprintSpeed); // UPDATE THE INITISPEED HERE
+                // }
             }
 
             else

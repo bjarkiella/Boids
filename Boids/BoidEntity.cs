@@ -22,13 +22,14 @@ namespace Boids.Boids
         private float _targetSpeed;
         private bool _accelFromCorner = false;
         private Vector2 _escapeDir;
+        private bool _fleeing = false;
 
         public float SpeedFactor = 1f;
 
         internal float BoidVisionRadius() => VisionRadius;
         internal float CloseVision() => BoidVisionRadius()/BoidConstants.visionFactor;
         internal void ResetSpeedFactor() => SpeedFactor = 1f;
-        internal void SteerFromEdge(BC.Edge? edge)
+        internal void SteerFromEdge(BC.Edge? edge, float speedFactor = BoidConstants.speedDown)
         {
             if (edge == null)
             {
@@ -37,11 +38,12 @@ namespace Boids.Boids
             Vector2 steerDir = BoidBC.SteerBoid(Position,Radius,BoidVisionRadius(),BoidConstants.wallTurn);
             RotateTowardsDir(steerDir,BoidConstants.MaxTurn);
             SpeedFactor = BoidConstants.speedDown;
-            UpdateVelocity(_preSpeed,BoidConstants.minSpeed,BoidConstants.maxSpeed,SpeedFactor); 
+            UpdateVelocity(_preSpeed,BoidConstants.minSpeed,BoidConstants.maxSpeed,speedFactor); 
             Position = BC.PosCheck(Position,Radius);
         }
         internal void SteerFromPlayer(Vector2 playerPos)
         {
+            _fleeing = true;
             Vector2 avoidVector = Position - playerPos;
             RotateTowardsDir(avoidVector,BoidConstants.MaxTurn);
             SpeedFactor = BoidConstants.speedUp;
@@ -103,18 +105,36 @@ namespace Boids.Boids
             // TODO: I might need a switch case here, when to "wiggle", not sure where to keep PosCheck (steerfromedeg or integrate)
             _prevPosition = Position;
             Position += Velocity * Dt;
-            BC.Edge? edge = BC.ClosestEdge(Position,Radius,BoidVisionRadius(),0.95f);
+
+            float edgeProx = _fleeing ? 0.99f : 0.95f;
+
+            // float edgeProx = 0.95f; 
+            BC.Edge? edge = BC.ClosestEdge(Position,Radius,BoidVisionRadius(),edgeProx);
             if (edge!= null)
             {
-                SteerFromEdge(edge);
+                float speedFactor = _fleeing ? BoidConstants.speedUp : BoidConstants.speedDown;
+                SteerFromEdge(edge,speedFactor);
+                // Vector2 steerDir = BoidBC.SteerBoid(Position,Radius,BoidVisionRadius(),BoidConstants.wallTurn);
+                // RotateTowardsDir(steerDir,BoidConstants.MaxTurn);
+                // UpdateVelocity(_preSpeed,BoidConstants.minSpeed,BoidConstants.maxSpeed,SpeedFactor);
+                // Position = BC.PosCheck(Position,Radius);
+
+                // SteerFromEdge(edge);
+                // _fleeing = false;
+                // float speedFactor = _fleeing ? BoidConstants.speedUp : SpeedFactor;
+                // UpdateVelocity(_preSpeed,BoidConstants.minSpeed,BoidConstants.maxSpeed,speedFactor);
+                // Position = BC.PosCheck(Position,Radius);
             }
-            else
+            else 
             {
-                float wiggleSpeed = WiggleSpeed();
-                Vector2 wiggleHeading = WiggleHeading();
-                Velocity = wiggleHeading * wiggleSpeed;
+                if (!_fleeing)
+                {
+                    float wiggleSpeed = WiggleSpeed();
+                    Vector2 wiggleHeading = WiggleHeading();
+                    Velocity = wiggleHeading * wiggleSpeed;
+                }
             }
-            // Position = BC.PosCheck(Position,Radius); 
+            _fleeing = false;
             CornerCheck();
         }
         internal void ApplyBC(Constants.BoundaryType bType)
