@@ -20,6 +20,7 @@ namespace Boids
         KeyboardState _prevKeyboardState;
         BoidManager _boidManager;
         PlayerEntity _player;
+        PlayerCamera _playerCamera;
         private SimUI _simUI;
         private StartupUI _startupUI;
         public enum GameMode { None, Simulation, Player }
@@ -29,8 +30,16 @@ namespace Boids
             _graphics = new GraphicsDeviceManager(this);
             _graphics.PreferredBackBufferHeight = Constants.SHeight;
             _graphics.PreferredBackBufferWidth = Constants.SWidth;
+            _playerCamera = new (Vector2.Zero);
             Content.RootDirectory = "Content";
             IsMouseVisible = true;
+            Window.AllowUserResizing = true;
+            Window.ClientSizeChanged += OnResize;
+        }
+        private void OnResize(object sender, EventArgs e)
+        {
+            Constants.SWidth = Window.ClientBounds.Width;
+            Constants.SHeight = Window.ClientBounds.Height;
         }
         protected override void Initialize()
         {
@@ -76,7 +85,8 @@ namespace Boids
                     break;
                 case GameMode.Player:
                     _player.Update(current, _prevKeyboardState);
-                    _boidManager.Update(_player.Position, _player._eatRadius,_player.EatBoid);
+                    _boidManager.Update(_player.Position, _player.EatRadius,_player.EatBoid);
+                    _playerCamera.Follow(_player.PlayerBox,Constants.ScreenSize);
                     break;
             }
             _prevKeyboardState = current; // Used to keep track if key is pressed multiple times

@@ -19,15 +19,19 @@ namespace Boids.Player
         private float _sprintAcc = 1f;
         private float _sprintSpeed = 1f;
         private BC.Edge? _edge;
-        public float _eatRadius => VisionRadius;
+        public float EatRadius => VisionRadius;
         public bool EatBoid { get; private set; } = false;
+        public Rectangle PlayerBox => new (
+                (int)(Position.X - Radius),
+                (int)(Position.Y - Radius),
+                (int)(Radius*2),
+                (int)(Radius*2));
 
         internal void SteerTowards(Vector2 desiredDir, float maxTurnRate) => RotateTowardsDir(desiredDir,maxTurnRate); 
 
         internal void Integrate() 
         {
             Position += Velocity * Dt;
-            //Lets do some stufffff
         }
 
         public void Update(KeyboardState current, KeyboardState _prevKeyboardState)
@@ -53,9 +57,9 @@ namespace Boids.Player
                 move.X -= 1;
             }
             if (current.IsKeyDown(Keys.LeftShift) && !_prevKeyboardState.IsKeyDown(Keys.LeftShift) &&
-            !_sprinting &&
-            _coolDown <= 0f &&
-            move.Length() > 0)
+                    !_sprinting &&
+                    _coolDown <= 0f &&
+                    move.Length() > 0)
             {
                 _sprinting = true;
                 _sprintTimeLeft = PlayerConstants.sprintTime;
@@ -78,7 +82,7 @@ namespace Boids.Player
                 _sprintTimeLeft = MathF.Max(0f, _sprintTimeLeft);
                 if (_sprintTimeLeft <= 0f)
                 {
-               _sprinting = false;
+                    _sprinting = false;
                     _sprintTimeLeft = 0f;
                     _sprintAcc = 1f;
                     _sprintSpeed = 1f;
@@ -94,16 +98,9 @@ namespace Boids.Player
             // Movement of player set 
             if (move != Vector2.Zero)
             {
-                // Smoothing out the heading (same as in steer in boidmanager)
                 Vector2 heading = Vector2.Normalize(move);
-                SteerTowards(heading,PlayerConstants.MaxTurn);
                 ApplyAccel(heading,PlayerConstants.maxAccel,_sprintAcc);
-                UpdateVelocity(100f,0f,PlayerConstants.maxSpeed,_sprintSpeed); // UPDATE THE INITISPEED HERE
-                // if (_sprinting)
-                // {
-                //     ApplyAccel(heading,PlayerConstants.maxAccel,_sprintAcc);
-                //     UpdateVelocity(100f,0f,PlayerConstants.maxSpeed,_sprintSpeed); // UPDATE THE INITISPEED HERE
-                // }
+                UpdateVelocity(Speed,0f,PlayerConstants.maxSpeed,_sprintSpeed); // UPDATE THE INITISPEED HERE
             }
 
             else
@@ -112,9 +109,7 @@ namespace Boids.Player
             }
             Integrate();
 
-            // Position += Velocity * dt;
-            // Position = BC.PosCheck(Position, Radius);
-
+            Position = BC.PosCheck(Position, Radius);
         }
 
         public void Draw(SpriteBatch sb)

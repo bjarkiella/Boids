@@ -7,9 +7,6 @@ namespace Boids.Boids
         public const float visionFactor = 20f; // If this is below 20, then boids get stuck to walls, relats to wallProx and wallTurn 
         public const float boidMinFactor = 0f;
         public const float boidMaxFactor = 5f;
-        public static float sepFactor = 1.8f;
-        public static float alignFactor = 0.7f;
-        public static float coheFactor = 0.7f;
         public const float accFactor = 2f;
         public const float maxSpeed = 200f;
         public const float minSpeed = 100f;
@@ -25,5 +22,9 @@ namespace Boids.Boids
         public const int maxStuck = 5;
         public const float MaxWiggleAngle = 25f;
         public const float MaxWiggleSpeed = 5f;
-    }
+
+        public static float SepFactor {get; set;} = 1.8f;
+        public static float AlignFactor {get; set;} = 0.7f;
+        public static float CoheFactor {get; set;} = 0.7f;
+}
 }

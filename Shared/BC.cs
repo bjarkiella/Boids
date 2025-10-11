@@ -1,6 +1,4 @@
 using System;
-using System.Collections.Generic;
-using System.Linq;
 using Microsoft.Xna.Framework;
 
 namespace Boids.Shared
@@ -48,26 +46,6 @@ namespace Boids.Shared
                 return closest;
             else
                 return null;
-
-
-
-            // if (position.X-radius/4 <= 0)
-            // {
-            //     return Edge.Left;
-            // }
-            // else if (position.X + radius*2 >= Constants.ActiveWidth)
-            // {
-            //     return Edge.Right;
-            // }
-            // else if (position.Y - radius/4 <= 0)
-            // {
-            //     return Edge.Top; 
-            // }
-            // else if (position.Y + radius >= Constants.ActiveHeight)
-            // {
-            //     return Edge.Bottom; 
-            // }
-            // return null;
         }
 
 
@@ -91,7 +69,7 @@ namespace Boids.Shared
             }
             return position;
         }
-        public static Vector2 distVect(Vector2 a, Vector2 b)
+        public static Vector2 DistVect(Vector2 a, Vector2 b)
         {
             return b - a;
         }

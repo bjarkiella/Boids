@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using MonoGameGum.Forms.Controls;
 
 using Boids.Boids;
+using Boids.Shared;
 
 namespace Boids.ui
 {
@@ -47,15 +48,15 @@ namespace Boids.ui
                     float newValue = float.Parse(label.Text);
                     if (slider.Name == "Cohesion")
                     {
-                        BoidConstants.coheFactor = newValue;
+                        BoidConstants.CoheFactor = newValue;
                     }
                     else if (slider.Name == "Seperation")
                     {
-                        BoidConstants.sepFactor = newValue;
+                        BoidConstants.SepFactor = newValue;
                     }
                     else if (slider.Name == "Alignment")
                     {
-                        BoidConstants.alignFactor = newValue;
+                        BoidConstants.AlignFactor = newValue;
                     }
                 };
             }

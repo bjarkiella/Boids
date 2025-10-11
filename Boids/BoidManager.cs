@@ -30,8 +30,6 @@ namespace Boids.Boids
         
         public void Update(Vector2? eatPos= null, float? eatRadius = null, bool eatBoid=false)
         {
-            // TODO: The boids are behaving strangely, it might be because there is to much randomness inserted to each boid
-            // perhaps only go with randomness when flocked?
             List<BoidEntity> eatenBoid = [];
 
             foreach (BoidEntity b in _boids)
@@ -57,7 +55,6 @@ namespace Boids.Boids
                     b.Integrate();
                     continue; //BOID DEAD OR ESCPAED, NEXT!
                 } 
-                // b.ApplyBC(Constants.bcCondition);
                 foreach (BoidEntity other in _boids)
                 {
                     // Some pre-checks
@@ -71,7 +68,6 @@ namespace Boids.Boids
                 if (neighbours > 0)
                 {
                     Vector2 nSteer = BoidFlocking.FlockSteer(neighbours,b,align,center,sep,steer);
-                    // steer += nSteer;
                     b.UpdateSteerVelocity(nSteer);
                 }
 
@@ -79,12 +75,6 @@ namespace Boids.Boids
                 b.Integrate();
             }
             foreach (BoidEntity b in eatenBoid) _boids.Remove(b);
-            //
-            // foreach (BoidEntity b in _boids)
-            // {
-            //     b.Integrate();
-            //     b.ApplyBC(Constants.bcCondition);
-            // }
         }
 
         public void Draw(SpriteBatch sb)

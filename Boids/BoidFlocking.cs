@@ -29,7 +29,7 @@ namespace Boids.Boids
             if (align.LengthSquared() > Constants.ZeroCompare)
             {
                 Vector2 desiredAlign = Vector2.Normalize(align) * maxSpeed;
-                steer += (desiredAlign - v) * BoidConstants.alignFactor;
+                steer += (desiredAlign - v) * BoidConstants.AlignFactor;
             }
 
             // COHESION: seek COM => desired = normalize(COM - pos) * maxSpeed, steer = desired - v  (tiny change)
@@ -37,14 +37,14 @@ namespace Boids.Boids
             if (toCOM.LengthSquared() > Constants.ZeroCompare)
             {
                 Vector2 desiredCoh = Vector2.Normalize(toCOM) * maxSpeed;
-                steer += (desiredCoh - v) * BoidConstants.coheFactor;
+                steer += (desiredCoh - v) * BoidConstants.CoheFactor;
             }
 
             // SEPARATION: use accumulated repulsion; normalize late, desired - v  (tiny change)
             if (sep.LengthSquared() > Constants.ZeroCompare)
             {
                 Vector2 desiredSep = Vector2.Normalize(sep) * maxSpeed;
-                steer += (desiredSep - v) * BoidConstants.sepFactor;
+                steer += (desiredSep - v) * BoidConstants.SepFactor;
             }
 
             // keep your little bit of randomness (unchanged)

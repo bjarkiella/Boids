@@ -4,7 +4,6 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 
 namespace Boids.Boids
-//TODO: create a getter for BoidVisionRadius from BaseEntity, it is being called many times, could be best to put it here:
 {
     internal class BoidEntity(
             Texture2D texture,
@@ -114,16 +113,6 @@ namespace Boids.Boids
             {
                 float speedFactor = _fleeing ? BoidConstants.speedUp : BoidConstants.speedDown;
                 SteerFromEdge(edge,speedFactor);
-                // Vector2 steerDir = BoidBC.SteerBoid(Position,Radius,BoidVisionRadius(),BoidConstants.wallTurn);
-                // RotateTowardsDir(steerDir,BoidConstants.MaxTurn);
-                // UpdateVelocity(_preSpeed,BoidConstants.minSpeed,BoidConstants.maxSpeed,SpeedFactor);
-                // Position = BC.PosCheck(Position,Radius);
-
-                // SteerFromEdge(edge);
-                // _fleeing = false;
-                // float speedFactor = _fleeing ? BoidConstants.speedUp : SpeedFactor;
-                // UpdateVelocity(_preSpeed,BoidConstants.minSpeed,BoidConstants.maxSpeed,speedFactor);
-                // Position = BC.PosCheck(Position,Radius);
             }
             else 
             {

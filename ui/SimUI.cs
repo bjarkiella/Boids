@@ -63,15 +63,15 @@ namespace Boids.ui
                 };
                 if (name == "Cohesion")
                 {
-                    slider.Value = Math.Round(BoidConstants.coheFactor, Constants.roundNumber);
+                    slider.Value = Math.Round(BoidConstants.CoheFactor, Constants.roundNumber);
                 }
                 else if (name == "Seperation")
                 {
-                    slider.Value = Math.Round(BoidConstants.sepFactor, Constants.roundNumber);
+                    slider.Value = Math.Round(BoidConstants.SepFactor, Constants.roundNumber);
                 }
                 else if (name == "Alignment")
                 {
-                    slider.Value = Math.Round(BoidConstants.alignFactor, Constants.roundNumber);
+                    slider.Value = Math.Round(BoidConstants.AlignFactor, Constants.roundNumber);
                 }
                 else slider.Value = 1;
 

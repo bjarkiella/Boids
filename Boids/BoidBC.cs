@@ -59,25 +59,6 @@ namespace Boids.Boids
                    }
             }
 
-
-            // if (edgeList[(int)BC.Edge.Top] < 0f)
-            // if (left < Constants.WarnInX)
-            // {
-            //     x -= (left - Constants.WarnInX) / Constants.WarnInX;
-            // }
-            // if (right < Constants.WarnInX)
-            // {
-            //     x -= (Constants.WarnInX - right) / Constants.WarnInX;
-            // }
-            // if (top < Constants.WarnInY)
-            // {
-            //     y -= (top - Constants.WarnInY) / Constants.WarnInY;
-            // }
-            // if (bottom < Constants.WarnInY)
-            // {
-            //     y -= (Constants.WarnInY - bottom) / Constants.WarnInY;
-            // }
-
             if (x == 0f && y == 0f) return Vector2.Zero;
 
             return Vector2.Normalize(new Vector2(x, y));
