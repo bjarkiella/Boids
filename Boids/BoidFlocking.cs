@@ -14,7 +14,6 @@ namespace Boids.Boids
             Vector2 distance = otherBoid.Position - checkBoid.Position;
             float d = distance.Length();
             if (d > Constants.ZeroCompare && d < closeLen) sep -=distance/(d*d);
-                // sep += Vector2.Normalize(-distance) / (d*d) ; // sep -= distance/d // sep -= distance/ (d*d);  
         }    
         internal static Vector2 FlockSteer(float neighbours, BoidEntity checkBoid, Vector2 align, Vector2 center, Vector2 sep, Vector2 steer)
         {
@@ -51,12 +50,6 @@ namespace Boids.Boids
             steer += Utils.RandomVector(BoidConstants.RandomSteer, BoidConstants.RandomSteer);
 
             return steer;
-
-            // steer += (align - checkBoid.Velocity) * BoidConstants.alignFactor;
-            // steer += (center - checkBoid.Position) * BoidConstants.coheFactor;
-            // steer += sep * BoidConstants.sepFactor;
-            // steer += Utils.RandomVector(BoidConstants.RandomSteer, BoidConstants.RandomSteer);
-            // return steer;   
         }
 
     }

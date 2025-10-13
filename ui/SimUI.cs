@@ -118,8 +118,6 @@ namespace Boids.ui
             // Slider hooking
             SimHandling.sliderHandling(_boidSlider);
 
-            // Combobox handling
-            SimHandling.bcHandling(_bcCond);
         }
         public void BuildUI()
         {

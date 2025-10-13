@@ -101,7 +101,6 @@ namespace Boids.Boids
         }
         internal void Integrate()
         {
-            // TODO: I might need a switch case here, when to "wiggle", not sure where to keep PosCheck (steerfromedeg or integrate)
             _prevPosition = Position;
             Position += Velocity * Dt;
 
@@ -126,50 +125,35 @@ namespace Boids.Boids
             _fleeing = false;
             CornerCheck();
         }
-        internal void ApplyBC(Constants.BoundaryType bType)
+        internal void ApplyBC()
         {
-            switch (bType)
+            BC.Edge? edge = BC.ClosestEdge(Position,Radius,BoidVisionRadius(),BoidConstants.wallProx);
+            if (edge == null && !_inTurn && !_accel) return; // Here there is nothing happening 
+            else if (edge == null && _inTurn && !_accel) // Here the boid stops turning and starts accelerating
             {
-                case Constants.BoundaryType.Steer:
-                    BC.Edge? edge = BC.ClosestEdge(Position,Radius,BoidVisionRadius(),BoidConstants.wallProx);
-                    if (edge == null && !_inTurn && !_accel) return; // Here there is nothing happening 
-                    else if (edge == null && _inTurn && !_accel) // Here the boid stops turning and starts accelerating
-                    {
-                        // Console.WriteLine("Ive stopped turning");
-                        _inTurn = false;
-                        _accel = true;
-                        ResetSpeedFactor();
+                // Console.WriteLine("Ive stopped turning");
+                _inTurn = false;
+                _accel = true;
+                ResetSpeedFactor();
 
-                        return;
-                    }
-                    else if (edge == null && _accel)  // Here the boid is accelerating
-                    {
-                        float currentSpeed = ApplyAccTo(_preSpeed,BoidConstants.boidAccel);
-                        if (_preSpeed <= currentSpeed) _accel = false;
-                        else Velocity = currentSpeed * Heading;
-                        // Console.WriteLine("My current speed is: " + Velocity.Length());
-                    }
-                    else if (edge != null && !_inTurn)  // Here the boid starts turning
-                    {
-                        // Console.WriteLine("Ive started turning now");
-                        _preSpeed = Speed;  // check if max speed is exceeded?
-                        _inTurn = true;
-                        SteerFromEdge(edge);
-                    }
-                    else if (edge!= null && _inTurn && !_accel) SteerFromEdge(edge);  // Here the boid is currently turning
-                    break;
-
-                case Constants.BoundaryType.Bounce:
-                    Velocity = BoidBC.Bounce(Velocity, Position);
-                    break;
-
-                case Constants.BoundaryType.Wrap:
-                    Position = BoidBC.Wrap(Position);
-                    break;
-
-                default:
-                    break;
+                return;
             }
+            else if (edge == null && _accel)  // Here the boid is accelerating
+            {
+                float currentSpeed = ApplyAccTo(_preSpeed,BoidConstants.boidAccel);
+                if (_preSpeed <= currentSpeed) _accel = false;
+                else Velocity = currentSpeed * Heading;
+                // Console.WriteLine("My current speed is: " + Velocity.Length());
+            }
+            else if (edge != null && !_inTurn)  // Here the boid starts turning
+            {
+                // Console.WriteLine("Ive started turning now");
+                _preSpeed = Speed;  // check if max speed is exceeded?
+                _inTurn = true;
+                SteerFromEdge(edge);
+            }
+            else if (edge!= null && _inTurn && !_accel) SteerFromEdge(edge);  // Here the boid is currently turning
+
         }
 
         internal bool InVisionRange(Vector2 pos) {

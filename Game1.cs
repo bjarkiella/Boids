@@ -20,7 +20,7 @@ namespace Boids
         KeyboardState _prevKeyboardState;
         BoidManager _boidManager;
         PlayerEntity _player;
-        PlayerCamera _playerCamera;
+        // PlayerCamera _playerCamera;
         private SimUI _simUI;
         private StartupUI _startupUI;
         public enum GameMode { None, Simulation, Player }
@@ -30,7 +30,7 @@ namespace Boids
             _graphics = new GraphicsDeviceManager(this);
             _graphics.PreferredBackBufferHeight = Constants.SHeight;
             _graphics.PreferredBackBufferWidth = Constants.SWidth;
-            _playerCamera = new (Vector2.Zero);
+            // _playerCamera = new (Vector2.Zero);
             Content.RootDirectory = "Content";
             IsMouseVisible = true;
             Window.AllowUserResizing = true;
@@ -57,10 +57,6 @@ namespace Boids
         {
             Time.Update(gameTime);
 
-            if(Time.Delta <= 0f)
-            {
-                Console.WriteLine("Time is zero...");
-            }
             KeyboardState current = Keyboard.GetState();
 
             if (GamePad.GetState(PlayerIndex.One).Buttons.Back == ButtonState.Pressed)
@@ -86,7 +82,8 @@ namespace Boids
                 case GameMode.Player:
                     _player.Update(current, _prevKeyboardState);
                     _boidManager.Update(_player.Position, _player.EatRadius,_player.EatBoid);
-                    _playerCamera.Follow(_player.PlayerBox,Constants.ScreenSize);
+                    // _playerCamera.Follow(_player.PlayerBox,Constants.ScreenSize);
+                    // Constants.CameraPosition = _playerCamera.CamPosition;
                     break;
             }
             _prevKeyboardState = current; // Used to keep track if key is pressed multiple times
@@ -147,36 +144,53 @@ namespace Boids
             Texture2D playerTexture = Content.Load<Texture2D>("red_circle");
             _player = new PlayerEntity(playerTexture, new Vector2(Constants.ActiveWidth / 2, Constants.ActiveHeight / 2), new Vector2(0, 0),PlayerConstants.eatRadiusFactor);
             _boidManager = new BoidManager(boidTexture);
-            for (int i = 0; i < 50; i++) _boidManager.SpawnBoid();
+            for (int i = 0; i < 150; i++) _boidManager.SpawnBoid();
         }
         protected override void Draw(GameTime gameTime)
         {
             GraphicsDevice.Clear(Color.CornflowerBlue);
 
-            // _spriteBatch.Begin(SpriteSortMode.FrontToBack, BlendState.AlphaBlend);
-            _spriteBatch.Begin(
-                    SpriteSortMode.Deferred,
-                    BlendState.AlphaBlend,
-                    SamplerState.PointClamp,   // fewer state changes than default if pixel art / UI
-                    depthStencilState: null,
-                    rasterizerState: null
-                    );
             switch (_gamemode)
             {
                 case GameMode.Simulation:
+                    _spriteBatch.Begin(
+                            SpriteSortMode.Deferred,
+                            BlendState.AlphaBlend,
+                            SamplerState.PointClamp,  
+                            depthStencilState: null,
+                            rasterizerState: null
+                            );
                     _boidManager.Draw(_spriteBatch);
+                    _spriteBatch.End();
                     break;
                 case GameMode.Player:
+                    _spriteBatch.Begin(
+                            SpriteSortMode.Deferred,
+                            BlendState.AlphaBlend,
+                            SamplerState.PointClamp,   
+                            depthStencilState: null,
+                            rasterizerState: null,
+                            effect: null
+                            // transformMatrix: _playerCamera.Transform
+                            );
                     _player.Draw(_spriteBatch);
                     _boidManager.Draw(_spriteBatch);
+                    _spriteBatch.End();
                     break;
             }
-            _spriteBatch.End();
             switch (_gamemode)
             {
                 case GameMode.None:
                 case GameMode.Simulation:
+                    _spriteBatch.Begin(
+                            SpriteSortMode.Deferred,
+                            BlendState.AlphaBlend,
+                            SamplerState.PointClamp, 
+                            depthStencilState: null,
+                            rasterizerState: null
+                            );
                     Gum.Draw();
+                    _spriteBatch.End();
                     break;
             }
 

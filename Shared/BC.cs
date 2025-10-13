@@ -22,7 +22,7 @@ namespace Boids.Shared
 
             return new Vector2(dx, dy);
         }
-        
+
         public static float[] PosEdge(Vector2 position, float radius)
         {
             float[] edgeList;
@@ -32,22 +32,23 @@ namespace Boids.Shared
             edgeList[(int) Edge.Top] = position.Y - radius;
             edgeList[(int) Edge.Bottom] = Constants.ActiveHeight - radius - position.Y;
             return edgeList;
+
         }
 
         public static Edge? ClosestEdge(Vector2 position, float radius, float proxRadius, float proxTrigger=0.03f)
         {
             float[] edgeList = PosEdge(position,radius);
+            // float[] edgeList = CamPosEdge(position,radius,Constants.CameraPosition);
             float minDist = Utils.MinValueArray(edgeList);
             int idx = Array.IndexOf(edgeList,minDist);
             Edge closest = (Edge)idx;
 
             if (proxTrigger <= 0f) return closest;
-            else if (proxTrigger < MathHelper.Clamp(1f-(minDist/proxRadius),0f,1f))
+            else if (proxTrigger < MathHelper.Clamp(1f-(minDist/proxRadius),0f,1f)) 
                 return closest;
             else
                 return null;
         }
-
 
         public static Vector2 PosCheck(Vector2 position, float radius)
         {

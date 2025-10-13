@@ -1,8 +1,5 @@
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Numerics;
-using System.Threading.Tasks;
+using Microsoft.Xna.Framework;
 
 namespace Boids.Shared
 {
@@ -14,6 +11,7 @@ namespace Boids.Shared
         public static int PWidth {get; set;}= SWidth;
         public static int ActiveHeight => SHeight - PHeight;
         public static int ActiveWidth => SWidth;
+        public static Vector2 CameraPosition {get; set;} = Vector2.Zero;
         public static Vector2 ScreenSize => new (ActiveWidth,ActiveHeight);
 
         public const float warnInPerc = 0.01f;
@@ -24,12 +22,5 @@ namespace Boids.Shared
         public const float ZeroCompare = 1e-10f;   
         public const int roundNumber = 2;
 
-
-
-        public enum BoundaryType
-        {
-            Wrap, Bounce, Steer
-        }
-        public static BoundaryType bcCondition = BoundaryType.Steer;
     }
 }

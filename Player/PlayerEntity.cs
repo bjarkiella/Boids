@@ -100,7 +100,7 @@ namespace Boids.Player
             {
                 Vector2 heading = Vector2.Normalize(move);
                 ApplyAccel(heading,PlayerConstants.maxAccel,_sprintAcc);
-                UpdateVelocity(Speed,0f,PlayerConstants.maxSpeed,_sprintSpeed); // UPDATE THE INITISPEED HERE
+                UpdateVelocity(Speed,0f,PlayerConstants.maxSpeed,_sprintSpeed);
             }
 
             else

@@ -51,7 +51,7 @@ namespace Boids.Boids
                     {
                         eatenBoid.Add(b);
                     }
-                    b.ApplyBC(Constants.bcCondition);
+                    b.ApplyBC();
                     b.Integrate();
                     continue; //BOID DEAD OR ESCPAED, NEXT!
                 } 
@@ -71,7 +71,7 @@ namespace Boids.Boids
                     b.UpdateSteerVelocity(nSteer);
                 }
 
-                b.ApplyBC(Constants.bcCondition);
+                b.ApplyBC();
                 b.Integrate();
             }
             foreach (BoidEntity b in eatenBoid) _boids.Remove(b);
