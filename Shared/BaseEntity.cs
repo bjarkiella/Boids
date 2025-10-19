@@ -19,6 +19,7 @@ namespace Boids.Shared
             } 
         } // Used to check if entity is at, or close to zero speed 
         public float VisionFactor { get; set; }
+        public Animation? Animation { get; }
 
         // Cap margins  
         private readonly float visionCap = MathF.Min(Constants.ActiveWidth,Constants.ActiveHeight)/2f; 
@@ -27,18 +28,22 @@ namespace Boids.Shared
         protected static float Dt => Time.Delta;
         protected float Angle => MathF.Atan2(Velocity.Y, Velocity.X);
         protected float Speed => Velocity.Length();
-        protected float Radius => (float)Texture.Width /2;
+        protected float Radius => Animation != null
+            ? MathF.Max((float)Animation.FrameWidth/2,(float)Animation.FrameHeight/2)
+            : (float)Texture.Width/2;
+
         protected float VisionRadius => MathF.Min(Radius * VisionFactor,visionCap);
         protected Vector2 Heading => Speed > Constants.ZeroCompare ? Vector2.Normalize(Velocity) : _fallbackHeading;
         protected Vector2 RandomHeading => Speed > Constants.ZeroCompare ? Vector2.Normalize(Velocity + Utils.RandomVector(-0.05f,0.05f)) : _fallbackHeading;
         
 
-        public BaseEntity(Texture2D texture, Vector2 position, Vector2 velocity, float visionFactor)
+        public BaseEntity(Texture2D texture, Vector2 position, Vector2 velocity, float visionFactor, Animation animation)
         {
             Texture = texture;
             Position = position;
             Velocity = velocity;
             VisionFactor = visionFactor;
+            Animation = animation;
         }
     
         public void RotateTowardsDir(Vector2 desiredDir, float maxRate)

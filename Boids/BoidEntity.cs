@@ -6,11 +6,11 @@ using Microsoft.Xna.Framework.Graphics;
 namespace Boids.Boids
 {
     internal class BoidEntity(
-            Texture2D texture,
+            Animation animation,
             Vector2 position,
             Vector2 velocity,
             float visionFactor)
-        :BaseEntity(texture, position,velocity, visionFactor)
+        :BaseEntity(animation.Texture, position,velocity, visionFactor,animation)
     {
         private bool _inTurn = false;
         private float _preSpeed = 0f;
@@ -22,8 +22,12 @@ namespace Boids.Boids
         private bool _accelFromCorner = false;
         private Vector2 _escapeDir;
         private bool _fleeing = false;
+        internal bool IsFleeing => _fleeing;
+        internal bool IsEscapingCorner => _accelFromCorner;
 
         public float SpeedFactor = 1f;
+
+        public readonly Animation _animation = animation;
 
         internal float BoidVisionRadius() => VisionRadius;
         internal float CloseVision() => BoidVisionRadius()/BoidConstants.visionFactor;
@@ -86,7 +90,8 @@ namespace Boids.Boids
                 _accelFromCorner = true;
                 _stuckframe = 0;
             }
-            if (_stuckframe == 0 && _accelFromCorner)  //The boid is accelerating from the corner
+            // if (_stuckframe == 0 && _accelFromCorner)  //The boid is accelerating from the corner
+            if (_accelFromCorner)
             {
                 float currentSpeed = ApplyAccTo(_targetSpeed,BoidConstants.boidAccel);
 
@@ -162,6 +167,15 @@ namespace Boids.Boids
             return distaSq <= visionSq;
         }
 
+        internal void Draw(SpriteBatch sb)
+        {
+            float scale = 2f;
+            Vector2 origin = new (_animation.FrameWidth/2f, _animation.FrameHeight/2f);
+            if (Velocity.X >= 0)
+                sb.Draw(_animation.Texture, Position, _animation.CurrentFrame, Color.White, 0f, origin, scale , SpriteEffects.None,0f);
+            else if (Velocity.X < 0)
+                sb.Draw(_animation.Texture, Position, _animation.CurrentFrame, Color.White, 0f, origin, scale , SpriteEffects.FlipHorizontally,0f);
+        }
 
     }
 }

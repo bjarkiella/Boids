@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
@@ -20,6 +21,8 @@ namespace Boids
         KeyboardState _prevKeyboardState;
         BoidManager _boidManager;
         PlayerEntity _player;
+        Animation _playerAnimation;
+        Animation _boidAnimation;
         // PlayerCamera _playerCamera;
         private SimUI _simUI;
         private StartupUI _startupUI;
@@ -51,6 +54,25 @@ namespace Boids
         protected override void LoadContent()
         {
             _spriteBatch = new SpriteBatch(GraphicsDevice);
+            Texture2D birdiesSheet = Content.Load<Texture2D>("Birdies");
+
+            // Animation for player
+            int frameCount = 5;
+            int frameWidth = 28;
+            int frameHeight = 25;
+            int startColumn = 1;
+            int startRow = 3;
+            List<Rectangle> playerFrames = Animation.LoadAnimation(frameCount,frameWidth,frameHeight,startColumn * frameWidth, startRow * frameHeight);
+            _playerAnimation = new(birdiesSheet, playerFrames, 0.1f, true);
+
+            // Animation for boids 
+            frameCount = 5;
+            frameWidth = 15;
+            frameHeight = 21;
+            startColumn = 12;
+            startRow = 0;
+            List<Rectangle> boidFrames = Animation.LoadAnimation(frameCount,frameWidth,frameHeight,startColumn * frameWidth, startRow * frameHeight);
+            _boidAnimation = new(birdiesSheet, boidFrames, 0.1f, true);
         }
 
         protected override void Update(GameTime gameTime)
@@ -118,8 +140,9 @@ namespace Boids
         private void SetupSimulation()
         {
             // Textures and boids created
-            Texture2D boidTexture = Content.Load<Texture2D>("circle");
-            _boidManager = new BoidManager(boidTexture);
+            // List<Rectangle> simBoidFrames = Animation.LoadAnimation(5,15,21,0,13);
+            // Texture2D boidTexture = Content.Load<Texture2D>("circle");
+            _boidManager = new BoidManager(_boidAnimation);
 
             // New UI drawn
             Gum.Root.Children.Clear();
@@ -140,10 +163,10 @@ namespace Boids
             Constants.PHeight = 0;
 
             // Textures, boids and player initialized
-            Texture2D boidTexture = Content.Load<Texture2D>("circle");
-            Texture2D playerTexture = Content.Load<Texture2D>("red_circle");
-            _player = new PlayerEntity(playerTexture, new Vector2(Constants.ActiveWidth / 2, Constants.ActiveHeight / 2), new Vector2(0, 0),PlayerConstants.eatRadiusFactor);
-            _boidManager = new BoidManager(boidTexture);
+            // Texture2D boidTexture = Content.Load<Texture2D>("circle");
+            // Texture2D playerTexture = Content.Load<Texture2D>("red_circle");
+            _player = new PlayerEntity(_playerAnimation, new Vector2(Constants.ActiveWidth / 2, Constants.ActiveHeight / 2), new Vector2(0, 0),PlayerConstants.eatRadiusFactor);
+            _boidManager = new BoidManager(_boidAnimation);
             for (int i = 0; i < 150; i++) _boidManager.SpawnBoid();
         }
         protected override void Draw(GameTime gameTime)

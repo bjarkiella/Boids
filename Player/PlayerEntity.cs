@@ -7,11 +7,11 @@ using Boids.Shared;
 namespace Boids.Player
 {
     internal class PlayerEntity(
-            Texture2D texture,
+            Animation animation,
             Vector2 position,
             Vector2 velocity,
             float eatRadiusFactor):
-        BaseEntity(texture, position, velocity, eatRadiusFactor)
+        BaseEntity(animation.Texture, position, velocity, eatRadiusFactor,animation)
     {
         private float _sprintTimeLeft = 0f;
         private float _coolDown = 0f;
@@ -19,6 +19,10 @@ namespace Boids.Player
         private float _sprintAcc = 1f;
         private float _sprintSpeed = 1f;
         private BC.Edge? _edge;
+        private readonly Animation _animation = animation;
+        private enum DirFace {Right,Left}
+        private DirFace currentFace = DirFace.Right;
+
         public float EatRadius => VisionRadius;
         public bool EatBoid { get; private set; } = false;
         public Rectangle PlayerBox => new (
@@ -26,6 +30,8 @@ namespace Boids.Player
                 (int)(Position.Y - Radius),
                 (int)(Radius*2),
                 (int)(Radius*2));
+
+
 
         internal void SteerTowards(Vector2 desiredDir, float maxTurnRate) => RotateTowardsDir(desiredDir,maxTurnRate); 
 
@@ -36,6 +42,7 @@ namespace Boids.Player
 
         public void Update(KeyboardState current, KeyboardState _prevKeyboardState)
         {
+            _animation.Update();
             _edge = BC.ClosestEdge(Position, Radius,Radius*2,PlayerConstants.wallProx);
 
             // Keyboard inputs for player, edge is used to stop pushing beyond edge
@@ -50,10 +57,12 @@ namespace Boids.Player
             }
             if (current.IsKeyDown(Keys.Right) && _edge != BC.Edge.Right) 
             {
+                currentFace = DirFace.Right;
                 move.X += 1;
             }
             if (current.IsKeyDown(Keys.Left) && _edge != BC.Edge.Left) 
             {
+                currentFace = DirFace.Left;
                 move.X -= 1;
             }
             if (current.IsKeyDown(Keys.LeftShift) && !_prevKeyboardState.IsKeyDown(Keys.LeftShift) &&
@@ -114,7 +123,15 @@ namespace Boids.Player
 
         public void Draw(SpriteBatch sb)
         {
-            sb.Draw(Texture, Position, Color.White);
+            float scale = 2.0f;
+            Vector2 origin = new (_animation.FrameWidth/2f, _animation.FrameHeight/2f);
+            if (currentFace == DirFace.Right)
+                sb.Draw(_animation.Texture, Position,_animation.CurrentFrame, Color.White,0f,origin ,scale,SpriteEffects.None, 0f);
+            else if (currentFace == DirFace.Left)
+                sb.Draw(_animation.Texture, Position,_animation.CurrentFrame, Color.White,0f,origin ,scale,SpriteEffects.FlipHorizontally, 0f);
+            else {
+                throw new InvalidOperationException ("The Player direction face could not be determined");
+            }
         }
     }
 }

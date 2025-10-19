@@ -20,4 +20,5 @@ UI/
 Thumbs.db
 
 # ── Some specific files ─────────────────────────────────────────
-CLAUDE.md
+.claude/
+AGENTS.md

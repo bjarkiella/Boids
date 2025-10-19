@@ -6,18 +6,23 @@ using Boids.Shared;
 
 namespace Boids.Boids
 {
-    internal class BoidManager(Texture2D texture)
+    internal class BoidManager(Animation boidAnimation)
     {
         private readonly List<BoidEntity> _boids = []; 
         public IReadOnlyList<BoidEntity> ListOfBoids => _boids;
-        private readonly Texture2D _boidTexture = texture;
+        private readonly Texture2D _boidTexture = boidAnimation.Texture;
+        private readonly List<Rectangle> _frames = boidAnimation.Frames;
+        private readonly float _frameDuration = boidAnimation.FrameDuration;
+
         protected static float Dt => Time.Delta;
 
         public void SpawnBoid()
         {
             Vector2 spawnPoint = Utils.RandomSpawnPosition();
             Vector2 spawnVel = Utils.InitialVelocity(Utils.RandomAngle(), Utils.RandomSpeed());
-            BoidEntity newBoid = new (_boidTexture, spawnPoint, spawnVel, BoidConstants.visionFactor);
+            int randomStart = Random.Shared.Next(0, _frames.Count);
+            Animation boidAnimation = new (_boidTexture,_frames,_frameDuration,true,randomStart);
+            BoidEntity newBoid = new (boidAnimation, spawnPoint, spawnVel, BoidConstants.visionFactor);
             _boids.Add(newBoid);
         }
         public void RemoveBoid()
@@ -51,7 +56,9 @@ namespace Boids.Boids
                     {
                         eatenBoid.Add(b);
                     }
-                    b.ApplyBC();
+                    b.Animation?.Update();
+                    if (!b.IsFleeing)
+                        b.ApplyBC();
                     b.Integrate();
                     continue; //BOID DEAD OR ESCPAED, NEXT!
                 } 
@@ -71,6 +78,7 @@ namespace Boids.Boids
                     b.UpdateSteerVelocity(nSteer);
                 }
 
+                b.Animation?.Update();
                 b.ApplyBC();
                 b.Integrate();
             }
@@ -81,7 +89,7 @@ namespace Boids.Boids
         {
             foreach (BoidEntity b in _boids)
             {
-                sb.Draw(b.Texture, b.Position, Color.White);
+                b.Draw(sb);
             }
         }
     }
