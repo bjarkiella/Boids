@@ -11,6 +11,11 @@ namespace Boids.Shared
         {
             return (float)random.NextDouble() * (MathF.Max(a, b) - MathF.Min(a, b)) + MathF.Min(a, b);
         }
+        public static int RandomIntRange(int a, int b)
+        {
+            return random.Next(Math.Min(a,b), Math.Max(a,b));
+        }
+
         public static Vector2 RandomVector(float a, float b)
         {
             return new Vector2(RandomFloatRange(a, b), RandomFloatRange(a, b));
@@ -19,7 +24,7 @@ namespace Boids.Shared
         {
             float wCons = 1f - Constants.warnOutPerc;
             return new Vector2(RandomFloatRange(Constants.ActiveWidth*Constants.warnOutPerc, Constants.ActiveWidth*wCons),
-            RandomFloatRange(Constants.ActiveHeight*Constants.warnOutPerc, Constants.ActiveHeight*wCons));
+                    RandomFloatRange(Constants.ActiveHeight*Constants.warnOutPerc, Constants.ActiveHeight*wCons));
         }
         public static Vector2 NewDirection(float radAngle)
         {
@@ -48,7 +53,7 @@ namespace Boids.Shared
                 if (arrayList[i] < minDist) minDist = arrayList[i];
             return minDist;
         }
-        
- 
+
+
     }
 }

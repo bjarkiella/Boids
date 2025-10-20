@@ -9,13 +9,14 @@ using Boids.Shared;
 using Boids.Boids;
 using Boids.Player;
 using Boids.ui;
+using Boids.Background;
 
 namespace Boids
 {
 
     public class Game1 : Game
     {
-        private GraphicsDeviceManager _graphics;
+        private readonly GraphicsDeviceManager _graphics;
         private SpriteBatch _spriteBatch;
         GumService Gum => GumService.Default;
         KeyboardState _prevKeyboardState;
@@ -23,6 +24,8 @@ namespace Boids
         PlayerEntity _player;
         Animation _playerAnimation;
         Animation _boidAnimation;
+        ParallaxManager _smallCloudPLManager;
+        ParallaxManager _largeCloudPLManager;
         // PlayerCamera _playerCamera;
         private SimUI _simUI;
         private StartupUI _startupUI;
@@ -55,6 +58,9 @@ namespace Boids
         {
             _spriteBatch = new SpriteBatch(GraphicsDevice);
             Texture2D birdiesSheet = Content.Load<Texture2D>("Birdies");
+            Texture2D largeCloudSheet = Content.Load<Texture2D>("clouds_big");
+            Texture2D smallCloudSheet = Content.Load<Texture2D>("clouds_small");
+            Texture2D mainBackground = Content.Load<Texture2D>("parallax-mountain-bg");
 
             // Animation for player
             int frameCount = 5;
@@ -73,6 +79,35 @@ namespace Boids
             startRow = 0;
             List<Rectangle> boidFrames = Animation.LoadAnimation(frameCount,frameWidth,frameHeight,startColumn * frameWidth, startRow * frameHeight);
             _boidAnimation = new(birdiesSheet, boidFrames, 0.1f, true);
+
+            // Main Background
+
+
+            // Large Cloud sprites
+            List<int> cloudWidth = [36,40];
+            List<int> cloudHeight =[24,24];
+            List<int> cloudOffX = [15,45];
+            List<int> cloudOffY = [6,11];
+            List<Rectangle> _largeClouds = [];
+            for (int i = 0; i<cloudWidth.Count;i++)
+            {
+                Rectangle ble = new(cloudOffX[i],cloudOffY[i],cloudWidth[i],cloudHeight[i]);
+               _largeClouds.Add(ble); 
+            }
+            _largeCloudPLManager = new ParallaxManager(largeCloudSheet, _largeClouds);
+
+            // Small Cloud sprites
+            cloudWidth = [16,20,20];
+            cloudHeight =[10,16,16];
+            cloudOffX = [0,16,11];
+            cloudOffY = [0,0,6];
+            List<Rectangle> _smallClouds = [];
+            for (int i = 0; i<cloudWidth.Count;i++)
+            {
+                Rectangle ble = new(cloudOffX[i],cloudOffY[i],cloudWidth[i],cloudHeight[i]);
+               _smallClouds.Add(ble); 
+            }
+            _smallCloudPLManager = new ParallaxManager(smallCloudSheet, _smallClouds);
         }
 
         protected override void Update(GameTime gameTime)
@@ -98,14 +133,16 @@ namespace Boids
                     Gum.Update(gameTime);
                     break;
                 case GameMode.Simulation:
+                    _largeCloudPLManager.Update();
+                    _smallCloudPLManager.Update();
                     _boidManager.Update();
                     Gum.Update(gameTime);
                     break;
                 case GameMode.Player:
+                    _largeCloudPLManager.Update();
+                    _smallCloudPLManager.Update();
                     _player.Update(current, _prevKeyboardState);
                     _boidManager.Update(_player.Position, _player.EatRadius,_player.EatBoid);
-                    // _playerCamera.Follow(_player.PlayerBox,Constants.ScreenSize);
-                    // Constants.CameraPosition = _playerCamera.CamPosition;
                     break;
             }
             _prevKeyboardState = current; // Used to keep track if key is pressed multiple times
@@ -183,6 +220,8 @@ namespace Boids
                             depthStencilState: null,
                             rasterizerState: null
                             );
+                    _largeCloudPLManager.Draw(_spriteBatch);
+                    _smallCloudPLManager.Draw(_spriteBatch);
                     _boidManager.Draw(_spriteBatch);
                     _spriteBatch.End();
                     break;
@@ -196,6 +235,8 @@ namespace Boids
                             effect: null
                             // transformMatrix: _playerCamera.Transform
                             );
+                    _largeCloudPLManager.Draw(_spriteBatch);
+                    _smallCloudPLManager.Draw(_spriteBatch);
                     _player.Draw(_spriteBatch);
                     _boidManager.Draw(_spriteBatch);
                     _spriteBatch.End();
