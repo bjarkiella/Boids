@@ -19,5 +19,7 @@ namespace Boids.Background
         internal const float FarLayerAlpha = 0.4f;      // Transparency for depth
         internal const float MidLayerAlpha = 0.6f;
         internal const float NearLayerAlpha = 0.8f;
+        
+        internal const int treeCount = 50; 
     }
 }

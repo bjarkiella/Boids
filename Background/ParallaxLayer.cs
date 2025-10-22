@@ -50,7 +50,7 @@ namespace Boids.Background
         private void SpawnParralaxEntity()
         {
             Rectangle randomFrame = _frames[Utils.RandomIntRange(0,_frames.Count-1)];
-            float randomY = Utils.RandomFloatRange(0,Constants.ActiveHeight);
+            float randomY = Utils.RandomFloatRange(0,Constants.ActiveHeight/1.5f);
             float speed = Utils.RandomFloatRange(-50f,50f);
 
             if (MathF.Abs(speed) < 10f)

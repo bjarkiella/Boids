@@ -26,6 +26,15 @@ namespace Boids
         Animation _boidAnimation;
         ParallaxManager _smallCloudPLManager;
         ParallaxManager _largeCloudPLManager;
+
+        Texture2D _mainBackground;
+        Texture2D _treeBackground;
+        Texture2D _treeDarkBackground;
+        Texture2D _treeSheet;
+        List<(Rectangle frame, Vector2 position)> _staticTrees = [];
+        readonly float _treeScale = 4.0f;
+        List<Rectangle> _treeFrames;
+
         // PlayerCamera _playerCamera;
         private SimUI _simUI;
         private StartupUI _startupUI;
@@ -57,33 +66,28 @@ namespace Boids
         protected override void LoadContent()
         {
             _spriteBatch = new SpriteBatch(GraphicsDevice);
-            Texture2D birdiesSheet = Content.Load<Texture2D>("Birdies");
+
+            // Static background - Sky
+            _mainBackground = Content.Load<Texture2D>("sky");
+            _treeBackground = Content.Load<Texture2D>("Tlayer2");
+            _treeDarkBackground = Content.Load<Texture2D>("Tlayer3");
+
+            // Static background - Trees
+            int frameCount= 5;
+            int frameWidth= 28;
+            int frameHeight= 64;
+            int startX= 21;   
+            int startY= 0;
+            int spacingX= 3;  
+            int spacingY= 0;  
+            _treeSheet = Content.Load<Texture2D>("Textures&trees");
+            _treeFrames = BackgroundUtils.LoadSprites(frameCount,frameWidth,frameHeight,startX,startY,spacingX,spacingY);
+
+            // Moving background
             Texture2D largeCloudSheet = Content.Load<Texture2D>("clouds_big");
             Texture2D smallCloudSheet = Content.Load<Texture2D>("clouds_small");
-            Texture2D mainBackground = Content.Load<Texture2D>("parallax-mountain-bg");
 
-            // Animation for player
-            int frameCount = 5;
-            int frameWidth = 28;
-            int frameHeight = 25;
-            int startColumn = 1;
-            int startRow = 3;
-            List<Rectangle> playerFrames = Animation.LoadAnimation(frameCount,frameWidth,frameHeight,startColumn * frameWidth, startRow * frameHeight);
-            _playerAnimation = new(birdiesSheet, playerFrames, 0.1f, true);
-
-            // Animation for boids 
-            frameCount = 5;
-            frameWidth = 15;
-            frameHeight = 21;
-            startColumn = 12;
-            startRow = 0;
-            List<Rectangle> boidFrames = Animation.LoadAnimation(frameCount,frameWidth,frameHeight,startColumn * frameWidth, startRow * frameHeight);
-            _boidAnimation = new(birdiesSheet, boidFrames, 0.1f, true);
-
-            // Main Background
-
-
-            // Large Cloud sprites
+            // Moving background - Large Clouds 
             List<int> cloudWidth = [36,40];
             List<int> cloudHeight =[24,24];
             List<int> cloudOffX = [15,45];
@@ -92,11 +96,11 @@ namespace Boids
             for (int i = 0; i<cloudWidth.Count;i++)
             {
                 Rectangle ble = new(cloudOffX[i],cloudOffY[i],cloudWidth[i],cloudHeight[i]);
-               _largeClouds.Add(ble); 
+                _largeClouds.Add(ble); 
             }
             _largeCloudPLManager = new ParallaxManager(largeCloudSheet, _largeClouds);
 
-            // Small Cloud sprites
+            // Moving background - Small Clouds 
             cloudWidth = [16,20,20];
             cloudHeight =[10,16,16];
             cloudOffX = [0,16,11];
@@ -105,9 +109,30 @@ namespace Boids
             for (int i = 0; i<cloudWidth.Count;i++)
             {
                 Rectangle ble = new(cloudOffX[i],cloudOffY[i],cloudWidth[i],cloudHeight[i]);
-               _smallClouds.Add(ble); 
+                _smallClouds.Add(ble); 
             }
             _smallCloudPLManager = new ParallaxManager(smallCloudSheet, _smallClouds);
+
+            // Animation
+            Texture2D birdiesSheet = Content.Load<Texture2D>("Birdies");
+
+            // Animation - Player
+            frameCount = 5;
+            frameWidth = 28;
+            frameHeight = 25;
+            int startColumn = 1;
+            int startRow = 3;
+            List<Rectangle> playerFrames = Animation.LoadAnimation(frameCount,frameWidth,frameHeight,startColumn * frameWidth, startRow * frameHeight);
+            _playerAnimation = new(birdiesSheet, playerFrames, 0.1f, true);
+
+            // Animation - Boids 
+            frameCount = 5;
+            frameWidth = 15;
+            frameHeight = 21;
+            startColumn = 12;
+            startRow = 0;
+            List<Rectangle> boidFrames = Animation.LoadAnimation(frameCount,frameWidth,frameHeight,startColumn * frameWidth, startRow * frameHeight);
+            _boidAnimation = new(birdiesSheet, boidFrames, 0.1f, true);
         }
 
         protected override void Update(GameTime gameTime)
@@ -176,9 +201,10 @@ namespace Boids
         }
         private void SetupSimulation()
         {
+            // Background trees initialized (Placed here due to re-size availability)
+            _staticTrees = BackgroundUtils.SpritePosition(BackgroundConstants.treeCount,_treeFrames,_treeScale);
+
             // Textures and boids created
-            // List<Rectangle> simBoidFrames = Animation.LoadAnimation(5,15,21,0,13);
-            // Texture2D boidTexture = Content.Load<Texture2D>("circle");
             _boidManager = new BoidManager(_boidAnimation);
 
             // New UI drawn
@@ -199,9 +225,10 @@ namespace Boids
             // Constants modified
             Constants.PHeight = 0;
 
+            // Background trees initialized (Placed here due to re-size availability)
+            _staticTrees = BackgroundUtils.SpritePosition(BackgroundConstants.treeCount,_treeFrames,_treeScale);
+
             // Textures, boids and player initialized
-            // Texture2D boidTexture = Content.Load<Texture2D>("circle");
-            // Texture2D playerTexture = Content.Load<Texture2D>("red_circle");
             _player = new PlayerEntity(_playerAnimation, new Vector2(Constants.ActiveWidth / 2, Constants.ActiveHeight / 2), new Vector2(0, 0),PlayerConstants.eatRadiusFactor);
             _boidManager = new BoidManager(_boidAnimation);
             for (int i = 0; i < 150; i++) _boidManager.SpawnBoid();
@@ -209,6 +236,27 @@ namespace Boids
         protected override void Draw(GameTime gameTime)
         {
             GraphicsDevice.Clear(Color.CornflowerBlue);
+
+            Rectangle aspectBackground = BackgroundUtils.AspectBackground(_mainBackground);
+//TODO: Check on these scales again for the background tress, something is off
+            List<Rectangle> tileTrees = BackgroundUtils.TileBackground(
+                    _treeBackground,
+                    widthScale: 2f,    // or whatever scale you want
+                    heightScale: 2f,
+                    tileX: true,       // tile horizontally
+                    tileY: false,      // don't tile vertically (since it's at the bottom)
+                    startX: 0,         // start at left edge
+                    startY: Constants.ActiveHeight - (_treeBackground.Height * 2)
+                    );
+            List<Rectangle> tileDarkTrees = BackgroundUtils.TileBackground(
+                    _treeDarkBackground,
+                    widthScale: 2f,    // or whatever scale you want
+                    heightScale: 2f,
+                    tileX: true,       // tile horizontally
+                    tileY: false,      // don't tile vertically (since it's at the bottom)
+                    startX: 0,         // start at left edge
+                    startY: Constants.ActiveHeight - (_treeBackground.Height * 2)
+                    );
 
             switch (_gamemode)
             {
@@ -220,6 +268,19 @@ namespace Boids
                             depthStencilState: null,
                             rasterizerState: null
                             );
+                    _spriteBatch.Draw(_mainBackground,aspectBackground,Color.White);
+                    foreach (var tile in tileTrees)
+                    {
+                        _spriteBatch.Draw(_treeBackground, tile, Color.White);
+                    }
+                    foreach (var tile in tileDarkTrees)
+                    {
+                        _spriteBatch.Draw(_treeDarkBackground, tile, Color.White);
+                    }
+                    foreach(var (frame,pos) in _staticTrees)
+                    {
+                        _spriteBatch.Draw(_treeSheet,pos,frame,Color.White);
+                    }
                     _largeCloudPLManager.Draw(_spriteBatch);
                     _smallCloudPLManager.Draw(_spriteBatch);
                     _boidManager.Draw(_spriteBatch);
@@ -235,6 +296,20 @@ namespace Boids
                             effect: null
                             // transformMatrix: _playerCamera.Transform
                             );
+                    float scale = 4.0f;
+                    _spriteBatch.Draw(_mainBackground,aspectBackground,Color.White);
+                    foreach (var tile in tileTrees)
+                    {
+                        _spriteBatch.Draw(_treeBackground, tile, Color.White);
+                    }
+                    foreach (var tile in tileDarkTrees)
+                    {
+                        _spriteBatch.Draw(_treeDarkBackground, tile, Color.White);
+                    }
+                    foreach(var (frame,pos) in _staticTrees)
+                    {
+                        _spriteBatch.Draw(_treeSheet,pos,frame,Color.White,0f,Vector2.Zero,scale,SpriteEffects.None,0f);
+                    }
                     _largeCloudPLManager.Draw(_spriteBatch);
                     _smallCloudPLManager.Draw(_spriteBatch);
                     _player.Draw(_spriteBatch);
