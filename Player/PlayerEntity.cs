@@ -1,8 +1,11 @@
 using System;
+using System.Collections.Generic;
+using MonoGame.Extended;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using Boids.Shared;
+using Boids.Boids;
 
 namespace Boids.Player
 {
@@ -23,13 +26,20 @@ namespace Boids.Player
         private enum DirFace {Right,Left}
         private DirFace currentFace = DirFace.Right;
 
+        private float _opacity = 1.0f; 
+
+        private bool _showDebugCircle = false;
+
         public float EatRadius => VisionRadius;
+        public float OpacityFactor => _opacity;
         public bool EatBoid { get; private set; } = false;
         public Rectangle PlayerBox => new (
                 (int)(Position.X - Radius),
                 (int)(Position.Y - Radius),
                 (int)(Radius*2),
                 (int)(Radius*2));
+
+        private float _textureScale = 2f;
 
 
 
@@ -40,7 +50,7 @@ namespace Boids.Player
             Position += Velocity * Dt;
         }
 
-        public void Update(KeyboardState current, KeyboardState _prevKeyboardState)
+        public void Update(KeyboardState current, KeyboardState _prevKeyboardState, List<Rectangle> intersectEntity)
         {
             _animation.Update();
             _edge = BC.ClosestEdge(Position, Radius,Radius*2,PlayerConstants.wallProx);
@@ -74,6 +84,10 @@ namespace Boids.Player
                 _sprintTimeLeft = PlayerConstants.sprintTime;
                 _sprintAcc = PlayerConstants.sprintAcc;
                 _sprintSpeed = PlayerConstants.sprintSpeed;
+            }
+            if (current.IsKeyDown(Keys.RightShift) && _prevKeyboardState.IsKeyDown(Keys.RightShift)) 
+            {
+               _showDebugCircle = !_showDebugCircle; 
             }
             if (current.IsKeyDown(Keys.Space) && _prevKeyboardState.IsKeyDown(Keys.Space))
             {
@@ -119,16 +133,52 @@ namespace Boids.Player
             Integrate();
 
             Position = BC.PosCheck(Position, Radius);
+
+            // Checking if clouds intersect player
+            if (intersectEntity != null)
+            {
+                bool playerInCloud = EntityIntersection(intersectEntity);
+                UpdateOpacity(playerInCloud);
+            }
         }
 
+        public bool EntityIntersection(List<Rectangle> intersectEntity)
+        {
+            bool playerTouch = false;
+            Rectangle playerBox = PlayerBox;
+
+            foreach (Rectangle intersectRect in intersectEntity)
+            {
+                if (playerBox.Intersects(intersectRect))
+                {
+                    playerTouch = true;
+                    break;
+                }
+            }
+            return playerTouch;
+        }
+
+        public void UpdateOpacity(bool isInCloud)
+        {
+            // Smoothly transition opacity
+            float targetOpacity = isInCloud? 0.4f: 1.0f; 
+            float transitionSpeed = PlayerConstants.cloudTransSpeed;
+
+            if (_opacity < targetOpacity)
+                _opacity = Math.Min(_opacity + transitionSpeed * Dt, targetOpacity);
+            else if (_opacity > targetOpacity)
+                _opacity = Math.Max(_opacity - transitionSpeed * Dt, targetOpacity);
+        }
         public void Draw(SpriteBatch sb)
         {
-            float scale = 2.0f;
+            Color drawColor = Color.White * _opacity; 
             Vector2 origin = new (_animation.FrameWidth/2f, _animation.FrameHeight/2f);
+            if (_showDebugCircle)
+                sb.DrawCircle(Position,Game1.BoidVisionRadius * _opacity, 32, Color.Red *0.3f,2f);
             if (currentFace == DirFace.Right)
-                sb.Draw(_animation.Texture, Position,_animation.CurrentFrame, Color.White,0f,origin ,scale,SpriteEffects.None, 0f);
+                sb.Draw(_animation.Texture, Position,_animation.CurrentFrame, drawColor,0f,origin ,_textureScale,SpriteEffects.None, 0f);
             else if (currentFace == DirFace.Left)
-                sb.Draw(_animation.Texture, Position,_animation.CurrentFrame, Color.White,0f,origin ,scale,SpriteEffects.FlipHorizontally, 0f);
+                sb.Draw(_animation.Texture, Position,_animation.CurrentFrame, drawColor, 0f,origin ,_textureScale,SpriteEffects.FlipHorizontally, 0f);
             else {
                 throw new InvalidOperationException ("The Player direction face could not be determined");
             }

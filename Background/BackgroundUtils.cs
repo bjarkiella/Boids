@@ -23,16 +23,31 @@ namespace Boids.Background
             return new Rectangle(x, y, width, height);
         }
 
-        public static List<Rectangle> TileBackground(Texture2D background, float widthScale = 1.0f, float heightScale = 1.0f, bool tileX = true, bool tileY = true, int? startX = null, int? startY = null)
+        public static List<Rectangle> TileBackground( Texture2D background, float widthScale = 1.0f, float heightScale = 1.0f, bool tileX = true, bool tileY = true, float xPos= 0f, float yPos= 0f)      
         {
-            // Get the base rectangle for a single tile
-            Rectangle baseTile = StretchBackground(background, widthScale, heightScale, startX, startY);
+            // Validate scales (same as StretchBackground)
+            if (widthScale <= 0 || float.IsNaN(widthScale) || float.IsInfinity(widthScale))
+            {
+                throw new ArgumentOutOfRangeException(nameof(widthScale), "Width scale needs to be a positive float number");
+            }
+            if (heightScale <= 0 || float.IsNaN(heightScale) || float.IsInfinity(heightScale))
+            {
+                throw new ArgumentOutOfRangeException(nameof(heightScale), "Height scale needs to be a positive float number");
+            }
 
-            List<Rectangle> tiles = new();
+            // Calculate scaled dimensions
+            int scaledWidth = (int)(background.Width * widthScale);
+            int scaledHeight = (int)(background.Height * heightScale);
+
+            // Convert float start positions to int when creating the base position
+            int baseX = (int)xPos;
+            int baseY = (int)yPos;
+
+            List<Rectangle> tiles = [];
 
             // Calculate how many tiles needed
-            int tilesX = tileX ? (int)Math.Ceiling((float)Constants.ActiveWidth / baseTile.Width) : 1;
-            int tilesY = tileY ? (int)Math.Ceiling((float)Constants.ActiveHeight / baseTile.Height) : 1;
+            int tilesX = tileX ? (int)Math.Ceiling((float)Constants.ActiveWidth / scaledWidth) : 1;
+            int tilesY = tileY ? (int)Math.Ceiling((float)Constants.ActiveHeight / scaledHeight) : 1;
 
             // Create tiles
             for (int y = 0; y < tilesY; y++)
@@ -40,10 +55,10 @@ namespace Boids.Background
                 for (int x = 0; x < tilesX; x++)
                 {
                     tiles.Add(new Rectangle(
-                                baseTile.X + (x * baseTile.Width),  // Offset by width
-                                baseTile.Y + (y * baseTile.Height), // Offset by height
-                                baseTile.Width,
-                                baseTile.Height
+                                baseX + (x * scaledWidth),   // Offset by width
+                                baseY + (y * scaledHeight),  // Offset by height
+                                scaledWidth,
+                                scaledHeight
                                 ));
                 }
             }
@@ -51,7 +66,7 @@ namespace Boids.Background
             return tiles;
         }
 
-        public static Rectangle StretchBackground(Texture2D background, float widthScale = 1.0f, float heightScale = 1f, int? xPos = null, int? yPos = null)
+        public static Rectangle StretchBackground(Texture2D background, float widthScale = 1.0f, float heightScale = 1.0f, int? xPos = null, int? yPos = null)
         {
             int width, height;
             if (widthScale <= 0 || float.IsNaN(widthScale) || float.IsInfinity(widthScale)) 

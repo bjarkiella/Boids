@@ -161,9 +161,10 @@ namespace Boids.Boids
 
         }
 
-        internal bool InVisionRange(Vector2 pos) {
+        internal bool InVisionRange(Vector2 pos,float opacityFactor) {
+        float effVisionFactor = BoidVisionRadius() * opacityFactor;
             float distaSq = Vector2.DistanceSquared(Position,pos);
-            float visionSq = BoidVisionRadius() * BoidVisionRadius();
+            float visionSq = effVisionFactor * effVisionFactor;
             return distaSq <= visionSq;
         }
 

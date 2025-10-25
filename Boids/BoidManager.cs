@@ -33,7 +33,7 @@ namespace Boids.Boids
             }
         }
         
-        public void Update(Vector2? eatPos= null, float? eatRadius = null, bool eatBoid=false)
+        public void Update(Vector2? eatPos= null, float? eatRadius = null, bool eatBoid=false, float opacity=1.0f)
         {
             List<BoidEntity> eatenBoid = [];
 
@@ -49,7 +49,7 @@ namespace Boids.Boids
                 float neighbours = 0;
 
                 // Checking if player is close
-                if (eatPos.HasValue && b.InVisionRange(eatPos.Value)){
+                if (eatPos.HasValue && b.InVisionRange(eatPos.Value,opacity)){
                     b.SteerFromPlayer(eatPos.Value);
 
                     if (eatBoid && (b.Position - eatPos.Value).Length() <= eatRadius.Value)
@@ -67,7 +67,7 @@ namespace Boids.Boids
                     // Some pre-checks
                     if (other == b) continue;
                     if (eatenBoid.Contains(other)) continue;
-                    if (!b.InVisionRange(other.Position)) continue;
+                    if (!b.InVisionRange(other.Position,opacity)) continue;
                     BoidFlocking.GatherNeighbours(ref align, ref center, ref sep, b, other);
                     neighbours++;
                 }

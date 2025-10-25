@@ -10,6 +10,7 @@ using Boids.Boids;
 using Boids.Player;
 using Boids.ui;
 using Boids.Background;
+using System.Globalization;
 
 namespace Boids
 {
@@ -31,10 +32,12 @@ namespace Boids
         Texture2D _treeBackground;
         Texture2D _treeDarkBackground;
         Texture2D _treeSheet;
+
         List<(Rectangle frame, Vector2 position)> _staticTrees = [];
         readonly float _treeScale = 4.0f;
         List<Rectangle> _treeFrames;
 
+        public static float BoidVisionRadius {get; private set;}
         // PlayerCamera _playerCamera;
         private SimUI _simUI;
         private StartupUI _startupUI;
@@ -45,7 +48,6 @@ namespace Boids
             _graphics = new GraphicsDeviceManager(this);
             _graphics.PreferredBackBufferHeight = Constants.SHeight;
             _graphics.PreferredBackBufferWidth = Constants.SWidth;
-            // _playerCamera = new (Vector2.Zero);
             Content.RootDirectory = "Content";
             IsMouseVisible = true;
             Window.AllowUserResizing = true;
@@ -133,6 +135,9 @@ namespace Boids
             startRow = 0;
             List<Rectangle> boidFrames = Animation.LoadAnimation(frameCount,frameWidth,frameHeight,startColumn * frameWidth, startRow * frameHeight);
             _boidAnimation = new(birdiesSheet, boidFrames, 0.1f, true);
+
+            // Some variable exposure
+            BoidVisionRadius = BoidConstants.CalculateBoidVisionRadius(_boidAnimation);
         }
 
         protected override void Update(GameTime gameTime)
@@ -166,8 +171,18 @@ namespace Boids
                 case GameMode.Player:
                     _largeCloudPLManager.Update();
                     _smallCloudPLManager.Update();
-                    _player.Update(current, _prevKeyboardState);
-                    _boidManager.Update(_player.Position, _player.EatRadius,_player.EatBoid);
+
+                    List<Rectangle> cloudBounds = _largeCloudPLManager.GetEntityBounds();
+                    cloudBounds.AddRange(_smallCloudPLManager.GetEntityBounds());
+                    _player.Update(current, _prevKeyboardState,cloudBounds);
+                    // // Get all cloud bounds and update player opacity
+                    // List<Rectangle> allClouds = [];
+                    // allClouds.AddRange(_largeCloudPLManager.GetCloudBounds());
+                    // allClouds.AddRange(_smallCloudPLManager.GetCloudBounds());
+                    // _player.UpdateOpacity(allClouds);
+                    //_player.EatRadius * _player.OpacityFactor // Add this when passing it to the _boidmanage.update
+                    // _boidManager.Update(_player.Position, _player.EatRadius,_player.EatBoid);
+                    _boidManager.Update(_player.Position, _player.EatRadius ,_player.EatBoid,_player.OpacityFactor);
                     break;
             }
             _prevKeyboardState = current; // Used to keep track if key is pressed multiple times
@@ -237,25 +252,29 @@ namespace Boids
         {
             GraphicsDevice.Clear(Color.CornflowerBlue);
 
+            // Background setup here to align with window re-size
             Rectangle aspectBackground = BackgroundUtils.AspectBackground(_mainBackground);
-//TODO: Check on these scales again for the background tress, something is off
+            float widthScale = 2f;
+            float heightScale = 2f;
             List<Rectangle> tileTrees = BackgroundUtils.TileBackground(
                     _treeBackground,
-                    widthScale: 2f,    // or whatever scale you want
-                    heightScale: 2f,
+                    widthScale: widthScale,    
+                    heightScale: heightScale,
                     tileX: true,       // tile horizontally
                     tileY: false,      // don't tile vertically (since it's at the bottom)
-                    startX: 0,         // start at left edge
-                    startY: Constants.ActiveHeight - (_treeBackground.Height * 2)
+                    xPos: 0,         // start at left edge
+                    yPos: Constants.ActiveHeight - _treeBackground.Height*heightScale
                     );
+            widthScale = 1.5f;
+            heightScale = 1.5f;
             List<Rectangle> tileDarkTrees = BackgroundUtils.TileBackground(
                     _treeDarkBackground,
-                    widthScale: 2f,    // or whatever scale you want
-                    heightScale: 2f,
+                    widthScale: widthScale,    
+                    heightScale: heightScale,
                     tileX: true,       // tile horizontally
                     tileY: false,      // don't tile vertically (since it's at the bottom)
-                    startX: 0,         // start at left edge
-                    startY: Constants.ActiveHeight - (_treeBackground.Height * 2)
+                    xPos: 0,         // start at left edge
+                    yPos: Constants.ActiveHeight - _treeDarkBackground.Height*heightScale
                     );
 
             switch (_gamemode)
@@ -294,7 +313,6 @@ namespace Boids
                             depthStencilState: null,
                             rasterizerState: null,
                             effect: null
-                            // transformMatrix: _playerCamera.Transform
                             );
                     float scale = 4.0f;
                     _spriteBatch.Draw(_mainBackground,aspectBackground,Color.White);

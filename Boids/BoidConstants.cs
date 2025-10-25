@@ -1,4 +1,7 @@
 using System;
+using Microsoft.Xna.Framework.Graphics;
+using Boids.Shared;
+using Boids.Shared;
 
 namespace Boids.Boids
 {
@@ -26,5 +29,13 @@ namespace Boids.Boids
         public static float SepFactor {get; set;} = 1.8f;
         public static float AlignFactor {get; set;} = 0.7f;
         public static float CoheFactor {get; set;} = 0.7f;
+
+        internal static float CalculateBoidVisionRadius(Animation boidAnimation)
+        {
+            float radius = MathF.Max(boidAnimation.FrameWidth / 2f, boidAnimation.FrameHeight / 2f);
+            float visionRadius = radius * visionFactor;
+            float visionCap = MathF.Min(Constants.ActiveWidth, Constants.ActiveHeight) / 2f;
+            return MathF.Min(visionRadius, visionCap);
+        }
 }
 }

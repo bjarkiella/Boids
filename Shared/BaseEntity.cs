@@ -19,7 +19,7 @@ namespace Boids.Shared
             } 
         } // Used to check if entity is at, or close to zero speed 
         public float VisionFactor { get; set; }
-        public Animation? Animation { get; }
+        public Animation Animation { get; }
 
         // Cap margins  
         private readonly float visionCap = MathF.Min(Constants.ActiveWidth,Constants.ActiveHeight)/2f; 

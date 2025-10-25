@@ -15,6 +15,7 @@ namespace Boids.Background
         private readonly float _scale = scale;
 
         public float Width => _sourceRect.Width*_scale;
+        public float Height => _sourceRect.Height*_scale;
 
         protected static float Dt => Time.Delta;
 
@@ -29,6 +30,24 @@ namespace Boids.Background
             sb.Draw(_texture, _position, _sourceRect, Color.White, 0f, origin, _scale , SpriteEffects.None,0f);
         }
 
+        public Rectangle GetBounds()
+        {
+            Rectangle EntityBox = new (
+                    (int)(_position.X - Width/2f),
+                    (int)(_position.Y - Width/2f),
+                    (int)Width,
+                    (int)Width);
+            return EntityBox;
+        }
+        // public Rectangle GetBounds()
+        // {
+        //     return new Rectangle(
+        //         (int)(_position.X - _sourceRect.Width * _scale / 2f),
+        //         (int)(_position.Y - _sourceRect.Height * _scale / 2f),
+        //         (int)(_sourceRect.Width * _scale),
+        //         (int)(_sourceRect.Height * _scale)
+        //     );
+        // }
         public bool IsOffScreen()
         {
             float halfWidth = _sourceRect.Width * _scale/2f;

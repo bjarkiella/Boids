@@ -14,5 +14,6 @@ namespace Boids.Player
         public const float sprintSpeed = 2f;
         public const float sprintCoolDown = 5f;
         public const float wallProx = 0.03f;
+        public const float cloudTransSpeed = 3.0f;
     }
 }

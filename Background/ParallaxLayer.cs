@@ -39,6 +39,14 @@ namespace Boids.Background
 
         }
 
+        public List<Rectangle> GetLayerBounds()
+        {
+            List<Rectangle> bounds = [];
+            foreach (var entity in _parralaxEntity)
+                bounds.Add(entity.GetBounds());
+            return bounds;
+        }
+
         public void Draw(SpriteBatch sb)
         {
             foreach(ParallaxEntity entity in _parralaxEntity)

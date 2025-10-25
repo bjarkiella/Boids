@@ -27,6 +27,14 @@ namespace Boids.Background
             foreach (var layer in _layers)
                 layer.Draw(sb);
         }
+
+        public List<Rectangle> GetEntityBounds()
+        {
+            List<Rectangle> entitesBounds= [];
+            foreach (var layer in _layers)
+                entitesBounds.AddRange(layer.GetLayerBounds());
+            return entitesBounds;
+        }
     }
 }
 
