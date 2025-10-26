@@ -136,7 +136,7 @@ namespace Boids
             List<Rectangle> boidFrames = Animation.LoadAnimation(frameCount,frameWidth,frameHeight,startColumn * frameWidth, startRow * frameHeight);
             _boidAnimation = new(birdiesSheet, boidFrames, 0.1f, true);
 
-            // Some variable exposure
+            // Some variable exposure, used for player detection
             BoidVisionRadius = BoidConstants.CalculateBoidVisionRadius(_boidAnimation);
         }
 
@@ -174,7 +174,8 @@ namespace Boids
 
                     List<Rectangle> cloudBounds = _largeCloudPLManager.GetEntityBounds();
                     cloudBounds.AddRange(_smallCloudPLManager.GetEntityBounds());
-                    _player.Update(current, _prevKeyboardState,cloudBounds);
+                    List<Rectangle> treeBounds = BackgroundUtils.GetTreeBounds(_staticTrees,_treeScale);
+                    _player.Update(current, _prevKeyboardState,cloudBounds,treeBounds);
                     // // Get all cloud bounds and update player opacity
                     // List<Rectangle> allClouds = [];
                     // allClouds.AddRange(_largeCloudPLManager.GetCloudBounds());
@@ -314,7 +315,6 @@ namespace Boids
                             rasterizerState: null,
                             effect: null
                             );
-                    float scale = 4.0f;
                     _spriteBatch.Draw(_mainBackground,aspectBackground,Color.White);
                     foreach (var tile in tileTrees)
                     {
@@ -326,7 +326,7 @@ namespace Boids
                     }
                     foreach(var (frame,pos) in _staticTrees)
                     {
-                        _spriteBatch.Draw(_treeSheet,pos,frame,Color.White,0f,Vector2.Zero,scale,SpriteEffects.None,0f);
+                        _spriteBatch.Draw(_treeSheet,pos,frame,Color.White,0f,Vector2.Zero,_treeScale,SpriteEffects.None,0f);
                     }
                     _largeCloudPLManager.Draw(_spriteBatch);
                     _smallCloudPLManager.Draw(_spriteBatch);

@@ -29,6 +29,8 @@ namespace Boids.Player
         private float _opacity = 1.0f; 
 
         private bool _showDebugCircle = false;
+        private bool _playerInTrees = false;
+        private bool _playerInCloud = false;
 
         public float EatRadius => VisionRadius;
         public float OpacityFactor => _opacity;
@@ -50,10 +52,29 @@ namespace Boids.Player
             Position += Velocity * Dt;
         }
 
-        public void Update(KeyboardState current, KeyboardState _prevKeyboardState, List<Rectangle> intersectEntity)
+        public void Update(KeyboardState current, KeyboardState _prevKeyboardState, List<Rectangle> hideEntity, List<Rectangle> slowDownEntity)
         {
             _animation.Update();
             _edge = BC.ClosestEdge(Position, Radius,Radius*2,PlayerConstants.wallProx);
+
+            // Checking if clouds intersect player
+            if (hideEntity != null)
+            {
+                _playerInCloud = EntityIntersection(hideEntity);
+                UpdateOpacity();
+            }
+
+            // Checking if player is intersecting trees
+            if (slowDownEntity != null)
+            {
+                _playerInTrees = EntityIntersection(slowDownEntity);
+                UpdateOpacity();
+                // if (_playerInTrees && move != Vector2.Zero)
+                // {
+                //     Console.WriteLine("Im in da treees");
+                //     ApplyDrag(PlayerConstants.treeDrag);
+                // }
+            }
 
             // Keyboard inputs for player, edge is used to stop pushing beyond edge
             Vector2 move = Vector2.Zero;
@@ -78,7 +99,8 @@ namespace Boids.Player
             if (current.IsKeyDown(Keys.LeftShift) && !_prevKeyboardState.IsKeyDown(Keys.LeftShift) &&
                     !_sprinting &&
                     _coolDown <= 0f &&
-                    move.Length() > 0)
+                    move.Length() > 0 &&
+                    !_playerInTrees)
             {
                 _sprinting = true;
                 _sprintTimeLeft = PlayerConstants.sprintTime;
@@ -101,6 +123,15 @@ namespace Boids.Player
             // Sprinting conditions 
             if (_sprinting)
             {
+                // Cancel sprint if entering trees
+                if (_playerInTrees)
+                {
+                    _sprinting = false;
+                    _sprintTimeLeft = 0f;
+                    _sprintAcc = 1f;
+                    _sprintSpeed = 1f;
+                    _coolDown = PlayerConstants.sprintCoolDown;
+                }
                 _sprintTimeLeft -= Dt;
                 _sprintTimeLeft = MathF.Max(0f, _sprintTimeLeft);
                 if (_sprintTimeLeft <= 0f)
@@ -133,13 +164,9 @@ namespace Boids.Player
             Integrate();
 
             Position = BC.PosCheck(Position, Radius);
+            if (_playerInTrees && move != Vector2.Zero)
+                ApplyDrag(PlayerConstants.treeDrag);
 
-            // Checking if clouds intersect player
-            if (intersectEntity != null)
-            {
-                bool playerInCloud = EntityIntersection(intersectEntity);
-                UpdateOpacity(playerInCloud);
-            }
         }
 
         public bool EntityIntersection(List<Rectangle> intersectEntity)
@@ -158,10 +185,14 @@ namespace Boids.Player
             return playerTouch;
         }
 
-        public void UpdateOpacity(bool isInCloud)
+        public void UpdateOpacity()
         {
             // Smoothly transition opacity
-            float targetOpacity = isInCloud? 0.4f: 1.0f; 
+            float targetOpacity = 1.0f;
+            if (_playerInTrees)
+                targetOpacity = 0.7f;
+            else if (_playerInCloud)
+                targetOpacity = 0.4f;
             float transitionSpeed = PlayerConstants.cloudTransSpeed;
 
             if (_opacity < targetOpacity)

@@ -109,5 +109,30 @@ namespace Boids.Background
             }
             return spritePos;
         }
+        public static List<Rectangle> GetTreeBounds(
+                List<(Rectangle frame, Vector2 position)> trees,
+                float scale)
+        {
+            List<Rectangle> bounds = [];
+
+            foreach (var (frame, position) in trees)
+            {
+                // Calculate scaled dimensions
+                int scaledWidth = (int)(frame.Width * scale);
+                int scaledHeight = (int)(frame.Height * scale);
+
+                // Create collision box
+                Rectangle treeBounds = new(
+                        (int)position.X,
+                        (int)position.Y,
+                        scaledWidth,
+                        scaledHeight
+                        );
+
+                bounds.Add(treeBounds);
+            }
+
+            return bounds;
+        }
     }
 }
