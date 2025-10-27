@@ -6,21 +6,26 @@ using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using Boids.Shared;
 using Boids.Boids;
+using Boids.Particles;
 
 namespace Boids.Player
 {
     internal class PlayerEntity(
             Animation animation,
+            Animation sprintParticleAnimation,
             Vector2 position,
             Vector2 velocity,
             float eatRadiusFactor):
         BaseEntity(animation.Texture, position, velocity, eatRadiusFactor,animation)
     {
+        private readonly ParticleManager _sprintParticles = new (sprintParticleAnimation);
+
         private float _sprintTimeLeft = 0f;
         private float _coolDown = 0f;
         private bool _sprinting = false;
         private float _sprintAcc = 1f;
         private float _sprintSpeed = 1f;
+        private float _sprintParticleTimer = 0.05f;
         private BC.Edge? _edge;
         private readonly Animation _animation = animation;
         private enum DirFace {Right,Left}
@@ -69,11 +74,6 @@ namespace Boids.Player
             {
                 _playerInTrees = EntityIntersection(slowDownEntity);
                 UpdateOpacity();
-                // if (_playerInTrees && move != Vector2.Zero)
-                // {
-                //     Console.WriteLine("Im in da treees");
-                //     ApplyDrag(PlayerConstants.treeDrag);
-                // }
             }
 
             // Keyboard inputs for player, edge is used to stop pushing beyond edge
@@ -123,6 +123,7 @@ namespace Boids.Player
             // Sprinting conditions 
             if (_sprinting)
             {
+
                 // Cancel sprint if entering trees
                 if (_playerInTrees)
                 {
@@ -132,8 +133,26 @@ namespace Boids.Player
                     _sprintSpeed = 1f;
                     _coolDown = PlayerConstants.sprintCoolDown;
                 }
+                _sprintParticleTimer-= Dt;
                 _sprintTimeLeft -= Dt;
                 _sprintTimeLeft = MathF.Max(0f, _sprintTimeLeft);
+
+                if (_sprintParticleTimer<= 0f)
+                {
+                    // Calculate spawn position (behind player)
+                    Vector2 offset = -Vector2.Normalize(Velocity) * 10f;
+                    Vector2 spawnPos = Position + offset;
+
+                    // Spawn with slight random variation
+                    Vector2 particleVel = new Vector2(
+                            Utils.RandomFloatRange(-20f, 20f),
+                            Utils.RandomFloatRange(-20f, 20f));
+
+                    _sprintParticles.SpawnParticles(spawnPos, particleVel, lifetime: 0.5f,false);
+
+                    // Reset timer
+                    _sprintParticleTimer = 0.05f; // spawn every 50ms
+                }
                 if (_sprintTimeLeft <= 0f)
                 {
                     _sprinting = false;
@@ -166,6 +185,8 @@ namespace Boids.Player
             Position = BC.PosCheck(Position, Radius);
             if (_playerInTrees && move != Vector2.Zero)
                 ApplyDrag(PlayerConstants.treeDrag);
+
+            _sprintParticles.Update();
 
         }
 
@@ -202,6 +223,7 @@ namespace Boids.Player
         }
         public void Draw(SpriteBatch sb)
         {
+            _sprintParticles.Draw(sb);
             Color drawColor = Color.White * _opacity; 
             Vector2 origin = new (_animation.FrameWidth/2f, _animation.FrameHeight/2f);
             if (_showDebugCircle)

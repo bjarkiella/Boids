@@ -33,6 +33,8 @@ namespace Boids
         Texture2D _treeDarkBackground;
         Texture2D _treeSheet;
 
+        Texture2D _bloodParticles;
+
         List<(Rectangle frame, Vector2 position)> _staticTrees = [];
         readonly float _treeScale = 4.0f;
         List<Rectangle> _treeFrames;
@@ -176,13 +178,6 @@ namespace Boids
                     cloudBounds.AddRange(_smallCloudPLManager.GetEntityBounds());
                     List<Rectangle> treeBounds = BackgroundUtils.GetTreeBounds(_staticTrees,_treeScale);
                     _player.Update(current, _prevKeyboardState,cloudBounds,treeBounds);
-                    // // Get all cloud bounds and update player opacity
-                    // List<Rectangle> allClouds = [];
-                    // allClouds.AddRange(_largeCloudPLManager.GetCloudBounds());
-                    // allClouds.AddRange(_smallCloudPLManager.GetCloudBounds());
-                    // _player.UpdateOpacity(allClouds);
-                    //_player.EatRadius * _player.OpacityFactor // Add this when passing it to the _boidmanage.update
-                    // _boidManager.Update(_player.Position, _player.EatRadius,_player.EatBoid);
                     _boidManager.Update(_player.Position, _player.EatRadius ,_player.EatBoid,_player.OpacityFactor);
                     break;
             }

@@ -2,8 +2,6 @@ using Boids.Shared;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 
-//TODO: Add transparency factor to White.
-
 namespace Boids.Background
 {
     internal class ParallaxEntity(Texture2D texture, Rectangle sourceRect, Vector2 position, float speed, float scale)
