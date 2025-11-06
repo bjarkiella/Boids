@@ -1,0 +1,42 @@
+{
+  "general": [
+    "Well, that's not supposed to happen. But let's be honest, nothing ever goes according to plan, does it?",
+    "Error 42: The answer to life, the universe, and everything went wrong.",
+    "Something broke. We're not saying it's your fault, but we're heavily implying it.",
+    "The hamsters running the code have unionized and gone on strike. Please stand by.",
+    "Congratulations! You've discovered a feature we didn't know existed. It's called 'catastrophic failure.'",
+    "This error message has been brought to you by the Department of Redundancy Department of Redundancy.",
+    "We could tell you what went wrong, but honestly, we're just as confused as you are.",
+    "The code has decided to take a personal day. We respect its boundaries.",
+    "Error: Success failed successfully. Please try failing again.",
+    "Have you tried turning it off and on again? No seriously, that's all we've got."
+  ],
+  "file_not_found": [
+    "The file you're looking for has moved to a nice farm upstate where it can run free.",
+    "File not found. It's probably hiding with all those missing socks from your laundry.",
+    "We looked everywhere: under the couch, behind the fridge, in the cloud. No file. Sorry.",
+    "The file is currently attending a very important meeting and cannot be disturbed.",
+    "404: File Not Found. Unlike your car keys, we actually know where it isn't."
+  ],
+  "initialization_failed": [
+    "Initialization failed. The system refused to wake up. It mumbled something about 'just five more minutes.'",
+    "We tried to initialize, but the universe said 'nah.'",
+    "Initialization error: The void stared back and we blinked first.",
+    "The initialization sequence got stage fright and forgot its lines.",
+    "System failed to initialize. It's currently questioning its life choices."
+  ],
+  "out_of_memory": [
+    "Out of memory. The RAM has been redistributed to more deserving processes. Like minesweeper.",
+    "Memory full. Your computer is trying to remember where it left its keys.",
+    "We've run out of memory. Have you tried deleting your feelings? That usually frees up space.",
+    "Out of memory error. The bits are tired. The bytes are exhausted. We're all just done.",
+    "Memory overflow: Your computer is thinking too hard. Give it a break."
+  ],
+  "invalid_operation": [
+    "Invalid operation detected. We don't do that here. This is a respectable establishment.",
+    "That operation is about as valid as a three-dollar bill shaped like a triangle.",
+    "You can't do that. We tried. The laws of physics got upset.",
+    "Invalid operation: The code looked at what you tried to do and just... sighed.",
+    "That's not how any of this works. But points for creativity!"
+  ]
+}

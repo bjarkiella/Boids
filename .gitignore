@@ -22,3 +22,4 @@ Thumbs.db
 # ── Some specific files ─────────────────────────────────────────
 .claude/
 AGENTS.md
+.agent/

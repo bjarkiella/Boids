@@ -48,8 +48,6 @@ namespace Boids.Player
 
         private float _textureScale = 2f;
 
-
-
         internal void SteerTowards(Vector2 desiredDir, float maxTurnRate) => RotateTowardsDir(desiredDir,maxTurnRate); 
 
         internal void Integrate() 

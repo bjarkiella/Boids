@@ -27,13 +27,12 @@ namespace Boids
         Animation _boidAnimation;
         ParallaxManager _smallCloudPLManager;
         ParallaxManager _largeCloudPLManager;
+        Animation _sprintAnimation;
 
         Texture2D _mainBackground;
         Texture2D _treeBackground;
         Texture2D _treeDarkBackground;
         Texture2D _treeSheet;
-
-        Texture2D _bloodParticles;
 
         List<(Rectangle frame, Vector2 position)> _staticTrees = [];
         readonly float _treeScale = 4.0f;
@@ -138,6 +137,31 @@ namespace Boids
             List<Rectangle> boidFrames = Animation.LoadAnimation(frameCount,frameWidth,frameHeight,startColumn * frameWidth, startRow * frameHeight);
             _boidAnimation = new(birdiesSheet, boidFrames, 0.1f, true);
 
+            // Particles 
+            Texture2D particleSheet = Content.Load<Texture2D>("effects");
+
+            // Particles - Blood
+            List<Rectangle> _bloodParticles = [
+                new Rectangle(x:107,y:175,width:10,height:6),
+                new Rectangle(x:135,y:173,width:18,height:8),
+                new Rectangle(x:164,y:169,width:11,height:15),
+                new Rectangle(x:178,y:170,width:10,height:16)];
+
+            // Particles - Sprint
+            List<Rectangle> _sprintParticles = [
+                new Rectangle(x:131,y:130,width:26,height:28),
+                new Rectangle(x:164,y:130,width:26,height:28),
+                new Rectangle(x:196,y:130,width:26,height:28),
+                new Rectangle(x:226,y:130,width:26,height:28),
+                new Rectangle(x:258,y:130,width:26,height:28),
+                new Rectangle(x:291,y:130,width:26,height:28),
+                new Rectangle(x:323,y:130,width:26,height:28)];
+            _sprintAnimation = new(particleSheet, _sprintParticles, 0.1f, true);
+
+            // Particles - Alert 
+            List<Rectangle> _alertParticles = [
+                new Rectangle(x:525,y:164,width:4,height:13),
+                new Rectangle(x:589,y:165,width:4,height:13)];
             // Some variable exposure, used for player detection
             BoidVisionRadius = BoidConstants.CalculateBoidVisionRadius(_boidAnimation);
         }
@@ -240,7 +264,7 @@ namespace Boids
             _staticTrees = BackgroundUtils.SpritePosition(BackgroundConstants.treeCount,_treeFrames,_treeScale);
 
             // Textures, boids and player initialized
-            _player = new PlayerEntity(_playerAnimation, new Vector2(Constants.ActiveWidth / 2, Constants.ActiveHeight / 2), new Vector2(0, 0),PlayerConstants.eatRadiusFactor);
+            _player = new PlayerEntity(_playerAnimation, _sprintAnimation, new Vector2(Constants.ActiveWidth / 2, Constants.ActiveHeight / 2), new Vector2(0, 0),PlayerConstants.eatRadiusFactor);
             _boidManager = new BoidManager(_boidAnimation);
             for (int i = 0; i < 150; i++) _boidManager.SpawnBoid();
         }
