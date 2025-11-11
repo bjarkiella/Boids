@@ -9,14 +9,17 @@ namespace Boids.Particles
             Vector2 position,
             Vector2 velocity,
             float lifetime,
-            bool isGravity)
+            bool isGravity,
+            float rotation)
+
         :BaseEntity(animation.Texture, position,velocity, 0f,animation)
     {
-        private float _lifetime = lifetime;
+        private readonly float _lifetime = lifetime;
         private float _age = 0f;
-        private bool _isGravity = isGravity;
+        private readonly bool _isGravity = isGravity;
         private readonly Animation _animation = animation;
         public bool IsDead => _age >= _lifetime;
+        private readonly float _rotation = rotation;
 
         public void Update()
         {
@@ -36,7 +39,7 @@ namespace Boids.Particles
             float scale = Utils.RandomFloatRange(0.5f,3.0f);
 
             Vector2 origin = new(_animation.FrameWidth/2f, _animation.FrameHeight/2f);
-            sb.Draw(_animation.Texture, Position, _animation.CurrentFrame, color,0f,origin,scale,SpriteEffects.None,0f);
+            sb.Draw(_animation.Texture, Position, _animation.CurrentFrame, color,_rotation,origin,scale,SpriteEffects.None,0f);
 
         }
     }

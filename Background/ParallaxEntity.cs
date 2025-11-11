@@ -32,20 +32,12 @@ namespace Boids.Background
         {
             Rectangle EntityBox = new (
                     (int)(_position.X - Width/2f),
-                    (int)(_position.Y - Width/2f),
+                    (int)(_position.Y - Height/2f),
                     (int)Width,
-                    (int)Width);
+                    (int)Height);
             return EntityBox;
         }
-        // public Rectangle GetBounds()
-        // {
-        //     return new Rectangle(
-        //         (int)(_position.X - _sourceRect.Width * _scale / 2f),
-        //         (int)(_position.Y - _sourceRect.Height * _scale / 2f),
-        //         (int)(_sourceRect.Width * _scale),
-        //         (int)(_sourceRect.Height * _scale)
-        //     );
-        // }
+
         public bool IsOffScreen()
         {
             float halfWidth = _sourceRect.Width * _scale/2f;

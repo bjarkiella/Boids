@@ -5,7 +5,6 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using Boids.Shared;
-using Boids.Boids;
 using Boids.Particles;
 
 namespace Boids.Player
@@ -33,6 +32,7 @@ namespace Boids.Player
 
         private float _opacity = 1.0f; 
 
+
         private bool _showDebugCircle = false;
         private bool _playerInTrees = false;
         private bool _playerInCloud = false;
@@ -45,8 +45,9 @@ namespace Boids.Player
                 (int)(Position.Y - Radius),
                 (int)(Radius*2),
                 (int)(Radius*2));
+        private float Rotation => MathF.Atan2(Velocity.Y,Velocity.X);
 
-        private float _textureScale = 2f;
+        private readonly float _textureScale = 2f;
 
         internal void SteerTowards(Vector2 desiredDir, float maxTurnRate) => RotateTowardsDir(desiredDir,maxTurnRate); 
 
@@ -142,11 +143,9 @@ namespace Boids.Player
                     Vector2 spawnPos = Position + offset;
 
                     // Spawn with slight random variation
-                    Vector2 particleVel = new Vector2(
-                            Utils.RandomFloatRange(-20f, 20f),
-                            Utils.RandomFloatRange(-20f, 20f));
+                    Vector2 particleVel = new (Utils.RandomFloatRange(-20f, 20f), Utils.RandomFloatRange(-20f, 20f));
 
-                    _sprintParticles.SpawnParticles(spawnPos, particleVel, lifetime: 0.5f,false);
+                    _sprintParticles.SpawnParticles(spawnPos, particleVel, lifetime: 0.5f,false,Rotation-MathF.PI/2f);
 
                     // Reset timer
                     _sprintParticleTimer = 0.05f; // spawn every 50ms

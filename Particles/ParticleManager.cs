@@ -16,7 +16,7 @@ namespace Boids.Particles
 
         public int Count => _particles.Count;
 
-        public void SpawnParticles(Vector2 position, Vector2 velocity, float lifetime,bool isGravity)
+        public void SpawnParticles(Vector2 position, Vector2 velocity, float lifetime,bool isGravity, float rotation)
         {
             // Create new animation with random starting frame
             int randomStartFrame = Utils.RandomIntRange(0, _particleAnimation.Frames.Count);
@@ -27,7 +27,7 @@ namespace Boids.Particles
                     isLooping: true,
                     startFrame: randomStartFrame
                     );
-            ParticleEntity particle = new(particleAnim, position,velocity,lifetime,isGravity);
+            ParticleEntity particle = new(particleAnim, position,velocity,lifetime,isGravity,rotation);
             _particles.Add(particle);
 
         }
