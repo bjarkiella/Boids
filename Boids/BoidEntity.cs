@@ -2,15 +2,17 @@ using System;
 using Boids.Shared;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using Boids.Particles;
 
 namespace Boids.Boids
 {
     internal class BoidEntity(
-            Animation animation,
+            Animation boidAnimation,
+            BoidResources resources,
             Vector2 position,
             Vector2 velocity,
             float visionFactor)
-        :BaseEntity(animation.Texture, position,velocity, visionFactor,animation)
+        :BaseEntity(boidAnimation.Texture, position,velocity, visionFactor,boidAnimation)
     {
         private bool _inTurn = false;
         private float _preSpeed = 0f;
@@ -27,7 +29,10 @@ namespace Boids.Boids
 
         public float SpeedFactor = 1f;
 
-        public readonly Animation _animation = animation;
+        private float _alertCooldown = 0f;
+
+        public readonly Animation _animation = boidAnimation;
+        public readonly ParticleManager _alertParticles = new(resources.AlertParticleAnimation);
 
         internal float BoidVisionRadius() => VisionRadius;
         internal float CloseVision() => BoidVisionRadius()/BoidConstants.visionFactor;
@@ -52,6 +57,35 @@ namespace Boids.Boids
             SpeedFactor = BoidConstants.speedUp;
             UpdateVelocity(Speed,BoidConstants.minSpeed,BoidConstants.maxSpeed,SpeedFactor);
             ResetSpeedFactor();
+        }
+        internal Vector2 DeathByCake()
+        {
+            return Position;  // Return death position for blood spawn
+        }
+        internal void Update()
+        {
+            _alertParticles.Update();
+            if (_alertCooldown > 0f)
+                _alertCooldown -= Dt;
+        }
+        internal void Alert()
+        {
+            if (_alertCooldown <= 0f)  // Only spawn when cooldown expired
+            {
+                Vector2 offset = new (0, -_animation.FrameHeight / 2f);
+                
+                // Lifetime = 2 frames × 0.5s per frame = 1.0s
+                _alertParticles.SpawnParticles(
+                    Position + offset, 
+                    Vector2.Zero, 
+                    lifetime: 0.50f,  // Full animation duration
+                    isGravity: false, 
+                    rotation: 0f,
+                    startFrame: 0  // Always start at frame 0 for alert
+                );
+                
+                _alertCooldown = 2.0f;  // Can't alert again for 2 seconds
+            }
         }
         internal float WiggleSpeed()
         {
@@ -162,7 +196,7 @@ namespace Boids.Boids
         }
 
         internal bool InVisionRange(Vector2 pos,float opacityFactor) {
-        float effVisionFactor = BoidVisionRadius() * opacityFactor;
+            float effVisionFactor = BoidVisionRadius() * opacityFactor;
             float distaSq = Vector2.DistanceSquared(Position,pos);
             float visionSq = effVisionFactor * effVisionFactor;
             return distaSq <= visionSq;
@@ -172,6 +206,7 @@ namespace Boids.Boids
         {
             float scale = 2f;
             Vector2 origin = new (_animation.FrameWidth/2f, _animation.FrameHeight/2f);
+            _alertParticles.Draw(sb);
             if (Velocity.X >= 0)
                 sb.Draw(_animation.Texture, Position, _animation.CurrentFrame, Color.White, 0f, origin, scale , SpriteEffects.None,0f);
             else if (Velocity.X < 0)

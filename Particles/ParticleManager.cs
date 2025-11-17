@@ -16,16 +16,16 @@ namespace Boids.Particles
 
         public int Count => _particles.Count;
 
-        public void SpawnParticles(Vector2 position, Vector2 velocity, float lifetime,bool isGravity, float rotation)
+        public void SpawnParticles(Vector2 position, Vector2 velocity, float lifetime,bool isGravity, float rotation, int startFrame = -1)
         {
-            // Create new animation with random starting frame
-            int randomStartFrame = Utils.RandomIntRange(0, _particleAnimation.Frames.Count);
+            // Create new animation with specified or random starting frame
+            int frameToUse = startFrame >= 0 ? startFrame : Utils.RandomIntRange(0, _particleAnimation.Frames.Count);
             Animation particleAnim = new (
                     _particleAnimation.Texture,
                     _particleAnimation.Frames,
                     _particleAnimation.FrameDuration,
-                    isLooping: true,
-                    startFrame: randomStartFrame
+                    isLooping: _particleAnimation.FrameDuration < 0.3f,  // Only loop if fast animations
+                    startFrame: frameToUse
                     );
             ParticleEntity particle = new(particleAnim, position,velocity,lifetime,isGravity,rotation);
             _particles.Add(particle);

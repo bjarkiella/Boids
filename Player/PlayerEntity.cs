@@ -10,14 +10,13 @@ using Boids.Particles;
 namespace Boids.Player
 {
     internal class PlayerEntity(
-            Animation animation,
-            Animation sprintParticleAnimation,
+            PlayerResources resources,
             Vector2 position,
             Vector2 velocity,
             float eatRadiusFactor):
-        BaseEntity(animation.Texture, position, velocity, eatRadiusFactor,animation)
+        BaseEntity(resources.PlayerAnimation.Texture, position, velocity, eatRadiusFactor,resources.PlayerAnimation)
     {
-        private readonly ParticleManager _sprintParticles = new (sprintParticleAnimation);
+        private readonly ParticleManager _sprintParticles = new (resources.SprintParticleAnimation);
 
         private float _sprintTimeLeft = 0f;
         private float _coolDown = 0f;
@@ -26,7 +25,7 @@ namespace Boids.Player
         private float _sprintSpeed = 1f;
         private float _sprintParticleTimer = 0.05f;
         private BC.Edge? _edge;
-        private readonly Animation _animation = animation;
+        private readonly Animation _animation = resources.PlayerAnimation;
         private enum DirFace {Right,Left}
         private DirFace currentFace = DirFace.Right;
 
@@ -148,7 +147,7 @@ namespace Boids.Player
                     _sprintParticles.SpawnParticles(spawnPos, particleVel, lifetime: 0.5f,false,Rotation-MathF.PI/2f);
 
                     // Reset timer
-                    _sprintParticleTimer = 0.05f; // spawn every 50ms
+                    _sprintParticleTimer = 0.08f; // spawn every 500ms
                 }
                 if (_sprintTimeLeft <= 0f)
                 {

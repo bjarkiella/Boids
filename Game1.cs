@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
@@ -27,12 +27,18 @@ namespace Boids
         Animation _boidAnimation;
         ParallaxManager _smallCloudPLManager;
         ParallaxManager _largeCloudPLManager;
+
         Animation _sprintAnimation;
+        Animation _bloodAnimation;
+        Animation _alertAnimation;
 
         Texture2D _mainBackground;
         Texture2D _treeBackground;
         Texture2D _treeDarkBackground;
         Texture2D _treeSheet;
+
+        BoidResources _boidResources;
+        PlayerResources _playerResources;
 
         List<(Rectangle frame, Vector2 position)> _staticTrees = [];
         readonly float _treeScale = 4.0f;
@@ -146,6 +152,7 @@ namespace Boids
                 new Rectangle(x:135,y:173,width:18,height:8),
                 new Rectangle(x:164,y:169,width:11,height:15),
                 new Rectangle(x:178,y:170,width:10,height:16)];
+            _bloodAnimation = new(particleSheet, _bloodParticles, 0.1f, true);
 
             // Particles - Sprint
             List<Rectangle> _sprintParticles = [
@@ -157,13 +164,29 @@ namespace Boids
                 new Rectangle(x:291,y:130,width:26,height:28),
                 new Rectangle(x:323,y:130,width:26,height:28)];
             _sprintAnimation = new(particleSheet, _sprintParticles, 0.1f, true);
+            _bloodAnimation = new(particleSheet, _bloodParticles, 0.1f, true);
 
             // Particles - Alert 
             List<Rectangle> _alertParticles = [
                 new Rectangle(x:525,y:164,width:4,height:13),
                 new Rectangle(x:589,y:165,width:4,height:13)];
+            _alertAnimation = new(particleSheet, _alertParticles, 0.5f, false);  // 0.5s per frame, non-looping
+
             // Some variable exposure, used for player detection
             BoidVisionRadius = BoidConstants.CalculateBoidVisionRadius(_boidAnimation);
+
+            // Resources initialized
+            _boidResources = new()
+            {
+                BoidAnimation = _boidAnimation,
+                AlertParticleAnimation = _alertAnimation, 
+                BloodParticleAnimation = _bloodAnimation 
+            };
+            _playerResources = new () 
+            {
+                PlayerAnimation = _playerAnimation,
+                SprintParticleAnimation = _sprintAnimation
+            };
         }
 
         protected override void Update(GameTime gameTime)
@@ -240,7 +263,7 @@ namespace Boids
             _staticTrees = BackgroundUtils.SpritePosition(BackgroundConstants.treeCount,_treeFrames,_treeScale);
 
             // Textures and boids created
-            _boidManager = new BoidManager(_boidAnimation);
+            _boidManager = new BoidManager(_boidResources);
 
             // New UI drawn
             Gum.Root.Children.Clear();
@@ -264,8 +287,8 @@ namespace Boids
             _staticTrees = BackgroundUtils.SpritePosition(BackgroundConstants.treeCount,_treeFrames,_treeScale);
 
             // Textures, boids and player initialized
-            _player = new PlayerEntity(_playerAnimation, _sprintAnimation, new Vector2(Constants.ActiveWidth / 2, Constants.ActiveHeight / 2), new Vector2(0, 0),PlayerConstants.eatRadiusFactor);
-            _boidManager = new BoidManager(_boidAnimation);
+            _player = new PlayerEntity(_playerResources, new Vector2(Constants.ActiveWidth / 2, Constants.ActiveHeight / 2), new Vector2(0, 0),PlayerConstants.eatRadiusFactor);
+            _boidManager = new BoidManager(_boidResources);
             for (int i = 0; i < 150; i++) _boidManager.SpawnBoid();
         }
         protected override void Draw(GameTime gameTime)
