@@ -23,6 +23,15 @@ namespace Boids.Background
             return new Rectangle(x, y, width, height);
         }
 
+        public static List<Rectangle> LoadCloudFrames(int[] width, int[] heights, int[] offsetX, int[] offsetY)
+        {
+            List<Rectangle> frames = [];
+            for (int i = 0; i<width.Length;i++)
+            {
+                frames.Add(new(offsetX[i],offsetY[i],width[i],heights[i])); 
+            }
+            return frames;
+        }
         public static List<Rectangle> TileBackground( Texture2D background, float widthScale = 1.0f, float heightScale = 1.0f, bool tileX = true, bool tileY = true, float xPos= 0f, float yPos= 0f)      
         {
             // Validate scales (same as StretchBackground)

@@ -32,17 +32,12 @@ namespace Boids
         Animation _bloodAnimation;
         Animation _alertAnimation;
 
-        Texture2D _mainBackground;
-        Texture2D _treeBackground;
-        Texture2D _treeDarkBackground;
-        Texture2D _treeSheet;
-
+        BackgroundResources _backgroundResources;
         BoidResources _boidResources;
         PlayerResources _playerResources;
 
         List<(Rectangle frame, Vector2 position)> _staticTrees = [];
         readonly float _treeScale = 4.0f;
-        List<Rectangle> _treeFrames;
 
         public static float BoidVisionRadius {get; private set;}
         // PlayerCamera _playerCamera;
@@ -77,9 +72,9 @@ namespace Boids
             _spriteBatch = new SpriteBatch(GraphicsDevice);
 
             // Static background - Sky
-            _mainBackground = Content.Load<Texture2D>("sky");
-            _treeBackground = Content.Load<Texture2D>("Tlayer2");
-            _treeDarkBackground = Content.Load<Texture2D>("Tlayer3");
+            Texture2D skyBackground = Content.Load<Texture2D>("sky");
+            Texture2D treeBackground = Content.Load<Texture2D>("Tlayer2");
+            Texture2D treeDarkBackground = Content.Load<Texture2D>("Tlayer3");
 
             // Static background - Trees
             int frameCount= 5;
@@ -89,38 +84,26 @@ namespace Boids
             int startY= 0;
             int spacingX= 3;  
             int spacingY= 0;  
-            _treeSheet = Content.Load<Texture2D>("Textures&trees");
-            _treeFrames = BackgroundUtils.LoadSprites(frameCount,frameWidth,frameHeight,startX,startY,spacingX,spacingY);
+            Texture2D treeSheet = Content.Load<Texture2D>("Textures&trees");
+            List<Rectangle> treeFrames = BackgroundUtils.LoadSprites(frameCount,frameWidth,frameHeight,startX,startY,spacingX,spacingY);
 
             // Moving background
             Texture2D largeCloudSheet = Content.Load<Texture2D>("clouds_big");
             Texture2D smallCloudSheet = Content.Load<Texture2D>("clouds_small");
 
             // Moving background - Large Clouds 
-            List<int> cloudWidth = [36,40];
-            List<int> cloudHeight =[24,24];
-            List<int> cloudOffX = [15,45];
-            List<int> cloudOffY = [6,11];
-            List<Rectangle> _largeClouds = [];
-            for (int i = 0; i<cloudWidth.Count;i++)
-            {
-                Rectangle ble = new(cloudOffX[i],cloudOffY[i],cloudWidth[i],cloudHeight[i]);
-                _largeClouds.Add(ble); 
-            }
-            _largeCloudPLManager = new ParallaxManager(largeCloudSheet, _largeClouds);
+            int[] cloudWidth = [36,40];
+            int[] cloudHeight =[24,24];
+            int[] cloudOffX = [15,45];
+            int[] cloudOffY = [6,11];
+            List<Rectangle> _largeClouds = BackgroundUtils.LoadCloudFrames(cloudWidth,cloudHeight,cloudOffX,cloudOffY); 
 
             // Moving background - Small Clouds 
             cloudWidth = [16,20,20];
             cloudHeight =[10,16,16];
             cloudOffX = [0,16,11];
             cloudOffY = [0,0,6];
-            List<Rectangle> _smallClouds = [];
-            for (int i = 0; i<cloudWidth.Count;i++)
-            {
-                Rectangle ble = new(cloudOffX[i],cloudOffY[i],cloudWidth[i],cloudHeight[i]);
-                _smallClouds.Add(ble); 
-            }
-            _smallCloudPLManager = new ParallaxManager(smallCloudSheet, _smallClouds);
+            List<Rectangle> _smallClouds = BackgroundUtils.LoadCloudFrames(cloudWidth,cloudHeight,cloudOffX,cloudOffY); 
 
             // Animation
             Texture2D birdiesSheet = Content.Load<Texture2D>("Birdies");
@@ -164,18 +147,17 @@ namespace Boids
                 new Rectangle(x:291,y:130,width:26,height:28),
                 new Rectangle(x:323,y:130,width:26,height:28)];
             _sprintAnimation = new(particleSheet, _sprintParticles, 0.1f, true);
-            _bloodAnimation = new(particleSheet, _bloodParticles, 0.1f, true);
 
             // Particles - Alert 
             List<Rectangle> _alertParticles = [
                 new Rectangle(x:525,y:164,width:4,height:13),
                 new Rectangle(x:589,y:165,width:4,height:13)];
-            _alertAnimation = new(particleSheet, _alertParticles, 0.5f, false);  // 0.5s per frame, non-looping
+            _alertAnimation = new(particleSheet, _alertParticles, 0.1f,true);
 
             // Some variable exposure, used for player detection
             BoidVisionRadius = BoidConstants.CalculateBoidVisionRadius(_boidAnimation);
 
-            // Resources initialized
+            // Resources 
             _boidResources = new()
             {
                 BoidAnimation = _boidAnimation,
@@ -187,6 +169,22 @@ namespace Boids
                 PlayerAnimation = _playerAnimation,
                 SprintParticleAnimation = _sprintAnimation
             };
+            _backgroundResources = new()
+            {
+                Sky = skyBackground,
+                TreeSheet = treeSheet,
+                TreeFrames = treeFrames,
+                TreeBackground = treeBackground,
+                TreeDarkBackground = treeDarkBackground,
+                LargeCloudSheet = largeCloudSheet,
+                SmallCloudSheet = smallCloudSheet,
+                LargeCloudFrames = _largeClouds,
+                SmallCloudFrames = _smallClouds
+            };
+
+            // Managers
+            _largeCloudPLManager = new ParallaxManager(_backgroundResources.LargeCloudSheet, _backgroundResources.LargeCloudFrames);
+            _smallCloudPLManager = new ParallaxManager(_backgroundResources.SmallCloudSheet, _backgroundResources.SmallCloudFrames);
         }
 
         protected override void Update(GameTime gameTime)
@@ -260,7 +258,7 @@ namespace Boids
         private void SetupSimulation()
         {
             // Background trees initialized (Placed here due to re-size availability)
-            _staticTrees = BackgroundUtils.SpritePosition(BackgroundConstants.treeCount,_treeFrames,_treeScale);
+            _staticTrees = BackgroundUtils.SpritePosition(BackgroundConstants.treeCount,_backgroundResources.TreeFrames,_treeScale);
 
             // Textures and boids created
             _boidManager = new BoidManager(_boidResources);
@@ -284,45 +282,73 @@ namespace Boids
             Constants.PHeight = 0;
 
             // Background trees initialized (Placed here due to re-size availability)
-            _staticTrees = BackgroundUtils.SpritePosition(BackgroundConstants.treeCount,_treeFrames,_treeScale);
+            _staticTrees = BackgroundUtils.SpritePosition(BackgroundConstants.treeCount,_backgroundResources.TreeFrames,_treeScale);
 
             // Textures, boids and player initialized
             _player = new PlayerEntity(_playerResources, new Vector2(Constants.ActiveWidth / 2, Constants.ActiveHeight / 2), new Vector2(0, 0),PlayerConstants.eatRadiusFactor);
             _boidManager = new BoidManager(_boidResources);
             for (int i = 0; i < 150; i++) _boidManager.SpawnBoid();
         }
+        private void DrawBackground(SpriteBatch sb, Rectangle aspectBg, List<Rectangle> tiles, List<Rectangle> darkTiles)
+        {
+
+            sb.Begin(
+                    SpriteSortMode.Deferred,
+                    BlendState.AlphaBlend,
+                    SamplerState.PointClamp,  
+                    depthStencilState: null,
+                    rasterizerState: null
+                    );
+            sb.Draw(_backgroundResources.Sky,aspectBg,Color.White);
+            foreach (Rectangle tile in tiles)
+            {
+                sb.Draw(_backgroundResources.TreeBackground, tile, Color.White);
+            }
+            foreach (Rectangle tile in darkTiles)
+            {
+                sb.Draw(_backgroundResources.TreeDarkBackground, tile, Color.White);
+            }
+            foreach(var (frame,pos) in _staticTrees)
+            {
+                sb.Draw(_backgroundResources.TreeSheet,pos,frame,Color.White,0f,Vector2.Zero,_treeScale,SpriteEffects.None,0f);
+            }
+            _largeCloudPLManager.Draw(sb);
+            _smallCloudPLManager.Draw(sb);
+            sb.End();
+        }
         protected override void Draw(GameTime gameTime)
         {
             GraphicsDevice.Clear(Color.CornflowerBlue);
 
             // Background setup here to align with window re-size
-            Rectangle aspectBackground = BackgroundUtils.AspectBackground(_mainBackground);
+            Rectangle aspectBackground = BackgroundUtils.AspectBackground(_backgroundResources.Sky);
             float widthScale = 2f;
             float heightScale = 2f;
             List<Rectangle> tileTrees = BackgroundUtils.TileBackground(
-                    _treeBackground,
+                    _backgroundResources.TreeBackground,
                     widthScale: widthScale,    
                     heightScale: heightScale,
                     tileX: true,       // tile horizontally
                     tileY: false,      // don't tile vertically (since it's at the bottom)
                     xPos: 0,         // start at left edge
-                    yPos: Constants.ActiveHeight - _treeBackground.Height*heightScale
+                    yPos: Constants.ActiveHeight - _backgroundResources.TreeBackground.Height*heightScale
                     );
             widthScale = 1.5f;
             heightScale = 1.5f;
             List<Rectangle> tileDarkTrees = BackgroundUtils.TileBackground(
-                    _treeDarkBackground,
+                    _backgroundResources.TreeDarkBackground,
                     widthScale: widthScale,    
                     heightScale: heightScale,
                     tileX: true,       // tile horizontally
                     tileY: false,      // don't tile vertically (since it's at the bottom)
                     xPos: 0,         // start at left edge
-                    yPos: Constants.ActiveHeight - _treeDarkBackground.Height*heightScale
+                    yPos: Constants.ActiveHeight - _backgroundResources.TreeDarkBackground.Height*heightScale
                     );
 
             switch (_gamemode)
             {
                 case GameMode.Simulation:
+                    DrawBackground(_spriteBatch,aspectBackground,tileTrees,tileDarkTrees);
                     _spriteBatch.Begin(
                             SpriteSortMode.Deferred,
                             BlendState.AlphaBlend,
@@ -330,25 +356,10 @@ namespace Boids
                             depthStencilState: null,
                             rasterizerState: null
                             );
-                    _spriteBatch.Draw(_mainBackground,aspectBackground,Color.White);
-                    foreach (var tile in tileTrees)
-                    {
-                        _spriteBatch.Draw(_treeBackground, tile, Color.White);
-                    }
-                    foreach (var tile in tileDarkTrees)
-                    {
-                        _spriteBatch.Draw(_treeDarkBackground, tile, Color.White);
-                    }
-                    foreach(var (frame,pos) in _staticTrees)
-                    {
-                        _spriteBatch.Draw(_treeSheet,pos,frame,Color.White);
-                    }
-                    _largeCloudPLManager.Draw(_spriteBatch);
-                    _smallCloudPLManager.Draw(_spriteBatch);
                     _boidManager.Draw(_spriteBatch);
-                    _spriteBatch.End();
                     break;
                 case GameMode.Player:
+                    DrawBackground(_spriteBatch,aspectBackground,tileTrees,tileDarkTrees);
                     _spriteBatch.Begin(
                             SpriteSortMode.Deferred,
                             BlendState.AlphaBlend,
@@ -357,21 +368,6 @@ namespace Boids
                             rasterizerState: null,
                             effect: null
                             );
-                    _spriteBatch.Draw(_mainBackground,aspectBackground,Color.White);
-                    foreach (var tile in tileTrees)
-                    {
-                        _spriteBatch.Draw(_treeBackground, tile, Color.White);
-                    }
-                    foreach (var tile in tileDarkTrees)
-                    {
-                        _spriteBatch.Draw(_treeDarkBackground, tile, Color.White);
-                    }
-                    foreach(var (frame,pos) in _staticTrees)
-                    {
-                        _spriteBatch.Draw(_treeSheet,pos,frame,Color.White,0f,Vector2.Zero,_treeScale,SpriteEffects.None,0f);
-                    }
-                    _largeCloudPLManager.Draw(_spriteBatch);
-                    _smallCloudPLManager.Draw(_spriteBatch);
                     _player.Draw(_spriteBatch);
                     _boidManager.Draw(_spriteBatch);
                     _spriteBatch.End();
