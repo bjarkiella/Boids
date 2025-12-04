@@ -4,13 +4,13 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using MonoGameGum;
+using Gum.Wireframe;
 
 using Boids.Shared;
 using Boids.Boids;
 using Boids.Player;
 using Boids.ui;
 using Boids.Background;
-using System.Globalization;
 
 namespace Boids
 {
@@ -43,6 +43,8 @@ namespace Boids
         // PlayerCamera _playerCamera;
         private SimUI _simUI;
         private StartupUI _startupUI;
+        private TimerUI _timerUI = new();
+
         public enum GameMode { None, Simulation, Player }
         private GameMode _gamemode = GameMode.None;
         public Game1()
@@ -57,8 +59,24 @@ namespace Boids
         }
         private void OnResize(object sender, EventArgs e)
         {
+            // Update dimension constants
             Constants.SWidth = Window.ClientBounds.Width;
             Constants.SHeight = Window.ClientBounds.Height;
+            Constants.PWidth = Constants.SWidth;
+
+            GumService.Default.Root.Width = Constants.SWidth;
+            GumService.Default.Root.Height = Constants.SHeight;
+            
+            // Resize UI if in simulation mode
+            if (_gamemode == GameMode.Simulation && _simUI != null)
+            {
+                _simUI.ReSizeUI(Constants.SWidth, Constants.SHeight);
+            }
+            // Resize UI if in player mode
+            if (_gamemode == GameMode.Player && _timerUI != null)
+            {
+                _timerUI.ReSizeUI(Constants.SWidth, Constants.SHeight);
+            }
         }
         protected override void Initialize()
         {
@@ -224,6 +242,8 @@ namespace Boids
                     List<Rectangle> treeBounds = BackgroundUtils.GetTreeBounds(_staticTrees,_treeScale);
                     _player.Update(current, _prevKeyboardState,cloudBounds,treeBounds);
                     _boidManager.Update(_player.Position, _player.EatRadius ,_player.EatBoid,_player.OpacityFactor);
+
+                    _timerUI.UpdateTimer();
                     break;
             }
             _prevKeyboardState = current; // Used to keep track if key is pressed multiple times
@@ -249,6 +269,7 @@ namespace Boids
             {
                 _gamemode = GameMode.Player;
                 SetupPlayerMode();
+
             };
             _startupUI.OnExitClicked = () =>
             {
@@ -263,15 +284,24 @@ namespace Boids
             // Textures and boids created
             _boidManager = new BoidManager(_boidResources);
 
+            // Window size resize 
+            Constants.SWidth = Window.ClientBounds.Width;
+            Constants.SHeight = Window.ClientBounds.Height;
+            Constants.PWidth = Constants.SWidth;
+            Constants.PHeight = Constants.DefaultPanelHeight;
+            GraphicalUiElement.CanvasWidth = Window.ClientBounds.Width;
+            GraphicalUiElement.CanvasHeight = Window.ClientBounds.Height;
+            GumService.Default.Root.Width = Window.ClientBounds.Width;
+            GumService.Default.Root.Height = Window.ClientBounds.Height;
+
             // New UI drawn
             Gum.Root.Children.Clear();
             if (_simUI == null)
             {
                 _simUI = new SimUI();
-                _simUI.BuildUI();
-                _simUI.HookEvents(_boidManager);
+                _simUI.BuildUI(_boidManager);
             }
-            _simUI.ShowUI();
+            _simUI.RebuildAndShowUI(_boidManager);
         }
         private void SetupPlayerMode()
         {
@@ -288,6 +318,18 @@ namespace Boids
             _player = new PlayerEntity(_playerResources, new Vector2(Constants.ActiveWidth / 2, Constants.ActiveHeight / 2), new Vector2(0, 0),PlayerConstants.eatRadiusFactor);
             _boidManager = new BoidManager(_boidResources);
             for (int i = 0; i < 150; i++) _boidManager.SpawnBoid();
+
+            // Syncing Canvas to re-size
+            GraphicalUiElement.CanvasWidth = Window.ClientBounds.Width;
+            GraphicalUiElement.CanvasHeight = Window.ClientBounds.Height;
+            GumService.Default.Root.Width = Window.ClientBounds.Width;
+            GumService.Default.Root.Height = Window.ClientBounds.Height;
+
+            // Adding overlay UI      
+            _timerUI.BuildTimerUI();
+            _timerUI.ResetTimer();
+            _timerUI.ShowUI();
+
         }
         private void DrawBackground(SpriteBatch sb, Rectangle aspectBg, List<Rectangle> tiles, List<Rectangle> darkTiles)
         {
@@ -331,7 +373,7 @@ namespace Boids
                     tileX: true,       // tile horizontally
                     tileY: false,      // don't tile vertically (since it's at the bottom)
                     xPos: 0,         // start at left edge
-                    yPos: Constants.ActiveHeight - _backgroundResources.TreeBackground.Height*heightScale
+                    yPos: Constants.SHeight - _backgroundResources.TreeBackground.Height*heightScale
                     );
             widthScale = 1.5f;
             heightScale = 1.5f;
@@ -342,7 +384,7 @@ namespace Boids
                     tileX: true,       // tile horizontally
                     tileY: false,      // don't tile vertically (since it's at the bottom)
                     xPos: 0,         // start at left edge
-                    yPos: Constants.ActiveHeight - _backgroundResources.TreeDarkBackground.Height*heightScale
+                    yPos: Constants.SHeight - _backgroundResources.TreeDarkBackground.Height*heightScale
                     );
 
             switch (_gamemode)
@@ -357,6 +399,7 @@ namespace Boids
                             rasterizerState: null
                             );
                     _boidManager.Draw(_spriteBatch);
+                    _spriteBatch.End();
                     break;
                 case GameMode.Player:
                     DrawBackground(_spriteBatch,aspectBackground,tileTrees,tileDarkTrees);
@@ -377,6 +420,7 @@ namespace Boids
             {
                 case GameMode.None:
                 case GameMode.Simulation:
+                case GameMode.Player: 
                     _spriteBatch.Begin(
                             SpriteSortMode.Deferred,
                             BlendState.AlphaBlend,

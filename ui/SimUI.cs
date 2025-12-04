@@ -1,11 +1,7 @@
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 using Gum.Wireframe;
-using MonoGameGum.Forms.Controls;
+using Gum.Forms.Controls;
 using MonoGameGum.GueDeriving;
-using RenderingLibrary;
 using MonoGameGum;
 using Microsoft.Xna.Framework;
 
@@ -16,208 +12,297 @@ namespace Boids.ui
 {
     public class SimUI 
     {
-        GumService Gum => GumService.Default;
         private ContainerRuntime _mainContainer;
-        List<Button> _addbuttons,_rembuttons;
-        List<ControlPair<Slider, Label>> _boidSlider;
-        List<ComboBox> _bcCond;
-        public static List<Button> AddButtonRow(string labelName, int bWidth, List<int> bName, string preFix, StackPanel stackPanel,bool visible=true)
-        {
-            List<Button> listOut = new List<Button>();
-            Button button;
-            Label label = new Label();
-            label.Text = labelName;
-            label.Anchor(Anchor.Top);
-            stackPanel.AddChild(label);
-            foreach (int num in bName) {
-                button = new Button();
-                button.Text = preFix + num;
-                button.Name = preFix + num;
-                button.Visual.Width = bWidth;
-                button.IsVisible = visible;
-                listOut.Add(button);
-                stackPanel.AddChild(button);
-            }
-            return listOut;
-        }
-        public static List<ControlPair<Slider,Label>> AddSliderRow(int width, List<string> sName, StackPanel sliderPanel,StackPanel textPanel)
-        {
-            List<ControlPair<Slider,Label>> listOut = new List<ControlPair<Slider, Label>>();
-            Label startLabel = new Label();
-            startLabel.Text = " ";
-            textPanel.AddChild(startLabel);
+        private int _sliderWidth = 250; 
+        private int _buttonWidth = 125;
+        private int _defaultSpacing = 3;
+        
+        // Labels for dynamic value updates
+        private Label _cohesionLabel;
+        private Label _separationLabel;
+        private Label _alignmentLabel;
+        private Label _minSpeedLabel;
+        private Label _maxSpeedLabel;
 
-            foreach (string name in sName)
+        internal void BuildUI(BoidManager boidManager)
+        {
+            // Main bottom panel container
+            _mainContainer = new()
             {
-                Label label = new Label();
-                label.Text = name;
-                Label emptyLabel = new Label();
-                emptyLabel.Text = " ";
-                emptyLabel.Anchor(Anchor.Center);
-                Slider slider = new Slider()
-                {
-                    Name = name,    
-                    Width = width,
-                    Minimum = BoidConstants.boidMinFactor,
-                    Maximum = BoidConstants.boidMaxFactor
-                };
-                if (name == "Cohesion")
-                {
-                    slider.Value = Math.Round(BoidConstants.CoheFactor, Constants.roundNumber);
-                }
-                else if (name == "Seperation")
-                {
-                    slider.Value = Math.Round(BoidConstants.SepFactor, Constants.roundNumber);
-                }
-                else if (name == "Alignment")
-                {
-                    slider.Value = Math.Round(BoidConstants.AlignFactor, Constants.roundNumber);
-                }
-                else slider.Value = 1;
-
-                Label outText = new Label()
-                {
-                    Text = slider.Value.ToString()
-                };
-                textPanel.AddChild(emptyLabel);
-                sliderPanel.AddChild(label);
-                sliderPanel.AddChild(slider);
-                textPanel.AddChild(outText);
-                listOut.Add(new ControlPair<Slider, Label>(slider, outText));
-            }
-            return listOut;
-        }
-        public static List<ComboBox> addCombobox(List<string> comboItems, string name, string startIndex, int width,StackPanel comboPanel, string comboLabel, StackPanel textPanel)
-        {
-            List<ComboBox> listOut = new List<ComboBox>();
-            Label label = new Label();
-            label.Text = comboLabel;
-
-            ComboBox comboBox = new ComboBox();
-            foreach (string item in comboItems)
-            {
-                comboBox.Items.Add(item);
-            }
-            comboBox.Width = width;
-            comboBox.Name = name;
-            int defaultIndex = comboBox.Items.IndexOf(startIndex);
-            comboBox.SelectedObject = comboBox.Items[defaultIndex];
-            listOut.Add(comboBox);
-            comboPanel.AddChild(comboBox);
-            textPanel.AddChild(label); 
-            
-            return listOut;
-        }
-        internal void HookEvents(BoidManager boidManager)
-        {
-
-            // Button hooking
-            SimHandling.addOrRemButtons(_addbuttons, boidManager);
-            SimHandling.addOrRemButtons(_rembuttons, boidManager);
-
-            // Slider hooking
-            SimHandling.sliderHandling(_boidSlider);
-
-        }
-        public void BuildUI()
-        {
-            // Bottom container where all the control parts are kept 
-            _mainContainer = new ContainerRuntime();
-            _mainContainer.Name = "bottomPanel";
-            _mainContainer.WidthUnits = global::Gum.DataTypes.DimensionUnitType.RelativeToChildren;
-            _mainContainer.Width = Constants.SWidth;
+                Name = "bottomPanel",
+                WidthUnits = Gum.DataTypes.DimensionUnitType.Absolute,
+                Width = Constants.SWidth,
+                HeightUnits = Gum.DataTypes.DimensionUnitType.Absolute,
+                Height = Constants.PHeight
+            };
             _mainContainer.Dock(Dock.Bottom);
 
-            // Color rectanagle created
-            ColoredRectangleRuntime bottomBack = new ColoredRectangleRuntime(); 
-            bottomBack.Height = Constants.PHeight;
-            bottomBack.Width = Constants.PWidth;
-            bottomBack.Color = Color.SlateGray;
-            bottomBack.WidthUnits = global::Gum.DataTypes.DimensionUnitType.RelativeToChildren;
-            bottomBack.ChildrenLayout = global::Gum.Managers.ChildrenLayout.LeftToRightStack;
-            bottomBack.Dock(Dock.Bottom);
+            // Colored background rectangle
+            ColoredRectangleRuntime bottomBack = new()
+            {
+                Width = 100,
+                Color = Color.SlateGray,
+                WidthUnits = Gum.DataTypes.DimensionUnitType.PercentageOfParent,
+                HeightUnits = Gum.DataTypes.DimensionUnitType.RelativeToChildren,
+                ChildrenLayout = Gum.Managers.ChildrenLayout.LeftToRightStack,
+                StackSpacing = 20
+            };
             _mainContainer.AddChild(bottomBack);
 
-            ////////////////////////////////
-            // Button containers created //
-            //////////////////////////////
-            ContainerRuntime buttonContainer = new ContainerRuntime();
-            buttonContainer.Name = "buttonContainer";
-            buttonContainer.WidthUnits = global::Gum.DataTypes.DimensionUnitType.RelativeToChildren;
-            buttonContainer.StackSpacing = 3;
-            buttonContainer.ChildrenLayout = global::Gum.Managers.ChildrenLayout.LeftToRightStack;
+            // ==========================================
+            // SECTION 1: Add Buttons
+            // ==========================================
+            StackPanel addButtonsPanel = new() { Spacing = _defaultSpacing };
+            
+            Label addLabel = new() { Text = "Add Boids" };
+            addButtonsPanel.AddChild(addLabel);
 
-            StackPanel buttonPanel = new StackPanel();
-            buttonPanel.Name = "buttonPanel";
-            buttonPanel.Spacing = 3;
+            Button add1 = new() { Text = "+1" };
+            add1.Visual.Width = _buttonWidth;
+            add1.Click += (_, _) => boidManager.SpawnBoid();
+            addButtonsPanel.AddChild(add1);
 
-            StackPanel addButtons = new StackPanel();
-            addButtons.Spacing = 3;
-            StackPanel remButtons = new StackPanel();
-            remButtons.Spacing = 3;
+            Button add10 = new() { Text = "+10" };
+            add10.Visual.Width = _buttonWidth;
+            add10.Click += (_, _) => 
+            {
+                for (int i = 0; i < 10; i++)
+                    boidManager.SpawnBoid();
+            };
+            addButtonsPanel.AddChild(add10);
 
-            List<int> buttonName = new List<int> { 1, 10, 100 };
-            _addbuttons = AddButtonRow("Add boid", 125, buttonName, "+", addButtons);
-            _rembuttons = AddButtonRow("Remove boid", 125, buttonName, "-", remButtons);
+            Button add100 = new() { Text = "+100" };
+            add100.Visual.Width = _buttonWidth;
+            add100.Click += (_, _) => 
+            {
+                for (int i = 0; i < 100; i++)
+                    boidManager.SpawnBoid();
+            };
+            addButtonsPanel.AddChild(add100);
 
-            // Nesting from outer to inner (Button stacks)
-            bottomBack.AddChild(buttonPanel);
-            buttonPanel.AddChild(buttonContainer);
-            buttonContainer.AddChild(addButtons);
-            buttonContainer.AddChild(remButtons);
+            bottomBack.AddChild(addButtonsPanel.Visual);
 
-            ////////////////////////////////
-            // Slider containers created //
-            //////////////////////////////
-            ContainerRuntime slideContainer = new ContainerRuntime();
-            slideContainer.Name = "slideContainer";
-            slideContainer.WidthUnits = global::Gum.DataTypes.DimensionUnitType.RelativeToChildren;
-            slideContainer.AutoGridHorizontalCells = 2;
-            slideContainer.AutoGridVerticalCells = 1;
-            slideContainer.StackSpacing = 3;
-            slideContainer.ChildrenLayout = global::Gum.Managers.ChildrenLayout.LeftToRightStack;
+            // ==========================================
+            // SECTION 2: Remove Buttons
+            // ==========================================
+            StackPanel removeButtonsPanel = new() { Spacing = _defaultSpacing };
+            
+            Label removeLabel = new() { Text = "Remove Boids" };
+            removeButtonsPanel.AddChild(removeLabel);
 
-            StackPanel boidPanel = new StackPanel();
-            boidPanel.Spacing = 3;
-    
-            StackPanel boidLabelPanel = new StackPanel();
-            boidLabelPanel.Spacing = 3;
+            Button remove1 = new() { Text = "-1" };
+            remove1.Visual.Width = _buttonWidth;
+            remove1.Click += (_, _) => boidManager.RemoveBoid();
+            removeButtonsPanel.AddChild(remove1);
 
-            // Creating the sliders
-            List<string> sliderNames = new List<string> { "Cohesion", "Seperation", "Alignment" };
-            _boidSlider = SimUI.AddSliderRow(125, sliderNames, boidPanel, boidLabelPanel);
+            Button remove10 = new() { Text = "-10" };
+            remove10.Visual.Width = _buttonWidth;
+            remove10.Click += (_, _) => 
+            {
+                for (int i = 0; i < 10; i++)
+                    boidManager.RemoveBoid();
+            };
+            removeButtonsPanel.AddChild(remove10);
 
-            // Nesting from outer to inner (Button stacks)
-            bottomBack.AddChild(slideContainer);
-            slideContainer.AddChild(boidPanel);
-            slideContainer.AddChild(boidLabelPanel);
+            Button remove100 = new() { Text = "-100" };
+            remove100.Visual.Width = _buttonWidth;
+            remove100.Click += (_, _) => 
+            {
+                for (int i = 0; i < 100; i++)
+                    boidManager.RemoveBoid();
+            };
+            removeButtonsPanel.AddChild(remove100);
 
-            //////////////////////////////
-            // Info containers created //
-            ////////////////////////////
-            ContainerRuntime infoContainer = new ContainerRuntime();
-            infoContainer.Name = "infoContainer";
-            infoContainer.WidthUnits = global::Gum.DataTypes.DimensionUnitType.RelativeToChildren;
-            infoContainer.AutoGridHorizontalCells = 2;
-            infoContainer.AutoGridVerticalCells = 1;
-            infoContainer.StackSpacing = 3;
-            infoContainer.ChildrenLayout = global::Gum.Managers.ChildrenLayout.LeftToRightStack;
+            bottomBack.AddChild(removeButtonsPanel.Visual);
 
-            StackPanel infoPanel = new StackPanel();
-            infoPanel.Spacing = 3;
+            // ==========================================
+            // SECTION 3: Behavior Sliders
+            // ==========================================
+            ContainerRuntime behaviorContainer = new()
+            {
+                HeightUnits = Gum.DataTypes.DimensionUnitType.RelativeToChildren,
+                WidthUnits = Gum.DataTypes.DimensionUnitType.RelativeToChildren,
+                StackSpacing = _defaultSpacing,
+                ChildrenLayout = Gum.Managers.ChildrenLayout.LeftToRightStack
+            };
 
-            StackPanel infoLabel = new StackPanel();
-            infoLabel.Spacing = 3;
+            StackPanel behaviorSliders = new() { Spacing = _defaultSpacing };
+            StackPanel behaviorLabels = new() { Spacing = _defaultSpacing  };
 
-            // Creating info boxes
-            List<string> bcItems = new List<string> { "Steer", "Wrap", "Bounce" };
-            _bcCond = addCombobox(bcItems, "bcCondition", "Steer", 125,infoPanel,"Boundary Conditions",infoLabel);
+            // Section Header
+            Label behaviorHeader = new() { Text = "       Behavior" };
+            behaviorSliders.AddChild(behaviorHeader);
+            Label behaviorSpacer = new() { Text = " " };
+            behaviorLabels.AddChild(behaviorSpacer);
 
-            // Nesting from out to inner (Info stack)
-            bottomBack.AddChild(infoContainer);
-            infoContainer.AddChild(infoPanel);
-            infoContainer.AddChild(infoLabel);
+            // Cohesion Slider
+            Label cohesionNameLabel = new() { Text = "Cohesion" };
+            behaviorSliders.AddChild(cohesionNameLabel);
 
+            Slider cohesionSlider = new()
+            {
+                Width = _sliderWidth,
+                Minimum = BoidConstants.boidMinFactor,
+                Maximum = BoidConstants.boidMaxFactor,
+                Value = BoidConstants.CoheFactor
+            };
+            behaviorSliders.AddChild(cohesionSlider);
+
+            _cohesionLabel = new() { Text = cohesionSlider.Value.ToString("F1") };
+            behaviorLabels.AddChild(_cohesionLabel);
+
+            cohesionSlider.ValueChanged += (_, _) =>
+            {
+                float newValue = (float)Math.Round(cohesionSlider.Value, 1);
+                _cohesionLabel.Text = newValue.ToString("F1");
+                BoidConstants.CoheFactor = newValue;
+            };
+
+            // Separation Slider
+            Label separationNameLabel = new() { Text = "Separation" };
+            behaviorSliders.AddChild(separationNameLabel);
+
+            Slider separationSlider = new()
+            {
+                Width = _sliderWidth,
+                Minimum = BoidConstants.boidMinFactor,
+                Maximum = BoidConstants.boidMaxFactor,
+                Value = BoidConstants.SepFactor
+            };
+            behaviorSliders.AddChild(separationSlider);
+
+            _separationLabel = new() { Text = separationSlider.Value.ToString("F1") };
+            behaviorLabels.AddChild(_separationLabel);
+
+            separationSlider.ValueChanged += (_, _) =>
+            {
+                float newValue = (float)Math.Round(separationSlider.Value, 1);
+                _separationLabel.Text = newValue.ToString("F1");
+                BoidConstants.SepFactor = newValue;
+            };
+
+            // Alignment Slider
+            Label alignmentNameLabel = new() { Text = "Alignment" };
+            behaviorSliders.AddChild(alignmentNameLabel);
+
+            Slider alignmentSlider = new()
+            {
+                Width = _sliderWidth,
+                Minimum = BoidConstants.boidMinFactor,
+                Maximum = BoidConstants.boidMaxFactor,
+                Value = BoidConstants.AlignFactor
+            };
+            behaviorSliders.AddChild(alignmentSlider);
+
+            _alignmentLabel = new() { Text = alignmentSlider.Value.ToString("F1") };
+            behaviorLabels.AddChild(_alignmentLabel);
+
+            alignmentSlider.ValueChanged += (_, _) =>
+            {
+                float newValue = (float)Math.Round(alignmentSlider.Value, 1);
+                _alignmentLabel.Text = newValue.ToString("F1");
+                BoidConstants.AlignFactor = newValue;
+            };
+
+            behaviorContainer.AddChild(behaviorSliders.Visual);
+            behaviorContainer.AddChild(behaviorLabels.Visual);
+            bottomBack.AddChild(behaviorContainer);
+
+            // ==========================================
+            // SECTION 4: Speed Sliders
+            // ==========================================
+            ContainerRuntime speedContainer = new()
+            {
+                HeightUnits = Gum.DataTypes.DimensionUnitType.RelativeToChildren,
+                WidthUnits = Gum.DataTypes.DimensionUnitType.RelativeToChildren,
+                StackSpacing = _defaultSpacing ,
+                ChildrenLayout = Gum.Managers.ChildrenLayout.LeftToRightStack
+            };
+
+            StackPanel speedSliders = new() { Spacing = _defaultSpacing };
+            StackPanel speedLabels = new() { Spacing = _defaultSpacing };
+
+            // Section Header
+            Label speedHeader = new() { Text = "Speed" };
+            speedSliders.AddChild(speedHeader);
+            Label speedSpacer = new() { Text = " " };
+            speedLabels.AddChild(speedSpacer);
+
+            // Min Speed Slider
+            Label minSpeedNameLabel = new() { Text = "Min" };
+            speedSliders.AddChild(minSpeedNameLabel);
+
+            Slider minSpeedSlider = new()
+            {
+                Width = _sliderWidth,
+                Minimum = 50,
+                Maximum = 400,
+                Value = BoidConstants.MinSpeed
+            };
+            speedSliders.AddChild(minSpeedSlider);
+
+            _minSpeedLabel = new() { Text = minSpeedSlider.Value.ToString("F1") };
+            speedLabels.AddChild(_minSpeedLabel);
+
+            minSpeedSlider.ValueChanged += (_, _) =>
+            {
+                float newValue = (float)Math.Round(minSpeedSlider.Value, 1);
+                _minSpeedLabel.Text = newValue.ToString("F1");
+                BoidConstants.MinSpeed = newValue;
+            };
+
+            // Max Speed Slider
+            Label maxSpeedNameLabel = new() { Text = "Max" };
+            speedSliders.AddChild(maxSpeedNameLabel);
+
+            Slider maxSpeedSlider = new()
+            {
+                Width = _sliderWidth,
+                Minimum = 50,
+                Maximum = 400,
+                Value = BoidConstants.MaxSpeed
+            };
+            speedSliders.AddChild(maxSpeedSlider);
+
+            _maxSpeedLabel = new() { Text = maxSpeedSlider.Value.ToString("F1") };
+            speedLabels.AddChild(_maxSpeedLabel);
+
+            maxSpeedSlider.ValueChanged += (_, _) =>
+            {
+                float newValue = (float)Math.Round(maxSpeedSlider.Value, 1);
+                _maxSpeedLabel.Text = newValue.ToString("F1");
+                BoidConstants.MaxSpeed = newValue;
+            };
+
+            speedContainer.AddChild(speedSliders.Visual);
+            speedContainer.AddChild(speedLabels.Visual);
+            bottomBack.AddChild(speedContainer);
+
+            // TODO: Future texture support
+            // button.Visual.Texture = Content.Load<Texture2D>("ui/button_bg");
+            // bottomBack can be replaced with sprite background
+        }
+        
+        public void ReSizeUI(int newWidth, int newHeight)
+        {
+            if (_mainContainer != null)
+            {
+                UIUtils.UpdateUISize(newWidth,newHeight);
+
+                // Update the container width to match new screen width
+                _mainContainer.Width = newWidth;
+                _mainContainer.UpdateLayout();
+            }
+        }
+
+        internal void RebuildAndShowUI(BoidManager boidManager)
+        {
+            if(_mainContainer != null && _mainContainer.Parent != null)
+            {
+                _mainContainer.RemoveFromRoot();
+            }
+            BuildUI(boidManager);
+            ShowUI();
         }
         public void ShowUI()
         {
@@ -227,29 +312,8 @@ namespace Boids.ui
             }
             catch (Exception ex)
             {
-                Console.WriteLine("Simulation container has not been initialized", ex);
+                Console.WriteLine($"Simulation container has not been initialized: {ex}");
             }
-        }
-    
-        public static void printSizeCont(ContainerRuntime panel)
-        {
-            Console.WriteLine("ContainerRuntime: " + "\n" +
-            "Name: " + panel.Name + "\n" +
-            "Absolotue bottom: " + panel.AbsoluteBottom + "\n" +
-            "Absolote Left: " + panel.AbsoluteLeft + "\n" +
-            "Absolute Right" + panel.AbsoluteRight + "\n" +
-            "Absolute top: " + panel.AbsoluteTop + "\n" +
-            "Absolute x: " + panel.AbsoluteX + "\n" +
-            "Absoulte y: " + panel.AbsoluteY);
-        }
-        public static void printSizeStac(StackPanel panel)
-        {
-            Console.WriteLine("StackPanel: " + "\n" +
-            "Name: " + panel.Name + "\n" +
-            "Absolote Left: " + panel.AbsoluteLeft + "\n" +
-            "Absolute top: " + panel.AbsoluteTop + "\n" +
-            "Absolute height: " + panel.ActualHeight + "\n" +
-            "Absoulte width: " + panel.ActualWidth);
         }
     }
 }

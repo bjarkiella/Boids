@@ -40,7 +40,7 @@ namespace Boids.Shared
 
         public static float RandomSpeed()
         {
-            return RandomFloatRange(MathF.Max(1f,BoidConstants.minSpeed),BoidConstants.maxSpeed);
+            return RandomFloatRange(MathF.Max(1f,BoidConstants.MinSpeed),BoidConstants.MaxSpeed);
         }
         public static float RandomAngle()
         {

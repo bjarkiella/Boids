@@ -1,7 +1,6 @@
 using System;
 using Microsoft.Xna.Framework.Graphics;
 using Boids.Shared;
-using Boids.Shared;
 
 namespace Boids.Boids
 {
@@ -11,8 +10,8 @@ namespace Boids.Boids
         public const float boidMinFactor = 0f;
         public const float boidMaxFactor = 5f;
         public const float accFactor = 2f;
-        public const float maxSpeed = 200f;
-        public const float minSpeed = 100f;
+        public static float MaxSpeed { get; set; } = 200f;
+        public static float MinSpeed { get; set; } = 100f;
         public const float RandomSteer = 10f;
         public const float RandomVel = 1.1f;
         public const float steerWeight = 0.7f;

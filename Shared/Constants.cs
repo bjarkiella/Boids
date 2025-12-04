@@ -7,7 +7,8 @@ namespace Boids.Shared
 {
         public static int SHeight {get; set;} = 720 * 1;
         public static int SWidth {get; set;} = 1280 * 1;
-        public static int PHeight {get; set;}= 150;
+        public const int DefaultPanelHeight = 200;
+        public static int PHeight {get; set;} = DefaultPanelHeight;
         public static int PWidth {get; set;}= SWidth;
         public static int ActiveHeight => SHeight - PHeight;
         public static int ActiveWidth => SWidth;

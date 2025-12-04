@@ -1,8 +1,9 @@
 using System;
 using Gum.Wireframe;
-using MonoGameGum.Forms.Controls;
+using Gum.Forms.Controls;
 using MonoGameGum;
 using Microsoft.Xna.Framework;
+
 namespace Boids.ui
 {
     public class StartupUI 
@@ -20,28 +21,23 @@ namespace Boids.ui
         {
             simButton.Click += (_, _) => OnSimulationModeClicked?.Invoke();
             playerButton.Click += (_, _) => OnPlayerModeClicked?.Invoke();
-            exitButton.Click += (_,_) => OnExitClicked?.Invoke(); 
+            exitButton.Click += (_, _) => OnExitClicked?.Invoke(); 
         }
+
         public void BuildUI(Game game)
         {
-
-            _mainPanel = new StackPanel();
-            _mainPanel.Spacing = 3;
+            _mainPanel = new() { Spacing = 3 };
             _mainPanel.Anchor(Anchor.Center);
 
-            simButton = new Button();
-            simButton.Text = "Simulation Mode";
-
-            playerButton = new Button();
-            playerButton.Text = "Player Mode";
-            
-            exitButton = new Button();
-            exitButton.Text = "Exit";
+            simButton = new() { Text = "Simulation Mode" };
+            playerButton = new() { Text = "Player Mode" };
+            exitButton = new() { Text = "Exit" };
 
             _mainPanel.AddChild(simButton);
             _mainPanel.AddChild(playerButton);
             _mainPanel.AddChild(exitButton);
         }
+
         public void ShowUI()
         {
             try
@@ -50,9 +46,8 @@ namespace Boids.ui
             }
             catch (Exception ex)
             {
-                Console.WriteLine("Startup panel has not been initialized", ex);
+                Console.WriteLine($"Startup panel has not been initialized: {ex}");
             }
         }
-    
     }
 }

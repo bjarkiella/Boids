@@ -22,7 +22,7 @@ namespace Boids.Boids
 
             Vector2 v = checkBoid.Velocity;
             Vector2 p = checkBoid.Position;
-            float maxSpeed = BoidConstants.maxSpeed;
+            float maxSpeed = BoidConstants.MaxSpeed;
 
             // ALIGNMENT: desired = normalize(avgVel) * maxSpeed, steer = desired - v  (tiny change)
             if (align.LengthSquared() > Constants.ZeroCompare)

@@ -46,7 +46,7 @@ namespace Boids.Boids
             Vector2 steerDir = BoidBC.SteerBoid(Position,Radius,BoidVisionRadius(),BoidConstants.wallTurn);
             RotateTowardsDir(steerDir,BoidConstants.MaxTurn);
             SpeedFactor = BoidConstants.speedDown;
-            UpdateVelocity(_preSpeed,BoidConstants.minSpeed,BoidConstants.maxSpeed,speedFactor); 
+            UpdateVelocity(_preSpeed,BoidConstants.MinSpeed,BoidConstants.MaxSpeed,speedFactor); 
             Position = BC.PosCheck(Position,Radius);
         }
         internal void SteerFromPlayer(Vector2 playerPos)
@@ -55,7 +55,7 @@ namespace Boids.Boids
             Vector2 avoidVector = Position - playerPos;
             RotateTowardsDir(avoidVector,BoidConstants.MaxTurn);
             SpeedFactor = BoidConstants.speedUp;
-            UpdateVelocity(Speed,BoidConstants.minSpeed,BoidConstants.maxSpeed,SpeedFactor);
+            UpdateVelocity(Speed,BoidConstants.MinSpeed,BoidConstants.MaxSpeed,SpeedFactor);
             ResetSpeedFactor();
         }
         internal Vector2 DeathByCake()
