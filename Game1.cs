@@ -289,10 +289,7 @@ namespace Boids
             Constants.SHeight = Window.ClientBounds.Height;
             Constants.PWidth = Constants.SWidth;
             Constants.PHeight = Constants.DefaultPanelHeight;
-            GraphicalUiElement.CanvasWidth = Window.ClientBounds.Width;
-            GraphicalUiElement.CanvasHeight = Window.ClientBounds.Height;
-            GumService.Default.Root.Width = Window.ClientBounds.Width;
-            GumService.Default.Root.Height = Window.ClientBounds.Height;
+            UIUtils.UpdateUISize(Window.ClientBounds.Width,Window.ClientBounds.Height);
 
             // New UI drawn
             Gum.Root.Children.Clear();
@@ -320,10 +317,7 @@ namespace Boids
             for (int i = 0; i < 150; i++) _boidManager.SpawnBoid();
 
             // Syncing Canvas to re-size
-            GraphicalUiElement.CanvasWidth = Window.ClientBounds.Width;
-            GraphicalUiElement.CanvasHeight = Window.ClientBounds.Height;
-            GumService.Default.Root.Width = Window.ClientBounds.Width;
-            GumService.Default.Root.Height = Window.ClientBounds.Height;
+            UIUtils.UpdateUISize(Window.ClientBounds.Width,Window.ClientBounds.Height);
 
             // Adding overlay UI      
             _timerUI.BuildTimerUI();

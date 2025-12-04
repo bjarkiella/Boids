@@ -291,6 +291,7 @@ namespace Boids.ui
 
                 // Update the container width to match new screen width
                 _mainContainer.Width = newWidth;
+                _mainContainer.Dock(Dock.Bottom); 
                 _mainContainer.UpdateLayout();
             }
         }

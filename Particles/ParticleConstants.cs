@@ -1,7 +1,6 @@
 using System;
 using Microsoft.Xna.Framework.Graphics;
 using Boids.Shared;
-using Boids.Shared;
 
 namespace Boids.Particles
 {
