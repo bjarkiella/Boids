@@ -44,6 +44,7 @@ namespace Boids
         private SimUI _simUI;
         private StartupUI _startupUI;
         private TimerUI _timerUI = new();
+        private BoidCountUI _boidCountUI = new();
 
         public enum GameMode { None, Simulation, Player }
         private GameMode _gamemode = GameMode.None;
@@ -72,10 +73,15 @@ namespace Boids
             {
                 _simUI.ReSizeUI(Constants.SWidth, Constants.SHeight);
             }
-            // Resize UI if in player mode
+            // Resize timer UI if in player mode
             if (_gamemode == GameMode.Player && _timerUI != null)
             {
                 _timerUI.ReSizeUI(Constants.SWidth, Constants.SHeight);
+            }
+            // Resize boid counter UI if in player mode
+            if ((_gamemode == GameMode.Player || _gamemode == GameMode.Simulation) && _boidCountUI != null)
+            {
+                _boidCountUI.ReSizeUI(Constants.SWidth, Constants.SHeight);
             }
         }
         protected override void Initialize()
@@ -231,6 +237,11 @@ namespace Boids
                     _largeCloudPLManager.Update();
                     _smallCloudPLManager.Update();
                     _boidManager.Update();
+                    if (_boidManager.ListOfBoids != null)
+                    {
+                        int boidsNumber = _boidManager.ListOfBoids.Count;
+                        _boidCountUI.UpdateBoidCountDisplay(boidsNumber);
+                    }
                     Gum.Update(gameTime);
                     break;
                 case GameMode.Player:
@@ -242,6 +253,12 @@ namespace Boids
                     List<Rectangle> treeBounds = BackgroundUtils.GetTreeBounds(_staticTrees,_treeScale);
                     _player.Update(current, _prevKeyboardState,cloudBounds,treeBounds);
                     _boidManager.Update(_player.Position, _player.EatRadius ,_player.EatBoid,_player.OpacityFactor);
+                    
+                    if (_boidManager.ListOfBoids != null)
+                    {
+                        int boidsNumber = _boidManager.ListOfBoids.Count;
+                        _boidCountUI.UpdateBoidCountDisplay(boidsNumber);
+                    }
 
                     _timerUI.UpdateTimer();
                     break;
@@ -299,6 +316,9 @@ namespace Boids
                 _simUI.BuildUI(_boidManager);
             }
             _simUI.RebuildAndShowUI(_boidManager);
+
+            _boidCountUI.BuildBoidCountUI();
+            _boidCountUI.ShowUI();
         }
         private void SetupPlayerMode()
         {
@@ -323,6 +343,8 @@ namespace Boids
             _timerUI.BuildTimerUI();
             _timerUI.ResetTimer();
             _timerUI.ShowUI();
+            _boidCountUI.BuildBoidCountUI();
+            _boidCountUI.ShowUI();
 
         }
         private void DrawBackground(SpriteBatch sb, Rectangle aspectBg, List<Rectangle> tiles, List<Rectangle> darkTiles)
