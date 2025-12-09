@@ -17,7 +17,7 @@
     "VSync is currently in a committed relationship with your framerate. Don't be a homewrecker.",
     "The VSync switch is guarded by a very small but very aggressive dragon. For your safety, we've disabled access.",
     "VSync? More like WHY-sync! ...Sorry, that's all I've got. The setting stays as-is.",
-    "We asked VSync if it wanted to be toggled. Don't make the same mistake.",
+    "We asked VSync if it wanted to be toggled. It said 'ni!' repeatedly until we left.",
     "The last person who touched VSync is still waiting for their frames to sync. Don't make the same mistake."
   ],
   "sfx": [
@@ -26,5 +26,26 @@
     "We could change that, but it would require rebooting the space-time continuum. Bit of a hassle, really.",
     "The SFX slider is currently in witness protection. We cannot disclose its location or allow modifications.",
     "Fun fact: this SFX level was chosen by flipping a coin 47 times. You can't argue with that kind of methodology."
+  ],
+  "hdr": [
+    "HDR? You mean Highly Dramatic Rejection? Because that's what you're getting.",
+    "The HDR toggle has been sealed away by the Knights Who Say 'Ni'. Bring us a shrubbery and we'll talk.",
+    "Your screen's dynamic range is already highly dynamic. Any more dynamism and it might explode. Dramatically.",
+    "HDR is merely a flesh wound! ...Actually, it's working perfectly. Leave it alone.",
+    "We consulted the Book of Armaments about HDR. It said 'Skip a bit, brother.' So we did."
+  ],
+  "antialiasing": [
+    "Anti-aliasing? We prefer pro-aliasing here. Those jagged edges have rights too, you know.",
+    "The Anti-aliasing Guild has voted unanimously to keep things exactly as they are. Democracy in action!",
+    "Smoothing pixels is a form of pixel discrimination. We don't do that here.",
+    "Your edges are already so smooth, a newt could slide right off them. A newt, I say!",
+    "The Ministry of Silly Pixels has decreed that all anti-aliasing requests must be submitted in triplicate, during a full moon, while hopping on one foot."
+  ],
+  "texturequality": [
+    "These textures were hand-painted by a very talented artist who would be quite offended if you changed them.",
+    "Texture quality adjustment requires completion of the Quest for the Holy Grail. Good luck with that.",
+    "The textures are exactly as blurry or sharp as they need to be. It's an artistic choice. A bold one.",
+    "We asked the textures if they wanted to be higher quality. They said 'We're not quite dead yet!' So we left them.",
+    "Adjusting texture quality would anger the Killer Rabbit of Caerbannog. You don't want that. Trust me."
   ]
 }

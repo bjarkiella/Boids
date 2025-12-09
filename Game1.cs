@@ -43,10 +43,11 @@ namespace Boids
         // PlayerCamera _playerCamera;
         private SimUI _simUI;
         private StartupUI _startupUI;
+        private OptionsUI _optionsUI;
         private TimerUI _timerUI = new();
         private BoidCountUI _boidCountUI = new();
 
-        public enum GameMode { None, Simulation, Player }
+        public enum GameMode { None, Simulation, Player, Options }
         private GameMode _gamemode = GameMode.None;
         public Game1()
         {
@@ -69,6 +70,12 @@ namespace Boids
             GumService.Default.Root.Height = Constants.SHeight;
             
             // Resize UI if in simulation mode
+            if (_gamemode == GameMode.None && _startupUI != null)
+            {
+                _startupUI.ReSizeUI(Constants.SWidth, Constants.SHeight);
+            }
+
+            // Resize UI if in simulation mode
             if (_gamemode == GameMode.Simulation && _simUI != null)
             {
                 _simUI.ReSizeUI(Constants.SWidth, Constants.SHeight);
@@ -82,6 +89,11 @@ namespace Boids
             if ((_gamemode == GameMode.Player || _gamemode == GameMode.Simulation) && _boidCountUI != null)
             {
                 _boidCountUI.ReSizeUI(Constants.SWidth, Constants.SHeight);
+            }
+            // Resize UI if in options mode
+            if (_gamemode == GameMode.Options && _optionsUI != null)
+            {
+                _optionsUI.ReSizeUI(Constants.SWidth, Constants.SHeight);
             }
         }
         protected override void Initialize()
@@ -262,6 +274,9 @@ namespace Boids
 
                     _timerUI.UpdateTimer();
                     break;
+                case GameMode.Options:
+                    Gum.Update(gameTime);
+                    break;
             }
             _prevKeyboardState = current; // Used to keep track if key is pressed multiple times
 
@@ -281,6 +296,11 @@ namespace Boids
             {
                 _gamemode = GameMode.Simulation;
                 SetupSimulation();
+            };
+            _startupUI.OnOptionClicked = () =>
+            {
+                _gamemode = GameMode.Options;
+                SetupOptions();
             };
             _startupUI.OnPlayerModeClicked = () =>
             {
@@ -346,6 +366,23 @@ namespace Boids
             _boidCountUI.BuildBoidCountUI();
             _boidCountUI.ShowUI();
 
+        }
+        private void SetupOptions()
+        {
+            Gum.Root.Children.Clear();
+            UIUtils.UpdateUISize(Window.ClientBounds.Width, Window.ClientBounds.Height);
+            
+            if (_optionsUI == null)
+            {
+                _optionsUI = new OptionsUI();
+            }
+            _optionsUI.RebuildAndShowUI();
+            
+            _optionsUI.OnBackClicked = () =>
+            {
+                _gamemode = GameMode.None;
+                SetupStartup();
+            };
         }
         private void DrawBackground(SpriteBatch sb, Rectangle aspectBg, List<Rectangle> tiles, List<Rectangle> darkTiles)
         {
@@ -436,7 +473,8 @@ namespace Boids
             {
                 case GameMode.None:
                 case GameMode.Simulation:
-                case GameMode.Player: 
+                case GameMode.Player:
+                case GameMode.Options:
                     _spriteBatch.Begin(
                             SpriteSortMode.Deferred,
                             BlendState.AlphaBlend,
