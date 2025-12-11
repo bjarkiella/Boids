@@ -84,6 +84,20 @@ jobs:
             -p:PublishSingleFile=false \
             -o ./publish/${{ matrix.platform }}
 
+      - name: Add launcher and README
+        if: steps.check.outputs.enabled == 'true'
+        run: |
+          cp Release/README.txt ./publish/${{ matrix.platform }}/
+          if [[ "${{ matrix.platform }}" == "linux" ]]; then
+            cp Release/run.sh ./publish/${{ matrix.platform }}/
+            chmod +x ./publish/${{ matrix.platform }}/run.sh
+            chmod +x ./publish/${{ matrix.platform }}/Boids
+          elif [[ "${{ matrix.platform }}" == "macos" ]]; then
+            cp Release/run.command ./publish/${{ matrix.platform }}/
+            chmod +x ./publish/${{ matrix.platform }}/run.command
+            chmod +x ./publish/${{ matrix.platform }}/Boids
+          fi
+
       - name: Package (zip) for Windows/macOS
         if: steps.check.outputs.enabled == 'true' && matrix.package_ext == 'zip'
         run: |
