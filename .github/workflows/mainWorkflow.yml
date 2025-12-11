@@ -44,30 +44,39 @@ jobs:
             rid: osx-x64
             artifact_name: Boids-osx-x64
             package_ext: zip
-            build_flag: build_macos
-
-    # Skip job if platform checkbox is unchecked
-    if: >-
-      (matrix.platform == 'windows' && inputs.build_windows) ||
-      (matrix.platform == 'linux' && inputs.build_linux) ||
-      (matrix.platform == 'macos' && inputs.build_macos)
 
     steps:
+      - name: Check if platform is enabled
+        id: check
+        run: |
+          if [[ "${{ matrix.platform }}" == "windows" ]]; then
+            echo "enabled=${{ inputs.build_windows }}" >> $GITHUB_OUTPUT
+          elif [[ "${{ matrix.platform }}" == "linux" ]]; then
+            echo "enabled=${{ inputs.build_linux }}" >> $GITHUB_OUTPUT
+          elif [[ "${{ matrix.platform }}" == "macos" ]]; then
+            echo "enabled=${{ inputs.build_macos }}" >> $GITHUB_OUTPUT
+          fi
+
       - name: Checkout code
+        if: steps.check.outputs.enabled == 'true'
         uses: actions/checkout@v4
 
       - name: Setup .NET 8
+        if: steps.check.outputs.enabled == 'true'
         uses: actions/setup-dotnet@v4
         with:
           dotnet-version: "8.0.x"
 
       - name: Restore dotnet tools
+        if: steps.check.outputs.enabled == 'true'
         run: dotnet tool restore
 
       - name: Restore dependencies
+        if: steps.check.outputs.enabled == 'true'
         run: dotnet restore
 
       - name: Publish for ${{ matrix.platform }}
+        if: steps.check.outputs.enabled == 'true'
         run: |
           dotnet publish -c Release \
             -r ${{ matrix.rid }} \
@@ -76,18 +85,19 @@ jobs:
             -o ./publish/${{ matrix.platform }}
 
       - name: Package (zip) for Windows/macOS
-        if: matrix.package_ext == 'zip'
+        if: steps.check.outputs.enabled == 'true' && matrix.package_ext == 'zip'
         run: |
           cd publish/${{ matrix.platform }}
           zip -r ../../${{ matrix.artifact_name }}.zip .
 
       - name: Package (tar.gz) for Linux
-        if: matrix.package_ext == 'tar.gz'
+        if: steps.check.outputs.enabled == 'true' && matrix.package_ext == 'tar.gz'
         run: |
           cd publish/${{ matrix.platform }}
           tar -czvf ../../${{ matrix.artifact_name }}.tar.gz .
 
       - name: Upload artifact
+        if: steps.check.outputs.enabled == 'true'
         uses: actions/upload-artifact@v4
         with:
           name: ${{ matrix.artifact_name }}
