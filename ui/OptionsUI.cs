@@ -277,7 +277,7 @@ namespace Boids.ui
         internal void HookEvents()
         {
             // Back button
-            _backButton.Click += (_, _) => OnBackClicked?.Invoke();
+           _backButton.Click += (_, _) => OnBackClicked?.Invoke();
             
             // Popup OK button
             _popupOkButton.Click += (_, _) => HidePopup();
