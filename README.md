@@ -19,7 +19,12 @@ This project was developed as a learning exercise to get familiar with C# and ga
 
 ## Screenshots
 
-<!-- TODO: Add screenshots/gifs here -->
+The game features a main menu, an autonomous simulation mode, and a player-controlled predator mode.
+
+| Menu | Simulation | Player Mode |
+|:----:|:----------:|:-----------:|
+| ![Main Menu](screenshots/Menu.png) | ![Boids flocking autonomously](screenshots/Simulation.png) | ![Hunting as a predator](screenshots/Player.png) |
+| *Main menu with game options* | *Boids flock together following separation, alignment, and cohesion rules* | *Control the predator and hunt down the boids* |
 
 ## Controls
 
@@ -60,8 +65,10 @@ This project will continue to evolve as long as there's learning value in it. Ne
 
 ## Acknowledgments
 
-- Craig Reynolds for the original boids algorithm
-- <!-- TODO: Add asset credits -->
+- Boids algorithm -> Craig Reynolds 
+- Backgrounds and sky -> DustDFG, https://opengameart.org/content/pixel-art-mountains-parallax
+- Bird Textures -> Mantis,  https://opengameart.org/content/update-animated-birds-character-sheet
+- Effects -> Reemax ,https://opengameart.org/content/lpc-items-and-game-effects
 
 ## License
 
