@@ -2,8 +2,6 @@
 
 A flocking simulation and predator game built with MonoGame.
 
-![Screenshot placeholder](screenshots/screenshot1.png)
-
 ## About
 
 Boids is a simulation of flocking behavior, inspired by Craig Reynolds' classic boids algorithm. Watch as birds flock together following simple rules of separation, alignment, and cohesion - or take control as a predator and hunt them down!
@@ -21,10 +19,11 @@ This project was developed as a learning exercise to get familiar with C# and ga
 
 The game features a main menu, an autonomous simulation mode, and a player-controlled predator mode.
 
-| Menu | Simulation | Player Mode |
-|:----:|:----------:|:-----------:|
-| ![Main Menu](screenshots/Menu.png) | ![Boids flocking autonomously](screenshots/Simulation.png) | ![Hunting as a predator](screenshots/Player.png) |
-| *Main menu with game options* | *Boids flock together following separation, alignment, and cohesion rules* | *Control the predator and hunt down the boids* |
+| Screenshot | Description |
+|:----------:|:------------|
+| ![Main Menu](screenshots/Menu.png) | *Main menu with game options* |
+| ![Boids flocking autonomously](screenshots/Simulation.png) | *Boids flock together following separation, alignment, and cohesion rules* |
+| ![Hunting as a predator](screenshots/Player.png) | *Control the predator and hunt down the boids* |
 
 ## Controls
 
