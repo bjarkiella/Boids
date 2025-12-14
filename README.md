@@ -11,9 +11,9 @@ This project was developed as a learning exercise to get familiar with C# and ga
 ## Features
 
 - **Simulation Mode**: Watch the boids flock autonomously with realistic flocking behavior
-- **Player Mode**: Control a predator to hunt the boids before time runs out
-- **Parallax backgrounds**: Multi-layered scrolling clouds and scenery
-- **Customizable settings**: Adjust simulation parameters through the options menu
+  - **Customizable settings**: Adjustable flocking parameters in simulation mode
+- **Player Mode**: Control a predator to hunt the boids
+  - **Parallax backgrounds**: Use the background to hide as a predator
 
 ## Screenshots
 
