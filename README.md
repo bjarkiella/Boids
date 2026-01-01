@@ -58,16 +58,40 @@ dotnet run
 
 Pre-built releases are available for Windows, Linux, and macOS on the [Releases page](../../releases).
 
+#### macOS Security Note
+
+macOS may block the app with "Apple could not verify" warnings. To run:
+
+**Option A** - Right-click `run.command`, select "Open", click "Open" in the dialog. Repeat for any blocked `.dylib` files.
+
+**Option B** - Open Terminal in the extracted folder and run:
+```bash
+xattr -cr .
+```
+Then double-click `run.command`.
+
 ## Future Plans
 
 This project will continue to evolve as long as there's learning value in it. New features and improvements will be added as opportunities arise to explore new concepts in C# and game development.
 
 ## Acknowledgments
 
+### Other
 - Boids algorithm -> Craig Reynolds 
+
+### Textures
 - Backgrounds and sky -> DustDFG, https://opengameart.org/content/pixel-art-mountains-parallax
 - Bird Textures -> Mantis,  https://opengameart.org/content/update-animated-birds-character-sheet
 - Effects -> Reemax ,https://opengameart.org/content/lpc-items-and-game-effects
+
+### Sounds
+- Possible sound -> https://opengameart.org/content/various-sound-effects-0
+- https://opengameart.org/content/ambient-mountain-river-wind-and-forest-and-waterfall
+- https://opengameart.org/content/7-eating-crunches
+- https://opengameart.org/content/park-ambiences 
+- https://freesound.org/people/zouzmusic/sounds/414671/
+### Music
+
 
 ## License
 
